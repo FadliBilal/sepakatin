@@ -182,7 +182,7 @@ export function sanitizeContent(raw: ContractContentJSON, contractId: string): C
 }
 
 function imageDataUrl(value: unknown, label: string): string {
-  if (typeof value !== "string" || !/^data:image\/(png|jpe?g|webp|svg\+xml);base64,/.test(value)) {
+  if (typeof value !== "string" || !/^data:image\/(png|jpe?g|webp|svg\+xml)(;base64|;utf8)?,/i.test(value)) {
     throw new AgreementError(`${label} harus berupa gambar PNG, JPG, WEBP, atau SVG.`);
   }
   if (value.length > MAX_IMAGE_CHARS) throw new AgreementError(`${label} terlalu besar. Maksimal sekitar 1 MB.`);
@@ -367,7 +367,6 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
       break;
     }
     case "ematerai": {
-      requirePremium(agr);
       if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
       if (action.targetCopy !== "freelancer_copy" && action.targetCopy !== "client_copy") {
         throw new AgreementError("Pilihan salinan tidak valid.");
@@ -387,7 +386,6 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
       break;
     }
     case "removeEmaterai": {
-      requirePremium(agr);
       if (!agr.ematerai) throw new AgreementError("Belum ada e-Materai di dokumen ini.");
       agr.ematerai = undefined;
       log(agr, owner, "VERSION_BUMPED", "e-Materai dilepas dari dokumen oleh freelancer");

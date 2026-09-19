@@ -187,41 +187,65 @@ function AgreementDetail() {
     setIsUploadingMaterai(true);
     const reader = new FileReader();
     reader.onload = async () => {
-      const updated = await uploadEMaterai(agreement.id, {
-        imageUrl: reader.result as string,
-        serialNumber: serialNumberInput.trim() || undefined,
-        targetCopy,
-        uploadedBy: content.freelancer.name,
-      });
-      if (updated) {
-        setAgreement({ ...updated });
-        alert("e-Materai berhasil ditempel ke dokumen!");
+      try {
+        const updated = await uploadEMaterai(agreement.id, {
+          imageUrl: reader.result as string,
+          serialNumber: serialNumberInput.trim() || undefined,
+          targetCopy,
+          uploadedBy: content.freelancer.name,
+        });
+        if (updated) {
+          setAgreement({ ...updated });
+          alert("e-Materai berhasil ditempel ke dokumen!");
+        }
+      } catch (err) {
+        console.error("Gagal unggah e-Materai:", err);
+        alert(err instanceof Error ? err.message : "Gagal mengunggah e-Materai. Coba lagi.");
+      } finally {
+        setIsUploadingMaterai(false);
       }
+    };
+    reader.onerror = () => {
       setIsUploadingMaterai(false);
+      alert("Gagal membaca file gambar.");
     };
     reader.readAsDataURL(file);
   };
 
   const handleUseSampleMaterai = async () => {
     setIsUploadingMaterai(true);
-    const serial = serialNumberInput.trim() || "SN-2026-99824-EMTR";
-    const updated = await uploadEMaterai(agreement.id, {
-      imageUrl: generateSampleEMateraiDataUrl(serial),
-      serialNumber: serial,
-      targetCopy,
-      uploadedBy: content.freelancer.name,
-    });
-    if (updated) {
-      setAgreement({ ...updated });
-      alert("Contoh e-Materai berhasil ditempel!");
+    try {
+      const serial = serialNumberInput.trim() || "SN-2026-99824-EMTR";
+      const updated = await uploadEMaterai(agreement.id, {
+        imageUrl: generateSampleEMateraiDataUrl(serial),
+        serialNumber: serial,
+        targetCopy,
+        uploadedBy: content.freelancer.name,
+      });
+      if (updated) {
+        setAgreement({ ...updated });
+        alert("Contoh e-Materai berhasil ditempel!");
+      }
+    } catch (err) {
+      console.error("Gagal pakai contoh e-Materai:", err);
+      alert(err instanceof Error ? err.message : "Gagal menempelkan contoh e-Materai. Coba lagi.");
+    } finally {
+      setIsUploadingMaterai(false);
     }
-    setIsUploadingMaterai(false);
   };
 
   const handleRemoveMaterai = async () => {
     if (!confirm("Lepas e-Materai dari dokumen ini?")) return;
-    const updated = await removeEMaterai(agreement.id);
-    if (updated) setAgreement({ ...updated });
+    try {
+      const updated = await removeEMaterai(agreement.id);
+      if (updated) {
+        setAgreement({ ...updated });
+        alert("e-Materai berhasil dilepas dari dokumen.");
+      }
+    } catch (err) {
+      console.error("Gagal melepas e-Materai:", err);
+      alert(err instanceof Error ? err.message : "Gagal melepas e-Materai. Coba lagi.");
+    }
   };
 
   const handleSaveFreelancerSignature = async (sigDataUrl: string) => {

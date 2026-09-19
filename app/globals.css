@@ -130,60 +130,74 @@ body {
 /* ==========================================================================
    Aturan Cetak & Simpan PDF (A4 dengan Margin Resmi Rapi)
    ========================================================================== */
+@page {
+  size: A4 portrait;
+  margin: 12mm 14mm 12mm 14mm;
+}
+
 @media print {
   @page {
     size: A4 portrait;
-    margin: 18mm 16mm 18mm 16mm;
+    margin: 12mm 14mm 12mm 14mm;
   }
+
+  html,
   body {
     background: #ffffff !important;
     color: #0f172a !important;
     margin: 0 !important;
     padding: 0 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
-  html,
-  body {
     min-height: 0 !important;
     height: auto !important;
     width: 100% !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
   *,
   *::before,
   *::after {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
+
   .print-sheet {
+    box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 auto !important;
+    padding: 6mm 10mm !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    background: #ffffff !important;
   }
+
   .print-sheet * {
     min-width: 0;
   }
+
   /* Mencegah pemotongan pasal / kotak tanda tangan di tengah lembaran */
   .print-keep {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
+
   .print-sheet h1,
   .print-sheet h2,
   .print-sheet h3 {
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
+
   .print-sheet img {
     max-width: 100%;
   }
