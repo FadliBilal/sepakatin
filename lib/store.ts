@@ -18,7 +18,7 @@ import {
 import { generateContractId } from "./crypto";
 import { AccountUsage, FREE_RULES, isActiveStatus } from "./plans";
 import { isSupabaseConfigured } from "./supabase";
-import { getAccessToken, getCachedRemoteUsage, getSession, localAccounts, refreshAccount } from "./auth";
+import { getAccessToken, getCachedRemoteUsage, getSession, localAccounts, refreshAccount, updateLocalAccount } from "./auth";
 import { buildSealedDemoAgreement } from "./demo-data";
 import { DEMO_ACCOUNTS } from "./demo-accounts";
 
@@ -367,4 +367,104 @@ export async function getAgreementByContractId(contractId: string): Promise<Agre
   const list = await readLocal();
   return list.find((a) => a.contractId.toUpperCase() === normalized) ?? null;
 }
+
+// ------------------------------------------------------------------------------
+// Admin Platform Management
+// ------------------------------------------------------------------------------
+
+export interface AdminPlatformStats {
+  totalUsers: number;
+  totalAgreements: number;
+  totalAgreed: number;
+  totalPending: number;
+  totalCancelled: number;
+  totalProjectValue: number;
+  isSupabaseConnected: boolean;
+}
+
+export interface AdminUserView {
+  id: string;
+  username: string;
+  email: string;
+  fullName: string;
+  role: string;
+  phone: string;
+  plan: "gratis" | "pro";
+  credits: number;
+  agreementCount: number;
+  totalValue: number;
+}
+
+export async function adminGetPlatformStats(): Promise<AdminPlatformStats> {
+  const users = localAccounts();
+  const agreements = await readLocal();
+  const agreed = agreements.filter((a) => a.status === "AGREED" || a.status === "ACTIVE" || a.status === "COMPLETED").length;
+  const pending = agreements.filter((a) => a.status === "PENDING_CLIENT" || a.status === "CHANGES_REQUESTED" || a.status === "PENDING_APPROVAL" || a.status === "DRAFT").length;
+  const cancelled = agreements.filter((a) => a.status === "CANCELLED" || a.status === "REJECTED").length;
+  const totalValue = agreements
+    .filter((a) => a.status !== "CANCELLED" && a.status !== "REJECTED")
+    .reduce((sum, a) => sum + (Number(a.currentVersion?.contentJson?.payment?.totalValue) || 0), 0);
+
+  return {
+    totalUsers: users.length,
+    totalAgreements: agreements.length,
+    totalAgreed: agreed,
+    totalPending: pending,
+    totalCancelled: cancelled,
+    totalProjectValue: totalValue,
+    isSupabaseConnected: isSupabaseConfigured,
+  };
+}
+
+export async function adminGetAllUsers(): Promise<AdminUserView[]> {
+  const users = localAccounts();
+  const agreements = await readLocal();
+
+  return users.map((u) => {
+    const userAgreements = agreements.filter((a) => a.ownerId === u.id);
+    const totalVal = userAgreements
+      .filter((a) => a.status !== "CANCELLED" && a.status !== "REJECTED")
+      .reduce((sum, a) => sum + (Number(a.currentVersion?.contentJson?.payment?.totalValue) || 0), 0);
+    return {
+      id: u.id,
+      username: u.username,
+      email: u.email,
+      fullName: u.fullName,
+      role: u.role,
+      phone: u.phone,
+      plan: u.plan,
+      credits: localCredits(u.id),
+      agreementCount: userAgreements.length,
+      totalValue: totalVal,
+    };
+  });
+}
+
+export async function adminUpdateUserPlan(userId: string, plan: "gratis" | "pro"): Promise<void> {
+  updateLocalAccount(userId, { plan });
+}
+
+export async function adminUpdateUserCredits(userId: string, credits: number): Promise<void> {
+  setLocalCredits(userId, credits);
+  updateLocalAccount(userId, { credits });
+}
+
+export async function adminGetAllAgreements(): Promise<AgreementRecord[]> {
+  return readLocal();
+}
+
+export async function adminModerateAgreement(agreementId: string, action: "cancel" | "delete"): Promise<void> {
+  const list = await readLocal();
+  if (action === "delete") {
+    writeLocal(list.filter((a) => a.id !== agreementId));
+    return;
+  }
+  const item = list.find((a) => a.id === agreementId);
+  if (item) {
+    item.status = "CANCELLED";
+    item.updatedAt = new Date().toISOString();
+    writeLocal(list);
+  }
+}
+
 

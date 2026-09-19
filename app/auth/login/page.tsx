@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, KeyRound, LogIn } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { DEMO_ACCOUNTS, login, useSession } from "@/lib/auth";
+import { DEMO_ACCOUNTS, isAdmin, login, useSession } from "@/lib/auth";
 
-function nextPath(): string {
-  if (typeof window === "undefined") return "/dashboard";
+function nextPath(isAdminUser = false): string {
+  if (typeof window === "undefined") return isAdminUser ? "/admin" : "/dashboard";
   const next = new URLSearchParams(window.location.search).get("next");
-  return next && next.startsWith("/") ? next : "/dashboard";
+  return next && next.startsWith("/") ? next : isAdminUser ? "/admin" : "/dashboard";
 }
 
 export default function LoginPage() {
@@ -22,9 +22,9 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, ready } = useSession();
 
-  // Sudah masuk? Langsung ke dashboard
+  // Sudah masuk? Langsung ke dashboard / admin
   useEffect(() => {
-    if (ready && user) router.replace(nextPath());
+    if (ready && user) router.replace(nextPath(isAdmin(user)));
   }, [ready, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +37,7 @@ export default function LoginPage() {
       setError(result.error);
       return;
     }
-    router.push(nextPath());
+    router.push(nextPath(isAdmin(result.user || null)));
   };
 
   const fillDemo = (idx: number) => {
@@ -124,7 +124,11 @@ export default function LoginPage() {
                   <p className="font-semibold text-slate-900">
                     {acc.fullName}{" "}
                     <span className="font-medium text-brand-600">
-                      · {acc.hasSampleAgreement ? "Pro, ada contoh dokumen" : `Gratis + ${acc.credits} kredit, masih kosong`}
+                      · {acc.hasSampleAgreement
+                          ? "Pro, ada contoh dokumen"
+                          : acc.role === "admin"
+                          ? "Admin Platform (Akses Penuh)"
+                          : `Gratis + ${acc.credits} kredit, masih kosong`}
                     </span>
                   </p>
                   <p className="break-all">{acc.email}</p>

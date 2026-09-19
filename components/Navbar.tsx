@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Plus, LogOut } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { logout, useSession } from "@/lib/auth";
+import { isAdmin, logout, useSession } from "@/lib/auth";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -13,8 +13,10 @@ export function Navbar() {
   const { user, ready } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const admin = isAdmin(user);
   const navLinks = [
     ...(user ? [{ href: "/dashboard", label: "Dashboard" }] : []),
+    ...(admin ? [{ href: "/admin", label: "Admin Panel" }] : []),
     { href: "/verify", label: "Cek Dokumen" },
   ];
 

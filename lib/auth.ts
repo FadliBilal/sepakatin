@@ -56,19 +56,64 @@ function readRegisteredUsers(): LocalAccount[] {
   }
 }
 
+export function isAdmin(user: SessionUser | null): boolean {
+  if (!user) return false;
+  return user.role?.toLowerCase() === "admin" || user.email?.toLowerCase().startsWith("admin@");
+}
+
+export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | "pro"; credits?: number }): void {
+  try {
+    const raw = localStorage.getItem("sepakatin_plan_overrides_v2");
+    const overrides = raw ? JSON.parse(raw) : {};
+    overrides[userId] = { ...(overrides[userId] || {}), ...updates };
+    localStorage.setItem("sepakatin_plan_overrides_v2", JSON.stringify(overrides));
+  } catch {}
+
+  try {
+    const users = readRegisteredUsers();
+    const idx = users.findIndex((u) => u.id === userId);
+    if (idx !== -1) {
+      if (updates.plan) users[idx].plan = updates.plan;
+      if (typeof updates.credits === "number") users[idx].credits = updates.credits;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+  } catch {}
+
+  emit();
+}
+
 export function localAccounts(): LocalAccount[] {
-  const demos: LocalAccount[] = DEMO_ACCOUNTS.map((a) => ({
-    id: a.id,
-    username: a.username,
-    email: a.email,
-    password: a.password,
-    fullName: a.fullName,
-    role: a.role,
-    phone: a.phone,
-    plan: a.plan,
-    credits: a.credits,
-  }));
-  return [...demos, ...readRegisteredUsers()];
+  let overrides: Record<string, { plan?: "gratis" | "pro"; credits?: number }> = {};
+  try {
+    const raw = typeof window !== "undefined" ? localStorage.getItem("sepakatin_plan_overrides_v2") : null;
+    if (raw) overrides = JSON.parse(raw);
+  } catch {}
+
+  const demos: LocalAccount[] = DEMO_ACCOUNTS.map((a) => {
+    const o = overrides[a.id];
+    return {
+      id: a.id,
+      username: a.username,
+      email: a.email,
+      password: a.password,
+      fullName: a.fullName,
+      role: a.role,
+      phone: a.phone,
+      plan: o?.plan ?? a.plan,
+      credits: typeof o?.credits === "number" ? o.credits : a.credits,
+    };
+  });
+
+  const registered = readRegisteredUsers().map((u) => {
+    const o = overrides[u.id];
+    return {
+      ...u,
+      plan: o?.plan ?? u.plan,
+      credits: typeof o?.credits === "number" ? o.credits : u.credits,
+    };
+  });
+
+  return [...demos, ...registered];
 }
 
 function toSession(account: LocalAccount): SessionUser {

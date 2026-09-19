@@ -41,4 +41,16 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     credits: 3,
     hasSampleAgreement: false,
   },
+  {
+    id: "usr_admin_sepakatin",
+    username: "admin",
+    email: "admin@sepakatin.id",
+    password: "admin123",
+    fullName: "Admin Sepakatin",
+    role: "admin",
+    phone: "+62 853-3933-3616",
+    plan: "pro",
+    credits: 999,
+    hasSampleAgreement: false,
+  },
 ];
