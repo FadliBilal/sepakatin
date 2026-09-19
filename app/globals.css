@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #0a1fd4;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Komponen tampilan bersama — dipakai di semua halaman agar konsisten
+   ========================================================================== */
+@layer components {
+  .container-page {
+    @apply w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply bg-white border border-slate-200 rounded-2xl shadow-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-sm {
+    @apply px-3.5 py-2 text-xs rounded-lg;
+  }
+  .btn-lg {
+    @apply px-6 py-3.5 text-base;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
+  }
+  .btn-secondary {
+    @apply bg-white text-slate-700 border border-slate-300 hover:border-brand-600 hover:text-brand-600;
+  }
+  .btn-ghost {
+    @apply text-slate-600 hover:text-brand-600 hover:bg-slate-100;
+  }
+  .btn-whatsapp {
+    @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700;
+  }
+
+  .input {
+    @apply w-full px-3.5 py-2.5 text-sm text-slate-900 bg-white border border-slate-300 rounded-xl placeholder:text-slate-400 transition focus:outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10;
+  }
+  .label {
+    @apply block text-sm font-medium text-slate-700 mb-1.5;
+  }
+  .hint {
+    @apply text-xs text-slate-500 mt-1;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold;
+  }
+  .kicker {
+    @apply text-sm font-semibold text-brand-600;
+  }
+  .page-title {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-slate-900;
+  }
+  .section-title {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight text-slate-900;
+  }
+  .card-title {
+    @apply text-base font-semibold text-slate-900;
+  }
+  .back-link {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors;
+  }
+
+  .tab {
+    @apply px-4 py-2.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors;
+  }
+  .tab-active {
+    @apply bg-brand-600 text-white shadow-sm;
+  }
+  .tab-idle {
+    @apply text-slate-600 hover:text-brand-600 hover:bg-slate-100;
+  }
+
+  /* Tampilan isi dokumen kesepakatan */
+  .doc-heading {
+    @apply text-sm font-semibold text-slate-900 pb-2 mb-3 border-b border-slate-200;
+  }
+  .doc-box {
+    @apply p-4 rounded-xl bg-slate-50 border border-slate-200;
+  }
+}
+
+/* ==========================================================================
+   Animasi Marquee
+   ========================================================================== */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ==========================================================================
+   Aturan Cetak & Simpan PDF (A4 dengan Margin Resmi Rapi)
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  html,
+  body {
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  *,
+  *::before,
+  *::after {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .print-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .print-sheet * {
+    min-width: 0;
+  }
+  /* Mencegah pemotongan pasal / kotak tanda tangan di tengah lembaran */
+  .print-keep {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-sheet h1,
+  .print-sheet h2,
+  .print-sheet h3 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .print-sheet img {
+    max-width: 100%;
+  }
+}
+
