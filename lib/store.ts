@@ -396,6 +396,14 @@ export interface AdminUserView {
 }
 
 export async function adminGetPlatformStats(): Promise<AdminPlatformStats> {
+  if (isSupabaseConfigured) {
+    try {
+      const res = await api<{ stats: AdminPlatformStats }>("/api/admin");
+      return res.stats;
+    } catch (err) {
+      console.error("Failed to get cloud admin stats, falling back", err);
+    }
+  }
   const users = localAccounts();
   const agreements = await readLocal();
   const agreed = agreements.filter((a) => a.status === "AGREED" || a.status === "ACTIVE" || a.status === "COMPLETED").length;
@@ -417,13 +425,21 @@ export async function adminGetPlatformStats(): Promise<AdminPlatformStats> {
 }
 
 export async function adminGetAllUsers(): Promise<AdminUserView[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const res = await api<{ users: AdminUserView[] }>("/api/admin");
+      return res.users;
+    } catch (err) {
+      console.error("Failed to get cloud admin users, falling back", err);
+    }
+  }
   const users = localAccounts();
   const agreements = await readLocal();
 
   return users.map((u) => {
     const userAgreements = agreements.filter((a) => a.ownerId === u.id);
     const totalVal = userAgreements
-      .filter((a) => a.status !== "CANCELLED" && a.status !== "REJECTED")
+      .filter((a) => a.status !== "CANCELLED")
       .reduce((sum, a) => sum + (Number(a.currentVersion?.contentJson?.payment?.totalValue) || 0), 0);
     return {
       id: u.id,
@@ -441,19 +457,48 @@ export async function adminGetAllUsers(): Promise<AdminUserView[]> {
 }
 
 export async function adminUpdateUserPlan(userId: string, plan: "gratis" | "pro"): Promise<void> {
+  if (isSupabaseConfigured) {
+    await api("/api/admin", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "updatePlan", userId, plan }),
+    });
+    return;
+  }
   updateLocalAccount(userId, { plan });
 }
 
 export async function adminUpdateUserCredits(userId: string, credits: number): Promise<void> {
+  if (isSupabaseConfigured) {
+    await api("/api/admin", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "updateCredits", userId, credits }),
+    });
+    return;
+  }
   setLocalCredits(userId, credits);
   updateLocalAccount(userId, { credits });
 }
 
 export async function adminGetAllAgreements(): Promise<AgreementRecord[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const res = await api<{ agreements: AgreementRecord[] }>("/api/admin");
+      return res.agreements;
+    } catch (err) {
+      console.error("Failed to get cloud admin agreements, falling back", err);
+    }
+  }
   return readLocal();
 }
 
 export async function adminModerateAgreement(agreementId: string, action: "cancel" | "delete"): Promise<void> {
+  if (isSupabaseConfigured) {
+    await api("/api/admin", {
+      method: "DELETE",
+      body: JSON.stringify({ action, agreementId }),
+    });
+    return;
+  }
   const list = await readLocal();
   if (action === "delete") {
     writeLocal(list.filter((a) => a.id !== agreementId));
