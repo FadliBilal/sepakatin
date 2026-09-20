@@ -534,18 +534,6 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
       documentHash: "",
       approvedAt: "2026-09-24T16:20:00.000Z",
     },
-    {
-      id: "app_cli_005",
-      agreementId,
-      versionId: currentVersion.id,
-      versionNumber: 5,
-      signerName: "Budi Santoso",
-      signerEmail: "budi@solusidigital.id",
-      role: "client",
-      status: "APPROVED",
-      documentHash: "",
-      approvedAt: "2026-09-24T16:35:00.000Z",
-    },
   ];
 
   const activityLogs: ActivityLogItem[] = [
@@ -648,18 +636,10 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
     {
       id: "log_013",
       agreementId,
-      actorName: "Budi Santoso",
-      eventType: "CLIENT_APPROVED",
-      description: "Budi Santoso (klien) menyetujui seluruh isi versi 5 dan menandatangani dokumen",
-      createdAt: "2026-09-24T16:35:00.000Z",
-    },
-    {
-      id: "log_014",
-      agreementId,
-      actorName: "Sistem Sepakatin",
-      eventType: "AGREED_LOCKED",
-      description: "Kedua pihak sudah setuju dengan versi 5. Dokumen dikunci dan tidak bisa diubah lagi.",
-      createdAt: "2026-09-24T16:35:05.000Z",
+      actorName: "Fadli Bilal",
+      eventType: "SENT_TO_CLIENT",
+      description: "Link kesepakatan versi 5 dikirim ke klien (budi@solusidigital.id) untuk persetujuan",
+      createdAt: "2026-09-24T16:26:00.000Z",
     },
   ];
 
@@ -667,7 +647,7 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
     id: agreementId,
     projectId: "proj_default_001",
     contractId: DEMO_CONTRACT_ID,
-    status: "AGREED",
+    status: "PENDING_CLIENT",
     currentVersionNumber: 5,
     reviewToken,
     ownerId,
@@ -676,7 +656,7 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
     validUntil: "2026-12-31",
     createdBy: "Fadli Bilal",
     createdAt: "2026-09-20T08:00:00.000Z",
-    updatedAt: "2026-09-24T16:35:05.000Z",
+    updatedAt: "2026-09-24T16:26:00.000Z",
     versions,
     currentVersion,
     approvals,
@@ -700,14 +680,6 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
         signerName: "Fadli Bilal",
         signatureDataUrl: SAMPLE_SIGNATURE_FADLI,
         signedAt: "2026-09-24T16:20:00.000Z",
-      },
-      {
-        id: "sig_002",
-        agreementId,
-        signerRole: "client",
-        signerName: "Budi Santoso",
-        signatureDataUrl: SAMPLE_SIGNATURE_BUDI,
-        signedAt: "2026-09-24T16:35:00.000Z",
       },
     ],
   };

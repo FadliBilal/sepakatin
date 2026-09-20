@@ -113,7 +113,7 @@ export default function ClientReviewPage() {
       }
     } catch (err) {
       console.error("Error approving:", err);
-      alert("Terjadi kesalahan saat menyimpan persetujuan.");
+      alert(err instanceof Error && err.message ? err.message : "Terjadi kesalahan saat menyimpan persetujuan.");
     } finally {
       setIsSubmittingApproval(false);
     }
@@ -138,7 +138,7 @@ export default function ClientReviewPage() {
       }
     } catch (err) {
       console.error("Error requesting change:", err);
-      alert("Terjadi kesalahan saat mengirim permintaan.");
+      alert(err instanceof Error && err.message ? err.message : "Terjadi kesalahan saat mengirim permintaan.");
     } finally {
       setIsSubmittingChange(false);
     }
@@ -206,18 +206,31 @@ export default function ClientReviewPage() {
 
       {/* Tindakan klien */}
       <div className="card p-6 sm:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Persetujuan Anda</h3>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Setujui jika semua sudah sesuai, atau minta perubahan jika ada yang perlu diperbaiki.
-            </p>
-          </div>
-          <button type="button" onClick={() => setShowChangeModal(true)} className="btn btn-secondary">
-            <Edit3 className="w-4 h-4" />
-            Minta Perubahan
-          </button>
-        </div>
+        {(() => {
+          const isLocked = ["AGREED", "ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED", "REJECTED"].includes(agreement.status);
+          return (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {isLocked ? "Dokumen Telah Disepakati" : clientApproval ? "Persetujuan Tersimpan" : "Persetujuan Anda"}
+                </h3>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {isLocked
+                    ? "Kedua pihak sudah menyetujui versi ini. Dokumen telah dikunci secara hukum dan menjadi acuan resmi proyek."
+                    : clientApproval
+                    ? "Anda telah menyetujui versi ini. Menunggu proses selanjutnya dari freelancer."
+                    : "Setujui jika semua sudah sesuai, atau minta perubahan jika ada yang perlu diperbaiki."}
+                </p>
+              </div>
+              {!isLocked && !clientApproval && (
+                <button type="button" onClick={() => setShowChangeModal(true)} className="btn btn-secondary">
+                  <Edit3 className="w-4 h-4" />
+                  Minta Perubahan
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {clientApproval ? (
           <div className="space-y-6">
