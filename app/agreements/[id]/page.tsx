@@ -582,7 +582,7 @@ function AgreementDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 pt-2 border-t border-emerald-200/60">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-emerald-200/60">
                     <button
                       type="button"
                       onClick={() => handleDownloadDoc(freelancerStampedDoc)}
@@ -591,6 +591,15 @@ function AgreementDetail() {
                       <Download className="w-3.5 h-3.5" />
                       Unduh PDF
                     </button>
+                    <Link
+                      href={`/agreements/${agreement.id}/print?copy=freelancer_copy`}
+                      target="_blank"
+                      className="btn btn-secondary btn-sm"
+                      title="Buka tampilan cetak surat perjanjian Salinan Freelancer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      Versi Cetak A4
+                    </Link>
                     <button
                       type="button"
                       onClick={() => handleRemoveStampedDoc("freelancer_copy")}
@@ -663,7 +672,7 @@ function AgreementDetail() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 pt-2 border-t border-blue-200/60">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-blue-200/60">
                     <button
                       type="button"
                       onClick={() => handleDownloadDoc(clientStampedDoc)}
@@ -672,6 +681,15 @@ function AgreementDetail() {
                       <Download className="w-3.5 h-3.5" />
                       Unduh PDF
                     </button>
+                    <Link
+                      href={`/agreements/${agreement.id}/print?copy=client_copy`}
+                      target="_blank"
+                      className="btn btn-secondary btn-sm"
+                      title="Buka tampilan cetak surat perjanjian Salinan Klien"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      Versi Cetak A4
+                    </Link>
                     <button
                       type="button"
                       onClick={() => handleRemoveStampedDoc("client_copy")}

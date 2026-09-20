@@ -74,9 +74,14 @@ export default function AgreementPrintPage() {
     );
   }
 
+  const copyParam = searchParams.get("copy");
+  const initialCopyType =
+    copyParam === "client_copy" || copyParam === "freelancer_copy" ? copyParam : undefined;
+
   return (
     <PrintableAgreement
       agreement={agreement}
+      initialCopyType={initialCopyType}
       backHref={token ? `/review/${token}` : user ? `/agreements/${agreement.id}` : "/"}
       backLabel={token ? "Kembali ke Halaman Persetujuan" : user ? "Kembali ke Kesepakatan" : "Kembali ke Beranda"}
     />

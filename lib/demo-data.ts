@@ -451,6 +451,26 @@ export const SAMPLE_EMATERAI_SVG_DATA_URL =
   <text x="90" y="168" text-anchor="middle" font-family="sans-serif" font-style="italic" font-size="7" fill="#09090b">PERURI - DJP RI</text>
 </svg>`);
 
+export const SAMPLE_EMATERAI_CLIENT_SVG_DATA_URL =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" fill="#ffffff"/>
+  <rect x="4" y="4" width="172" height="172" fill="none" stroke="#09090b" stroke-width="2.5"/>
+  <rect x="8" y="8" width="164" height="164" fill="none" stroke="#09090b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="90" y="24" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="9" fill="#09090b">METERAI ELEKTRONIK</text>
+  <line x1="14" y1="28" x2="166" y2="28" stroke="#09090b" stroke-width="1"/>
+  <text x="90" y="55" text-anchor="middle" font-family="monospace" font-weight="900" font-size="24" fill="#09090b">10000</text>
+  <text x="90" y="68" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="9" fill="#09090b">SEPULUH RIBU RUPIAH</text>
+  <rect x="55" y="76" width="70" height="70" fill="none" stroke="#09090b" stroke-width="1"/>
+  <rect x="62" y="83" width="16" height="16" fill="#09090b"/>
+  <rect x="102" y="83" width="16" height="16" fill="#09090b"/>
+  <rect x="62" y="123" width="16" height="16" fill="#09090b"/>
+  <rect x="85" y="95" width="10" height="10" fill="#09090b"/>
+  <rect x="97" y="112" width="12" height="12" fill="#09090b"/>
+  <text x="90" y="158" text-anchor="middle" font-family="monospace" font-size="8" fill="#09090b">SN-2026-99825-EMTR</text>
+  <text x="90" y="168" text-anchor="middle" font-family="sans-serif" font-style="italic" font-size="7" fill="#09090b">PERURI - DJP RI</text>
+</svg>`);
+
 export const SAMPLE_SIGNATURE_FADLI =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 90" width="240" height="90">
@@ -534,6 +554,18 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
       status: "APPROVED",
       documentHash: "",
       approvedAt: "2026-09-24T16:20:00.000Z",
+    },
+    {
+      id: "app_client_005",
+      agreementId,
+      versionId: currentVersion.id,
+      versionNumber: 5,
+      signerName: "Budi Santoso",
+      signerEmail: "budi@solusidigital.id",
+      role: "client",
+      status: "APPROVED",
+      documentHash: "",
+      approvedAt: "2026-09-24T16:30:00.000Z",
     },
   ];
 
@@ -642,13 +674,29 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
       description: "Link kesepakatan versi 5 dikirim ke klien (budi@solusidigital.id) untuk persetujuan",
       createdAt: "2026-09-24T16:26:00.000Z",
     },
+    {
+      id: "log_014",
+      agreementId,
+      actorName: "Budi Santoso",
+      eventType: "CLIENT_APPROVED",
+      description: "Budi Santoso (klien) menyetujui versi 5 dan menandatangani dokumen",
+      createdAt: "2026-09-24T16:30:00.000Z",
+    },
+    {
+      id: "log_015",
+      agreementId,
+      actorName: "Sistem Sepakatin",
+      eventType: "AGREED_LOCKED",
+      description: "Kedua pihak sudah setuju dengan versi 5. Dokumen dikunci dan berkas resmi kedua salinan bermeterai siap diakses.",
+      createdAt: "2026-09-24T16:30:00.000Z",
+    },
   ];
 
   return {
     id: agreementId,
     projectId: "proj_default_001",
     contractId: DEMO_CONTRACT_ID,
-    status: "PENDING_CLIENT",
+    status: "AGREED",
     currentVersionNumber: 5,
     reviewToken,
     ownerId,
@@ -657,7 +705,7 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
     validUntil: "2026-12-31",
     createdBy: "Fadli Bilal",
     createdAt: "2026-09-20T08:00:00.000Z",
-    updatedAt: "2026-09-24T16:26:00.000Z",
+    updatedAt: "2026-09-24T16:30:00.000Z",
     versions,
     currentVersion,
     approvals,
@@ -697,6 +745,28 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
       uploadedAt: "2026-09-24T16:25:00.000Z",
       uploadedBy: "Fadli Bilal",
     },
+    emateraiList: [
+      {
+        id: "emtr_demo_001",
+        agreementId,
+        versionNumber: 5,
+        imageUrl: SAMPLE_EMATERAI_SVG_DATA_URL,
+        serialNumber: "SN-2026-99824-EMTR",
+        targetCopy: "freelancer_copy",
+        uploadedAt: "2026-09-24T16:25:00.000Z",
+        uploadedBy: "Fadli Bilal",
+      },
+      {
+        id: "emtr_demo_002",
+        agreementId,
+        versionNumber: 5,
+        imageUrl: SAMPLE_EMATERAI_CLIENT_SVG_DATA_URL,
+        serialNumber: "SN-2026-99825-EMTR",
+        targetCopy: "client_copy",
+        uploadedAt: "2026-09-24T16:26:00.000Z",
+        uploadedBy: "Fadli Bilal",
+      },
+    ],
     signatures: [
       {
         id: "sig_001",
@@ -705,6 +775,14 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
         signerName: "Fadli Bilal",
         signatureDataUrl: SAMPLE_SIGNATURE_FADLI,
         signedAt: "2026-09-24T16:20:00.000Z",
+      },
+      {
+        id: "sig_002",
+        agreementId,
+        signerRole: "client",
+        signerName: "Budi Santoso",
+        signatureDataUrl: SAMPLE_SIGNATURE_BUDI,
+        signedAt: "2026-09-24T16:30:00.000Z",
       },
     ],
   };

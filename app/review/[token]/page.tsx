@@ -199,7 +199,11 @@ export default function ClientReviewPage() {
             Baca isinya dulu. Jika sudah sesuai, setujui di bagian bawah. Gratis, tanpa perlu daftar akun.
           </p>
         </div>
-        <Link href={`/agreements/${agreement.id}/print`} target="_blank" className="btn btn-secondary btn-sm self-start sm:self-auto">
+        <Link
+          href={`/agreements/${agreement.id}/print?token=${token}&copy=client_copy`}
+          target="_blank"
+          className="btn btn-secondary btn-sm self-start sm:self-auto"
+        >
           <Printer className="w-4 h-4" />
           Versi Cetak
         </Link>
@@ -233,14 +237,24 @@ export default function ClientReviewPage() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => handleDownloadDoc(clientStampedDoc)}
-              className="btn btn-primary flex-shrink-0 self-start sm:self-auto"
-            >
-              <Download className="w-4 h-4" />
-              Unduh Salinan Klien (PDF)
-            </button>
+            <div className="flex flex-wrap items-center gap-2 flex-shrink-0 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => handleDownloadDoc(clientStampedDoc)}
+                className="btn btn-primary"
+              >
+                <Download className="w-4 h-4" />
+                Unduh Salinan Klien (PDF)
+              </button>
+              <Link
+                href={`/agreements/${agreement.id}/print?token=${token}&copy=client_copy`}
+                target="_blank"
+                className="btn btn-secondary"
+              >
+                <Printer className="w-4 h-4" />
+                Buka Versi Cetak
+              </Link>
+            </div>
           </div>
         </div>
       )}

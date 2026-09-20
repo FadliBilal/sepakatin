@@ -17,6 +17,7 @@ interface PrintableAgreementProps {
   agreement: AgreementRecord;
   backHref: string;
   backLabel: string;
+  initialCopyType?: CopyType;
 }
 
 /**
@@ -24,8 +25,10 @@ interface PrintableAgreementProps {
  * <thead>/<tfoot> yang otomatis diulang browser di setiap kertas, jadi tetap rapi
  * apa pun pilihan "Margins" di dialog cetak.
  */
-export function PrintableAgreement({ agreement, backHref, backLabel }: PrintableAgreementProps) {
-  const [copyType, setCopyType] = useState<CopyType>(agreement.ematerai?.targetCopy ?? "freelancer_copy");
+export function PrintableAgreement({ agreement, backHref, backLabel, initialCopyType }: PrintableAgreementProps) {
+  const [copyType, setCopyType] = useState<CopyType>(
+    initialCopyType ?? (agreement.ematerai?.targetCopy === "client_copy" ? "client_copy" : "freelancer_copy")
+  );
 
   const currentVersion = agreement.currentVersion;
   const content = currentVersion.contentJson;

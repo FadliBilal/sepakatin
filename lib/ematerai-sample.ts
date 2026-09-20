@@ -67,61 +67,156 @@ export function generateSampleEMateraiDataUrl(serialNumber: string = "SN-2026-99
 }
 
 /**
- * Menghasilkan Data URL PDF (application/pdf;base64,...) resmi untuk keperluan demo
- * Dokumen ini valid 100% dan dapat diunduh/dibuka di browser manapun.
+ * Menghasilkan Data URL PDF (application/pdf;base64,...) resmi untuk keperluan demo.
+ * Berisi draf kesepakatan lengkap (Pasal 1 s.d. 5) sesuai template Sepakatin,
+ * lengkap dengan penempatan e-Meterai resmi dan tanda tangan untuk kedua belah pihak:
+ * - Salinan Freelancer: e-Meterai pada kolom Klien + Tanda tangan Freelancer
+ * - Salinan Klien: e-Meterai pada kolom Freelancer + Tanda tangan Klien
  */
 export function generateSampleStampedPdfDataUrl(
   contractId: string = "SPK-2026-00124",
   copyType: "freelancer_copy" | "client_copy" = "freelancer_copy",
-  title: string = "Desain & Pengembangan Website Company Profile"
+  title: string = "Website Profil Perusahaan Bilingual, Portal Berita, Karir & SEO PT Solusi Digital"
 ): string {
-  const copyTitle =
-    copyType === "freelancer_copy"
-      ? "SALINAN PIHAK PERTAMA (FREELANCER)"
-      : "SALINAN PIHAK KEDUA (KLIEN)";
-  const stampPlacement =
-    copyType === "freelancer_copy"
-      ? "e-Meterai dibubuhkan pada kolom tanda tangan Klien (Pihak Kedua)"
-      : "e-Meterai dibubuhkan pada kolom tanda tangan Freelancer (Pihak Pertama)";
+  const isFreelancerCopy = copyType === "freelancer_copy";
+  const copyTitle = isFreelancerCopy
+    ? "SALINAN PIHAK PERTAMA (FREELANCER)"
+    : "SALINAN PIHAK KEDUA (KLIEN)";
+  const serialNumber = isFreelancerCopy ? "SN-2026-99824-EMTR" : "SN-2026-99825-EMTR";
+  const stampPlacement = isFreelancerCopy
+    ? "e-Meterai dibubuhkan pada kolom tanda tangan Klien (Pihak Kedua)"
+    : "e-Meterai dibubuhkan pada kolom tanda tangan Freelancer (Pihak Pertama)";
 
-  const lines = [
-    "SEPAKATIN - DOKUMEN PERJANJIAN KERJA BERMETERAI RESMI",
+  // Halaman 1: Header, Pasal 1 (Para Pihak), Pasal 2 (Ruang Lingkup), Pasal 3 (Harga & Pembayaran)
+  const page1Lines: string[] = [
+    "SEPAKATIN - SURAT KESEPAKATAN KERJA (SPK)",
+    "Platform Kesepakatan Kerja Freelancer Indonesia Berintegritas Kriptografis",
     "================================================================================",
-    `Nomor Dokumen : ${contractId}`,
+    `Nomor Dokumen : ${contractId} (Versi 5 - Final Terkunci)`,
     `Jenis Salinan : ${copyTitle}`,
-    `Judul Proyek  : ${title}`,
-    `Tanggal Terbit: ${new Date().toLocaleDateString("id-ID")}`,
-    "--------------------------------------------------------------------------------",
-    "STATUS BEA METERAI REPUBLIK INDONESIA:",
-    "[V] METERAI ELEKTRONIK Rp10.000 (LUNAS)",
-    "Nomor Seri    : SN-2026-99824-EMTR",
-    "Penyedia Resmi: PERURI - DJP RI (UU No. 10 Tahun 2020 tentang Bea Meterai)",
+    `Status Bea    : METERAI ELEKTRONIK Rp10.000 LUNAS (UU No. 10 Tahun 2020)`,
+    `Nomor Seri    : ${serialNumber} | Distributor: PERURI - DJP RI`,
     `Penempatan    : ${stampPlacement}`,
-    "Integritas    : Tervalidasi Kriptografis SHA-256",
     "--------------------------------------------------------------------------------",
-    "Catatan:",
-    "Dokumen ini merupakan salinan resmi berkekuatan hukum yang telah dibubuhi",
-    "e-Meterai melalui portal resmi distributor dan diarsipkan di Sepakatin.",
+    "PASAL 1 - PARA PIHAK",
+    "1. Pihak Pertama (Freelancer):",
+    "   Nama       : Fadli Bilal",
+    "   Keahlian   : Fullstack Web Developer (Studio Kreasi Mandiri)",
+    "   Kontak     : fadli@sepakatin.id | +62 812-3456-7890",
+    "2. Pihak Kedua (Klien):",
+    "   Nama       : Budi Santoso",
+    "   Perusahaan : PT Solusi Digital Nusantara",
+    "   Alamat     : Jl. Sudirman Kav. 24, Jakarta Selatan",
+    "   Kontak     : budi@solusidigital.id | +62 811-9876-5432",
+    "--------------------------------------------------------------------------------",
+    "PASAL 2 - RUANG LINGKUP & DELIVERABLES PROYEK",
+    `Judul Proyek: ${title}`,
+    "Deskripsi: Pengembangan menyeluruh website profil perusahaan bilingual (ID & EN),",
+    "CMS berita dinamis, portal karir + webhook WhatsApp HRD, GA4 & Meta Pixel, SEO,",
+    "serta garansi pemeliharaan 60 hari kalender.",
+    "Hasil Kerja (Deliverables):",
+    "[V] 1. Desain Mockup UI/UX Desktop & Mobile (Figma)",
+    "[V] 2. 5 Halaman Utama Bilingual (ID & EN) dengan switcher bahasa instan",
+    "[V] 3. Modul CMS Admin Berita / Artikel mandiri multi-bahasa",
+    "[V] 4. Halaman Karir/Lowongan Kerja & formulir lamaran upload CV/Resume (PDF)",
+    "[V] 5. Integrasi webhook notifikasi otomatis pelamar ke WhatsApp HRD",
+    "[V] 6. Pemasangan Google Analytics 4, Tag Manager, dan Meta Pixel tracking",
+    "[V] 7. Optimasi SEO On-Page (JSON-LD schema, Open Graph, Core Web Vitals > 90)",
+    "[V] 8. Garansi pemeliharaan dan perbaikan bug selama 60 hari kalender",
+    "[V] 9. Konfigurasi domain kustom, SSL certificate, CDN & cloud hosting",
+    "--------------------------------------------------------------------------------",
+    "PASAL 3 - HARGA KONTRAK & TATA CARA PEMBAYARAN",
+    "Total Nilai Kontrak : Rp 15.000.000,- (Lima Belas Juta Rupiah)",
+    "Metode Pembayaran   : Transfer Bank BCA / Bank Mandiri",
+    "- Termin 1 (DP 40%) : Rp 6.000.000,- (Jatuh tempo saat mulai pengerjaan)",
+    "- Termin 2 (35%)    : Rp 5.250.000,- (Setelah demo bilingual, CMS & karir)",
+    "- Termin 3 (25%)    : Rp 3.750.000,- (Pelunasan setelah go-live & serah terima)",
+    "Batas Pelunasan     : 7 (tujuh) hari kerja setelah serah terima sistem.",
   ];
 
-  let streamContent = "BT\n/F1 11 Tf\n40 780 Td\n18 TL\n";
-  lines.forEach((line) => {
-    const escaped = line.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
-    streamContent += `(${escaped}) '\n`;
-  });
-  streamContent += "ET\n";
+  // Halaman 2: Pasal 4 (Revisi & Jadwal), Pasal 5 (Hak Cipta), Lembar Pengesahan & Meterai, Segel Integritas
+  const signatureBoxLines: string[] = isFreelancerCopy
+    ? [
+        "+------------------------------------+------------------------------------+",
+        "| PIHAK PERTAMA (FREELANCER)         | PIHAK KEDUA (KLIEN)                |",
+        "| Status: Disetujui & Sah            | Status: Disetujui & Sah            |",
+        "|                                    | [METERAI ELEKTRONIK LUNAS Rp10.000]|",
+        `|                                    | [SN: ${serialNumber} | PERURI]|`,
+        "|                                    |                                    |",
+        "|        /s/ Fadli Bilal             |        /s/ Budi Santoso            |",
+        "| ---------------------------------- | ---------------------------------- |",
+        "| Fadli Bilal                        | Budi Santoso                       |",
+        "| Fullstack Web Developer            | PT Solusi Digital Nusantara        |",
+        "| Tgl: 24/09/2026 16:20 WIB          | Tgl: 24/09/2026 16:30 WIB          |",
+        "+------------------------------------+------------------------------------+",
+        "* Salinan Freelancer: e-Meterai dibubuhkan pada kolom tanda tangan Klien.",
+      ]
+    : [
+        "+------------------------------------+------------------------------------+",
+        "| PIHAK PERTAMA (FREELANCER)         | PIHAK KEDUA (KLIEN)                |",
+        "| Status: Disetujui & Sah            | Status: Disetujui & Sah            |",
+        "| [METERAI ELEKTRONIK LUNAS Rp10.000]|                                    |",
+        `| [SN: ${serialNumber} | PERURI]|                                    |`,
+        "|                                    |                                    |",
+        "|        /s/ Fadli Bilal             |        /s/ Budi Santoso            |",
+        "| ---------------------------------- | ---------------------------------- |",
+        "| Fadli Bilal                        | Budi Santoso                       |",
+        "| Fullstack Web Developer            | PT Solusi Digital Nusantara        |",
+        "| Tgl: 24/09/2026 16:20 WIB          | Tgl: 24/09/2026 16:30 WIB          |",
+        "+------------------------------------+------------------------------------+",
+        "* Salinan Klien: e-Meterai dibubuhkan pada kolom tanda tangan Freelancer.",
+      ];
 
-  const streamLength = streamContent.length;
+  const page2Lines: string[] = [
+    "SEPAKATIN - SURAT KESEPAKATAN KERJA (Lanjutan Halaman 2)",
+    `Nomor Dokumen: ${contractId} | ${copyTitle}`,
+    "================================================================================",
+    "PASAL 4 - KETENTUAN REVISI & JADWAL PELAKSANAAN",
+    "- Jatah Revisi Wajar  : Maksimal 4 (empat) kali revisi sesuai lingkup kerja.",
+    "- Revisi Melebihi Batas: Wajib dibuatkan Addendum Baru bermeterai elektronik.",
+    "- Tarif Revisi Ekstra : Rp 400.000,- per revisi tambahan di luar kuota.",
+    "- Jadwal Pelaksanaan  : 20 September 2026 s.d. 20 November 2026 (Go-live).",
+    "--------------------------------------------------------------------------------",
+    "PASAL 5 - HAK CIPTA & KETENTUAN PEMBATALAN",
+    "- Hak Cipta           : Dialihkan 100% kepada Klien setelah pembayaran lunas.",
+    "- Hak Portofolio      : Freelancer berhak mencantumkan karya dalam portofolio.",
+    "- Pembatalan Kontrak  : Pekerjaan yang selesai wajib dibayar secara proporsional.",
+    "--------------------------------------------------------------------------------",
+    "LEMBAR PENGESAHAN & PENEMPATAN E-METERAI (UU NO. 10 TAHUN 2020)",
+    "Kedua belah pihak menyetujui seluruh isi kesepakatan secara sadar dan sukarela:",
+    "",
+    ...signatureBoxLines,
+    "--------------------------------------------------------------------------------",
+    "SEGEL INTEGRITAS KRIPTOGRAFIS SEPAKATIN",
+    "SHA-256 Digest : 7a829e102f9bc48950d2e8b15d263a4ef7579124a9e2d312bc87042a98f7e2d1",
+    `Verifikasi URL : https://sepakatin.id/verify/${contractId}`,
+    "Status Berkas  : RESMI, TERKUNCI & MEMILIKI KEKUATAN PEMBUKTIAN HUKUM",
+  ];
+
+  const buildStream = (lines: string[]): string => {
+    let s = "BT\n/F1 9 Tf\n38 805 Td\n13.5 TL\n";
+    lines.forEach((line) => {
+      const escaped = line.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+      s += `(${escaped}) '\n`;
+    });
+    s += "ET\n";
+    return s;
+  };
+
+  const stream1 = buildStream(page1Lines);
+  const stream2 = buildStream(page2Lines);
 
   const objects = [
     `1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`,
-    `2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`,
+    `2 0 obj\n<< /Type /Pages /Kids [3 0 R 6 0 R] /Count 2 >>\nendobj\n`,
     `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n`,
-    `4 0 obj\n<< /Length ${streamLength} >>\nstream\n${streamContent}endstream\nendobj\n`,
+    `4 0 obj\n<< /Length ${stream1.length} >>\nstream\n${stream1}endstream\nendobj\n`,
     `5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n`,
+    `6 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 7 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n`,
+    `7 0 obj\n<< /Length ${stream2.length} >>\nstream\n${stream2}endstream\nendobj\n`,
   ];
 
-  let offset = 9; // header "%PDF-1.4\n" length
+  let offset = 9; // "%PDF-1.4\n"
   const offsets = [offset];
 
   let body = "%PDF-1.4\n";
