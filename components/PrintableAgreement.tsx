@@ -52,6 +52,37 @@ export function PrintableAgreement({ agreement, backHref, backLabel, initialCopy
   // Cari berkas PDF bermeterai resmi jika sudah diunggah
   const currentStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === copyType);
 
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadDirectPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      if (currentStampedDoc?.fileUrl) {
+        const link = document.createElement("a");
+        link.href = currentStampedDoc.fileUrl;
+        link.download = currentStampedDoc.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      const { generateSampleStampedPdfDataUrl } = await import("@/lib/ematerai-sample");
+      const pdfDataUrl = generateSampleStampedPdfDataUrl(agreement.contractId, copyType, content.projectName);
+      const link = document.createElement("a");
+      link.href = pdfDataUrl;
+      link.download = `${agreement.contractId}-${copyType === "freelancer_copy" ? "Salinan-Freelancer" : "Salinan-Klien"}-Bermeterai.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+      window.print();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   return (
     <div className="bg-slate-100 min-h-screen py-8 print:py-0 print:bg-white text-slate-950">
       {/* Top Floating Print Controller (Hidden in Print) */}
@@ -77,10 +108,25 @@ export function PrintableAgreement({ agreement, backHref, backLabel, initialCopy
           </button>
         </div>
 
-        <button onClick={() => window.print()} className="btn btn-primary">
-          <Printer className="w-4 h-4" />
-          Cetak / Simpan PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDownloadDirectPdf}
+            disabled={isDownloadingPdf}
+            className="btn btn-primary"
+            title="Unduh berkas PDF dokumen ini langsung"
+          >
+            <Download className="w-4 h-4" />
+            {isDownloadingPdf ? "Menyiapkan PDF..." : "Unduh PDF"}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="btn btn-secondary"
+            title="Cetak ke printer fisik atau simpan PDF lewat browser"
+          >
+            <Printer className="w-4 h-4" />
+            Cetak / Simpan PDF
+          </button>
+        </div>
       </div>
 
       {/* Banner jika dokumen ini sudah memiliki berkas PDF bermeterai resmi */}
@@ -106,7 +152,7 @@ export function PrintableAgreement({ agreement, backHref, backLabel, initialCopy
       )}
 
       {/* A4 Sheet Paper Simulation */}
-      <div className="max-w-4xl mx-auto bg-white p-8 sm:p-14 shadow-md border border-slate-200 rounded-2xl print-sheet print:rounded-none print:border-0 print:shadow-none print:max-w-none">
+      <div id="printable-agreement-sheet" className="max-w-4xl mx-auto bg-white p-8 sm:p-14 shadow-md border border-slate-200 rounded-2xl print-sheet print:rounded-none print:border-0 print:shadow-none print:max-w-none">
         <table className="w-full border-collapse border-0 print:table">
           <thead className="hidden print:table-header-group">
             <tr>
