@@ -20,22 +20,25 @@ import {
   AlertTriangle,
   Clock,
   X,
+  FileText,
+  Download,
+  UploadCloud,
 } from "lucide-react";
 import {
   getAgreement,
   approveVersion,
   sendAgreementToClient,
   createNewVersion,
-  uploadEMaterai,
-  removeEMaterai,
+  uploadStampedDocument,
+  removeStampedDocument,
   submitVisualSignature,
 } from "@/lib/store";
-import { ActivityLogItem, AgreementRecord, ContractContentJSON, CopyType } from "@/lib/types";
+import { ActivityLogItem, AgreementRecord, ContractContentJSON, StampedDocumentRecord } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SignaturePad } from "@/components/SignaturePad";
 import { AgreementDocument } from "@/components/AgreementDocument";
 import { RequireAuth } from "@/components/RequireAuth";
-import { generateSampleEMateraiDataUrl } from "@/lib/ematerai-sample";
+import { generateSampleStampedPdfDataUrl } from "@/lib/ematerai-sample";
 import { formatDateID, formatDateTimeID } from "@/lib/crypto";
 
 type TabId = "document" | "ematerai" | "approvals" | "changes" | "audit";
@@ -75,11 +78,9 @@ function AgreementDetail() {
   const [activeTab, setActiveTab] = useState<TabId>("document");
   const [origin, setOrigin] = useState("");
 
-  // e-Materai
-  const [targetCopy, setTargetCopy] = useState<CopyType>("freelancer_copy");
-  const [serialNumberInput, setSerialNumberInput] = useState("SN-2026-99824-EMTR");
+  // Dokumen Bermeterai
+  const [isUploadingDoc, setIsUploadingDoc] = useState<string | null>(null);
   const [copiedWaText, setCopiedWaText] = useState(false);
-  const [isUploadingMaterai, setIsUploadingMaterai] = useState(false);
 
   // Perbarui kesepakatan (versi baru)
   const [showNewVersionModal, setShowNewVersionModal] = useState(false);
@@ -181,79 +182,113 @@ function AgreementDetail() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const freelancerStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === "freelancer_copy");
+  const clientStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === "client_copy");
+  const stampedCount = (freelancerStampedDoc ? 1 : 0) + (clientStampedDoc ? 1 : 0);
+
+  const handleDocumentPdfUpload = (copyType: "freelancer_copy" | "client_copy", e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setIsUploadingMaterai(true);
+
+    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+      alert("Mohon pilih file berkas berformat PDF.");
+      return;
+    }
+
+    if (file.size > 7 * 1024 * 1024) {
+      alert("Ukuran file PDF terlalu besar (maksimal 7 MB).");
+      return;
+    }
+
+    setIsUploadingDoc(copyType);
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const updated = await uploadEMaterai(agreement.id, {
-          imageUrl: reader.result as string,
-          serialNumber: serialNumberInput.trim() || undefined,
-          targetCopy,
-          uploadedBy: content.freelancer.name,
+        const updated = await uploadStampedDocument(agreement.id, {
+          copyType,
+          fileName: file.name,
+          fileUrl: reader.result as string,
+          fileSize: file.size,
         });
         if (updated) {
           setAgreement({ ...updated });
-          alert("e-Materai berhasil ditempel ke dokumen!");
+          const copyLabel = copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien";
+          alert(`File ${copyLabel} bermeterai resmi berhasil diunggah!`);
         }
       } catch (err) {
-        console.error("Gagal unggah e-Materai:", err);
-        alert(err instanceof Error ? err.message : "Gagal mengunggah e-Materai. Coba lagi.");
+        console.error("Gagal unggah dokumen bermeterai:", err);
+        alert(err instanceof Error ? err.message : "Gagal mengunggah dokumen. Coba lagi.");
       } finally {
-        setIsUploadingMaterai(false);
+        setIsUploadingDoc(null);
+        e.target.value = "";
       }
     };
     reader.onerror = () => {
-      setIsUploadingMaterai(false);
-      alert("Gagal membaca file gambar.");
+      setIsUploadingDoc(null);
+      alert("Gagal membaca file PDF.");
     };
     reader.readAsDataURL(file);
   };
 
-  const handleUseSampleMaterai = async () => {
-    setIsUploadingMaterai(true);
+  const handleUseSampleDocumentPdf = async (copyType: "freelancer_copy" | "client_copy") => {
+    setIsUploadingDoc(copyType);
     try {
-      const serial = serialNumberInput.trim() || "SN-2026-99824-EMTR";
-      const updated = await uploadEMaterai(agreement.id, {
-        imageUrl: generateSampleEMateraiDataUrl(serial),
-        serialNumber: serial,
-        targetCopy,
-        uploadedBy: content.freelancer.name,
+      const fileName = `${agreement.contractId}-${copyType === "freelancer_copy" ? "Salinan-Freelancer" : "Salinan-Klien"}-Bermeterai.pdf`;
+      const pdfDataUrl = generateSampleStampedPdfDataUrl(agreement.contractId, copyType, content.projectName);
+      const updated = await uploadStampedDocument(agreement.id, {
+        copyType,
+        fileName,
+        fileUrl: pdfDataUrl,
+        fileSize: 42500,
+        notes: "Contoh dokumen resmi bermeterai elektronik Peruri",
       });
       if (updated) {
         setAgreement({ ...updated });
-        alert("Contoh e-Materai berhasil ditempel!");
+        const copyLabel = copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien";
+        alert(`Contoh berkas ${copyLabel} bermeterai berhasil dipasang!`);
       }
     } catch (err) {
-      console.error("Gagal pakai contoh e-Materai:", err);
-      alert(err instanceof Error ? err.message : "Gagal menempelkan contoh e-Materai. Coba lagi.");
+      console.error("Gagal memasang contoh dokumen:", err);
+      alert(err instanceof Error ? err.message : "Gagal memasang contoh dokumen.");
     } finally {
-      setIsUploadingMaterai(false);
+      setIsUploadingDoc(null);
     }
   };
 
-  const handleRemoveMaterai = async () => {
-    if (!confirm("Lepas e-Materai dari dokumen ini?")) return;
+  const handleRemoveStampedDoc = async (copyType: "freelancer_copy" | "client_copy") => {
+    const copyLabel = copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien";
+    if (!confirm(`Hapus berkas ${copyLabel} bermeterai ini dari sistem?`)) return;
+    setIsUploadingDoc(copyType);
     try {
-      const updated = await removeEMaterai(agreement.id);
+      const updated = await removeStampedDocument(agreement.id, copyType);
       if (updated) {
         setAgreement({ ...updated });
-        alert("e-Materai berhasil dilepas dari dokumen.");
+        alert(`Berkas ${copyLabel} berhasil dihapus.`);
       }
     } catch (err) {
-      console.error("Gagal melepas e-Materai:", err);
-      alert(err instanceof Error ? err.message : "Gagal melepas e-Materai. Coba lagi.");
+      console.error("Gagal menghapus dokumen:", err);
+      alert(err instanceof Error ? err.message : "Gagal menghapus dokumen.");
+    } finally {
+      setIsUploadingDoc(null);
     }
   };
+
+  const handleDownloadDoc = (doc: StampedDocumentRecord) => {
+    const link = document.createElement("a");
+    link.href = doc.fileUrl;
+    link.download = doc.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const handleSaveFreelancerSignature = async (sigDataUrl: string) => {
     const updated = await submitVisualSignature(agreement.id, "freelancer", content.freelancer.name, sigDataUrl);
     if (updated) setAgreement({ ...updated });
   };
 
-  const waMessage = `Halo Pak/Bu ${content.client.name}, kesepakatan proyek "${content.projectName}" sudah disetujui dan e-Materai Rp10.000 sudah saya tempel.\n\nSilakan buka link berikut untuk menandatangani:\n${clientReviewUrl}\n\nPenting: mohon tanda tangan di sebelah kanan e-Materai dan jangan sampai menutupi e-Materai, supaya tetap sah. Terima kasih!`;
+  const waMessage = `Halo Pak/Bu ${content.client.name}, kesepakatan proyek "${content.projectName}" (${agreement.contractId}) telah selesai dibubuhi e-Meterai resmi Rp10.000.\n\nSalinan Klien yang sudah bermeterai resmi dapat Anda unduh langsung melalui tautan review berikut:\n${clientReviewUrl}\n\nTerima kasih!`;
 
   const copyWhatsAppMessage = () => {
     navigator.clipboard.writeText(waMessage);
@@ -263,7 +298,17 @@ function AgreementDetail() {
 
   const tabs: { id: TabId; label: string }[] = [
     { id: "document", label: "Isi Kesepakatan" },
-    { id: "ematerai", label: agreement.ematerai ? "Materai & TTD ✓" : "Materai & Tanda Tangan" },
+    {
+      id: "ematerai",
+      label:
+        stampedCount === 2
+          ? "Dokumen Bermeterai (2/2) ✓"
+          : stampedCount > 0
+          ? `Dokumen Bermeterai (${stampedCount}/2)`
+          : agreement.ematerai
+          ? "Dokumen Bermeterai ✓"
+          : "Dokumen Bermeterai",
+    },
     { id: "approvals", label: `Persetujuan (${currentApprovals.length}/2)` },
     { id: "changes", label: `Permintaan Perubahan (${agreement.changeRequests.length})` },
     { id: "audit", label: "Riwayat" },
@@ -395,192 +440,301 @@ function AgreementDetail() {
         </div>
       )}
 
-      {/* TAB: MATERAI & TANDA TANGAN */}
+      {/* TAB: DOKUMEN BERMETERAI */}
       {activeTab === "ematerai" && (
         <div className="space-y-6">
-          <div className="card p-6 space-y-3">
+          {/* Header Kartu */}
+          <div className="card p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="kicker">Pengesahan dokumen</p>
-                <h2 className="text-lg font-bold text-slate-900 mt-0.5">Tempel e-Materai Rp10.000</h2>
+                <p className="kicker">Pengesahan dokumen resmi</p>
+                <h2 className="text-lg font-bold text-slate-900 mt-0.5">Dokumen Bermeterai Resmi (Upload PDF Rangkap 2)</h2>
               </div>
-              {agreement.ematerai ? (
+              {stampedCount === 2 ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
-                  <Stamp className="w-3.5 h-3.5" />
-                  e-Materai sudah ditempel
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  2/2 Salinan Bermeterai Lengkap
+                </span>
+              ) : stampedCount === 1 ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 self-start">
+                  <Clock className="w-3.5 h-3.5" />
+                  1/2 Salinan Diunggah
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 self-start">
-                  Belum ada e-Materai
+                  0/2 Salinan Diunggah
                 </span>
               )}
             </div>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Setelah kedua pihak setuju, Anda bisa menempelkan e-Materai resmi. Klien lalu menandatangani di
-              sebelah kanan e-Materai tersebut.
+              Sesuai ketentuan hukum <strong>UU Bea Meterai No. 10 Tahun 2020</strong> dan aturan Peruri, e-meterai resmi dibubuhkan melalui
+              portal resmi distributor e-meterai. Dokumen kesepakatan dibuat <strong>rangkap 2 (dua)</strong>:
+              Salinan Freelancer dan Salinan Klien, yang kemudian diunggah kembali ke Sepakatin agar tersimpan aman dan dapat diunduh masing-masing pihak.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-brand-100 bg-brand-50/60 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="card-title">Belum punya e-Materai?</h3>
-              <p className="text-sm text-slate-600 mt-1 max-w-xl">
-                Beli e-Materai Rp10.000 di situs resmi <strong>e-meterai.co.id</strong>, unduh gambarnya, lalu unggah di bawah.
-              </p>
+          {/* Panduan Alur 3 Langkah */}
+          <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-6 space-y-4">
+            <h3 className="text-sm font-bold text-brand-950 uppercase tracking-wide">
+              Alur Pembubuhan Dokumen Bermeterai Resmi
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-white border border-brand-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-800">Langkah 1</span>
+                  <FileText className="w-4 h-4 text-brand-600" />
+                </div>
+                <h4 className="text-sm font-semibold text-slate-900">Unduh Draf Final</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Unduh draf kesepakatan bersih (format standar A4) yang sudah disetujui kedua pihak.
+                </p>
+                <Link
+                  href={`/agreements/${agreement.id}/print`}
+                  target="_blank"
+                  className="btn btn-secondary btn-sm w-full mt-1"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Unduh PDF Draf
+                </Link>
+              </div>
+
+              <div className="p-4 rounded-xl bg-white border border-brand-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-800">Langkah 2</span>
+                  <ExternalLink className="w-4 h-4 text-brand-600" />
+                </div>
+                <h4 className="text-sm font-semibold text-slate-900">Bubuhkan e-Meterai</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Beli &amp; bubuhkan e-Meterai Rp10.000 di portal distributor resmi (PosFin, Peruri, Privy, dll).
+                </p>
+                <a
+                  href="https://e-meterai.co.id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-sm w-full mt-1"
+                >
+                  Buka e-meterai.co.id
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <div className="p-4 rounded-xl bg-white border border-brand-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-800">Langkah 3</span>
+                  <UploadCloud className="w-4 h-4 text-brand-600" />
+                </div>
+                <h4 className="text-sm font-semibold text-slate-900">Unggah ke Sepakatin</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Unggah file PDF Salinan Freelancer &amp; Salinan Klien di bawah agar klien dapat mengunduhnya.
+                </p>
+                <span className="block text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded text-center">
+                  Tersimpan aman &amp; siap unduh
+                </span>
+              </div>
             </div>
-            <a href="https://e-meterai.co.id/" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-              Beli e-Materai
-              <ExternalLink className="w-4 h-4" />
-            </a>
           </div>
 
-          <div className="card p-6 space-y-5">
-            <h3 className="card-title">Tempel e-Materai</h3>
+          {/* Aturan Hukum Salinan 2 Pihak */}
+          <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 leading-relaxed space-y-1">
+            <p className="font-semibold flex items-center gap-1.5 text-blue-900">
+              <span>⚖️</span> Penempatan e-Meterai Menurut Aturan Hukum (UU No. 10 Tahun 2020)
+            </p>
+            <ul className="list-disc list-inside pl-1 text-blue-800 space-y-0.5">
+              <li>
+                <strong>Salinan Freelancer (Pihak Pertama):</strong> e-Meterai dibubuhkan pada kolom tanda tangan <strong>Klien</strong> (disimpan oleh Freelancer).
+              </li>
+              <li>
+                <strong>Salinan Klien (Pihak Kedua):</strong> e-Meterai dibubuhkan pada kolom tanda tangan <strong>Freelancer</strong> (disimpan dan diunduh oleh Klien).
+              </li>
+            </ul>
+          </div>
 
-            <div>
-              <p className="label">Ditempel di salinan milik siapa?</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {([
-                  {
-                    id: "freelancer_copy" as CopyType,
-                    title: "Salinan Freelancer",
-                    tag: "Di kolom klien",
-                    desc: "e-Materai ditempel di kolom tanda tangan klien. Salinan ini disimpan oleh Anda.",
-                  },
-                  {
-                    id: "client_copy" as CopyType,
-                    title: "Salinan Klien",
-                    tag: "Di kolom Anda",
-                    desc: "e-Materai ditempel di kolom tanda tangan Anda. Salinan ini disimpan oleh klien.",
-                  },
-                  {
-                    id: "both" as CopyType,
-                    title: "Kedua Salinan (Rangkap 2)",
-                    tag: "2 e-Materai Sah",
-                    desc: "Menempelkan e-Materai pada kedua salinan (Salinan Freelancer & Klien).",
-                  },
-                ]).map((opt) => (
-                  <button
-                    type="button"
-                    key={opt.id}
-                    onClick={() => setTargetCopy(opt.id)}
-                    className={`text-left p-4 rounded-xl border transition-colors ${
-                      targetCopy === opt.id ? "border-brand-600 bg-brand-50/60 ring-4 ring-brand-600/10" : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-sm font-semibold text-slate-900">{opt.title}</span>
-                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">{opt.tag}</span>
+          {/* Grid 2 Kartu Berkas Salinan */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Salinan Freelancer */}
+            <div className="card p-6 space-y-4 border-2 border-slate-200">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Salinan Pihak Pertama</span>
+                  <h3 className="text-base font-bold text-slate-900">Salinan Freelancer</h3>
+                </div>
+                <span className="text-[10px] font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-full">
+                  Disimpan Freelancer
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">
+                e-Meterai dibubuhkan pada kolom tanda tangan <strong>Klien (Pihak Kedua)</strong>.
+              </p>
+
+              {freelancerStampedDoc ? (
+                <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5" />
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed">{opt.desc}</p>
-                  </button>
-                ))}
-              </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900 truncate" title={freelancerStampedDoc.fileName}>
+                        {freelancerStampedDoc.fileName}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {freelancerStampedDoc.fileSize ? `${Math.round(freelancerStampedDoc.fileSize / 1024)} KB · ` : ""}
+                        Diunggah {formatDateTimeID(freelancerStampedDoc.uploadedAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-emerald-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc(freelancerStampedDoc)}
+                      className="btn btn-primary btn-sm flex-1"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Unduh PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStampedDoc("freelancer_copy")}
+                      disabled={isUploadingDoc === "freelancer_copy"}
+                      className="btn btn-ghost btn-sm text-rose-600 hover:bg-rose-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 space-y-4">
+                  <div className="text-center space-y-1">
+                    <UploadCloud className="w-8 h-8 text-slate-400 mx-auto" />
+                    <p className="text-xs font-semibold text-slate-700">Pilih Berkas PDF yang Sudah Bermeterai</p>
+                    <p className="text-[11px] text-slate-400">Maksimal 7 MB (.pdf)</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => handleDocumentPdfUpload("freelancer_copy", e)}
+                    disabled={isUploadingDoc === "freelancer_copy"}
+                    className="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-brand-600 file:text-white file:rounded-lg hover:file:bg-brand-700 cursor-pointer"
+                  />
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-slate-500">Perlu dokumen cepat untuk demo?</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUseSampleDocumentPdf("freelancer_copy")}
+                      disabled={isUploadingDoc === "freelancer_copy"}
+                      className="btn btn-secondary btn-xs"
+                    >
+                      <Stamp className="w-3 h-3" />
+                      Pakai Contoh PDF
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 leading-relaxed space-y-1">
-              <p className="font-semibold flex items-center gap-1.5 text-blue-900">
-                <span>⚖️</span> Aturan Hukum Bea Meterai (UU No. 10 Tahun 2020)
-              </p>
-              <p>
-                Surat perjanjian timbal balik dibuat rangkap 2 (dua) agar masing-masing pihak memegang 1 dokumen asli berkekuatan pembuktian perdata:
-              </p>
-              <ul className="list-disc list-inside pl-1 text-blue-800 space-y-0.5">
-                <li><strong>Salinan Freelancer:</strong> e-Materai ditempel pada kolom tanda tangan Klien.</li>
-                <li><strong>Salinan Klien:</strong> e-Materai ditempel pada kolom tanda tangan Freelancer.</li>
-              </ul>
-              <p className="text-[11px] text-blue-700 pt-0.5">
-                Idealnya digunakan <strong>2 e-Materai</strong> (1 untuk salinan freelancer, 1 untuk salinan klien).
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="label">Nomor seri e-Materai</label>
-                <input
-                  type="text"
-                  value={serialNumberInput}
-                  onChange={(e) => setSerialNumberInput(e.target.value)}
-                  placeholder="Tertera di gambar e-Materai"
-                  className="input uppercase"
-                />
+            {/* Salinan Klien */}
+            <div className="card p-6 space-y-4 border-2 border-slate-200">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Salinan Pihak Kedua</span>
+                  <h3 className="text-base font-bold text-slate-900">Salinan Klien</h3>
+                </div>
+                <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                  Diunduh oleh Klien
+                </span>
               </div>
-              <div>
-                <label className="label">Gambar e-Materai (PNG/JPG)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-brand-600 file:text-white file:rounded-lg hover:file:bg-brand-700 cursor-pointer"
-                />
-              </div>
-            </div>
+              <p className="text-xs text-slate-600">
+                e-Meterai dibubuhkan pada kolom tanda tangan <strong>Freelancer (Pihak Pertama)</strong>.
+              </p>
 
-            <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-sm text-slate-500">Sedang demo dan belum punya file e-Materai?</span>
-              <button type="button" onClick={handleUseSampleMaterai} disabled={isUploadingMaterai} className="btn btn-secondary btn-sm">
-                <Stamp className="w-4 h-4" />
-                Pakai Contoh e-Materai
+              {clientStampedDoc ? (
+                <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900 truncate" title={clientStampedDoc.fileName}>
+                        {clientStampedDoc.fileName}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {clientStampedDoc.fileSize ? `${Math.round(clientStampedDoc.fileSize / 1024)} KB · ` : ""}
+                        Diunggah {formatDateTimeID(clientStampedDoc.uploadedAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-blue-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc(clientStampedDoc)}
+                      className="btn btn-primary btn-sm flex-1"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Unduh PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStampedDoc("client_copy")}
+                      disabled={isUploadingDoc === "client_copy"}
+                      className="btn btn-ghost btn-sm text-rose-600 hover:bg-rose-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 space-y-4">
+                  <div className="text-center space-y-1">
+                    <UploadCloud className="w-8 h-8 text-slate-400 mx-auto" />
+                    <p className="text-xs font-semibold text-slate-700">Pilih Berkas PDF yang Sudah Bermeterai</p>
+                    <p className="text-[11px] text-slate-400">Maksimal 7 MB (.pdf)</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => handleDocumentPdfUpload("client_copy", e)}
+                    disabled={isUploadingDoc === "client_copy"}
+                    className="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-brand-600 file:text-white file:rounded-lg hover:file:bg-brand-700 cursor-pointer"
+                  />
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-slate-500">Perlu dokumen cepat untuk demo?</span>
+                    <button
+                      type="button"
+                      onClick={() => handleUseSampleDocumentPdf("client_copy")}
+                      disabled={isUploadingDoc === "client_copy"}
+                      className="btn btn-secondary btn-xs"
+                    >
+                      <Stamp className="w-3 h-3" />
+                      Pakai Contoh PDF
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* WhatsApp Pesan Siap Kirim */}
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-6 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4 text-emerald-600" />
+                Pesan WhatsApp siap kirim ke klien
+              </span>
+              <button type="button" onClick={copyWhatsAppMessage} className="btn btn-whatsapp btn-sm">
+                {copiedWaText ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copiedWaText ? "Pesan Tersalin!" : "Salin Pesan"}
               </button>
             </div>
-          </div>
-
-          <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 space-y-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-sm font-semibold text-amber-900">Tanda tangan tidak boleh menutupi e-Materai</h4>
-                <p className="text-sm text-amber-800 leading-relaxed mt-1">
-                  Sesuai aturan resmi e-Materai, tanda tangan klien harus di <strong>sebelah kanan</strong> e-Materai dan
-                  <strong> tidak boleh menimpanya</strong>, supaya e-Materai tetap bisa dicek keasliannya.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-amber-200 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  <MessageSquare className="w-4 h-4 text-emerald-600" />
-                  Pesan WhatsApp siap kirim ke klien
-                </span>
-                <button type="button" onClick={copyWhatsAppMessage} className="btn btn-whatsapp btn-sm">
-                  {copiedWaText ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  {copiedWaText ? "Pesan Tersalin!" : "Salin Pesan"}
-                </button>
-              </div>
-              <div className="p-4 bg-white border border-amber-200 rounded-xl text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                {waMessage}
-              </div>
+            <div className="p-4 bg-white border border-emerald-200 rounded-xl text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+              {waMessage}
             </div>
           </div>
 
-          {agreement.ematerai && (
-            <div className="card p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="card-title">e-Materai yang sedang dipakai</h3>
-                <button type="button" onClick={handleRemoveMaterai} className="btn btn-ghost btn-sm text-rose-600 hover:text-rose-700 hover:bg-rose-50">
-                  <Trash2 className="w-4 h-4" />
-                  Lepas
-                </button>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-6 doc-box">
-                <div className="w-32 h-32 flex-shrink-0 bg-white border border-slate-200 rounded-lg p-1 flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={agreement.ematerai.imageUrl} alt="e-Materai" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="text-sm space-y-1 text-slate-700">
-                  <p><span className="text-slate-500">Ditempel di:</span> {agreement.ematerai.targetCopy === "freelancer_copy" ? "Salinan freelancer (kolom klien)" : "Salinan klien (kolom freelancer)"}</p>
-                  <p><span className="text-slate-500">Nomor seri:</span> {agreement.ematerai.serialNumber || "-"}</p>
-                  <p><span className="text-slate-500">Waktu:</span> {formatDateTimeID(agreement.ematerai.uploadedAt)}</p>
-                  <p className="text-xs text-slate-500 pt-1">e-Materai ini sudah tampil di dokumen cetak dan di halaman klien.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
+          {/* Tanda tangan Freelancer */}
           <div className="card p-6 space-y-3">
             <h3 className="card-title">Tanda tangan Anda (Freelancer)</h3>
-            <p className="text-sm text-slate-500">Tanda tangan di kotak ini. Tanda tangan akan otomatis tersimpan dan muncul di surat kesepakatan.</p>
+            <p className="text-sm text-slate-500">Tanda tangan di kotak ini. Tanda tangan akan otomatis tersimpan dan muncul di draf kesepakatan.</p>
             <div className="max-w-sm">
               <SignaturePad signerName={content.freelancer.name} onSave={handleSaveFreelancerSignature} />
             </div>

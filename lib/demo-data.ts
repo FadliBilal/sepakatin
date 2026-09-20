@@ -11,6 +11,7 @@ import {
   ContractContentJSON,
 } from "./types";
 import { generateDocumentHash } from "./crypto";
+import { generateSampleStampedPdfDataUrl } from "./ematerai-sample";
 
 export const DEMO_CONTRACT_ID = "SPK-2026-00124";
 
@@ -662,6 +663,30 @@ export function buildDemoAgreement(ownerId: string, reviewToken = "token_abc_sol
     approvals,
     changeRequests: DEMO_CHANGE_REQUESTS,
     activityLogs,
+    stampedDocuments: [
+      {
+        id: "sdoc_demo_001",
+        agreementId,
+        copyType: "freelancer_copy",
+        fileName: "SPK-2026-00124-Salinan-Freelancer-Bermeterai.pdf",
+        fileUrl: generateSampleStampedPdfDataUrl(DEMO_CONTRACT_ID, "freelancer_copy", DEMO_CONTRACT_V5.projectName),
+        fileSize: 42500,
+        uploadedAt: "2026-09-24T16:25:00.000Z",
+        uploadedBy: "Fadli Bilal",
+        notes: "Salinan resmi Pihak Pertama (Freelancer) bermeterai elektronik Peruri",
+      },
+      {
+        id: "sdoc_demo_002",
+        agreementId,
+        copyType: "client_copy",
+        fileName: "SPK-2026-00124-Salinan-Klien-Bermeterai.pdf",
+        fileUrl: generateSampleStampedPdfDataUrl(DEMO_CONTRACT_ID, "client_copy", DEMO_CONTRACT_V5.projectName),
+        fileSize: 42500,
+        uploadedAt: "2026-09-24T16:26:00.000Z",
+        uploadedBy: "Fadli Bilal",
+        notes: "Salinan resmi Pihak Kedua (Klien) bermeterai elektronik Peruri",
+      },
+    ],
     ematerai: {
       id: "emtr_demo_001",
       agreementId,

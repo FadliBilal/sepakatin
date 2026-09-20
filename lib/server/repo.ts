@@ -123,10 +123,11 @@ function toRecord(row: AgreementRow): AgreementRecord {
   };
 }
 
-/** Versi ringan untuk daftar di dashboard: gambar e-Materai & tanda tangan tidak ikut dikirim. */
+/** Versi ringan untuk daftar di dashboard: gambar e-Materai, berkas bermeterai, & tanda tangan tidak ikut dikirim. */
 export function toListItem(agr: AgreementRecord): AgreementRecord {
   return {
     ...agr,
+    stampedDocuments: (agr.stampedDocuments ?? []).map((d) => ({ ...d, fileUrl: "" })),
     ematerai: agr.ematerai ? { ...agr.ematerai, imageUrl: "" } : undefined,
     signatures: (agr.signatures ?? []).map((s) => ({ ...s, signatureDataUrl: "" })),
   };

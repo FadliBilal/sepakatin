@@ -3,7 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, CheckCircle2, AlertCircle, Printer, Edit3, Check, AlertTriangle, X } from "lucide-react";
+import {
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Printer,
+  Edit3,
+  Check,
+  AlertTriangle,
+  X,
+  Download,
+  FileText,
+} from "lucide-react";
 import { getAgreementByReviewToken, approveVersion, requestChange, submitVisualSignature } from "@/lib/store";
 import { AgreementRecord } from "@/lib/types";
 import { SignaturePad } from "@/components/SignaturePad";
@@ -73,6 +84,17 @@ export default function ClientReviewPage() {
   );
   const clientVisualSig = agreement.signatures?.find((s) => s.signerRole === "client");
   const materaiOnClientSide = agreement.ematerai?.targetCopy === "freelancer_copy";
+
+  const clientStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === "client_copy");
+
+  const handleDownloadDoc = (doc: { fileUrl: string; fileName: string }) => {
+    const link = document.createElement("a");
+    link.href = doc.fileUrl;
+    link.download = doc.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleSavePostSignature = async (sigUrl: string) => {
     setIsSavingPostSignature(true);
@@ -182,6 +204,46 @@ export default function ClientReviewPage() {
           Versi Cetak
         </Link>
       </div>
+
+      {/* Banner Salinan Klien Bermeterai Resmi */}
+      {clientStampedDoc && (
+        <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50/90 p-5 shadow-sm space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Salinan Klien Bermeterai Resmi Tersedia
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Unduh Berkas Salinan Klien (Sudah Bermeterai Rp10.000)
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed max-w-xl">
+                  Freelancer telah membubuhkan e-Meterai resmi pada berkas perjanjian ini melalui portal distributor resmi Peruri dan mengunggahnya ke Sepakatin. Dokumen ini sah dan memiliki kekuatan hukum pembuktian perdata.
+                </p>
+                <p className="text-[11px] text-slate-500 pt-0.5">
+                  Berkas: <strong className="text-slate-700">{clientStampedDoc.fileName}</strong>
+                  {clientStampedDoc.fileSize ? ` · ${Math.round(clientStampedDoc.fileSize / 1024)} KB` : ""}
+                  {" · "}Diunggah {formatDateTimeID(clientStampedDoc.uploadedAt)}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDownloadDoc(clientStampedDoc)}
+              className="btn btn-primary flex-shrink-0 self-start sm:self-auto"
+            >
+              <Download className="w-4 h-4" />
+              Unduh Salinan Klien (PDF)
+            </button>
+          </div>
+        </div>
+      )}
 
       <AgreementDocument content={content} versionNumber={currentVersion.versionNumber} status={agreement.status}>
         {agreement.status === "AGREED" && (

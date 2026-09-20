@@ -11,6 +11,7 @@ import {
   CopyType,
   PlanId,
   PublicVerificationData,
+  StampedDocumentRecord,
 } from "./types";
 import { generateDocumentHash } from "./crypto";
 import { FREE_RULES, isPremiumPlan } from "./plans";
@@ -30,6 +31,18 @@ export type OwnerAction =
   | { type: "send" }
   | { type: "approve" }
   | { type: "newVersion"; content: ContractContentJSON }
+  | {
+      type: "uploadStampedDocument";
+      copyType: "freelancer_copy" | "client_copy";
+      fileName: string;
+      fileUrl: string;
+      fileSize?: number;
+      notes?: string;
+    }
+  | {
+      type: "removeStampedDocument";
+      copyType: "freelancer_copy" | "client_copy";
+    }
   | { type: "ematerai"; imageUrl: string; serialNumber?: string; targetCopy: CopyType }
   | { type: "removeEmaterai" }
   | { type: "signature"; dataUrl: string }
@@ -187,6 +200,22 @@ function imageDataUrl(value: unknown, label: string): string {
   }
   if (value.length > MAX_IMAGE_CHARS) throw new AgreementError(`${label} terlalu besar. Maksimal sekitar 1 MB.`);
   return value;
+}
+
+const MAX_DOCUMENT_CHARS = 10_000_000; // ± 7.5 MB berkas dokumen base64
+
+function documentDataUrl(value: unknown, label: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new AgreementError(`${label} wajib diisi.`);
+  }
+  const v = value.trim();
+  if (!v.startsWith("data:") && !v.startsWith("http://") && !v.startsWith("https://")) {
+    throw new AgreementError(`${label} harus berupa berkas dokumen PDF yang valid.`);
+  }
+  if (v.length > MAX_DOCUMENT_CHARS) {
+    throw new AgreementError(`${label} terlalu besar. Maksimal sekitar 7 MB.`);
+  }
+  return v;
 }
 
 // ------------------------------------------------------------------------------
@@ -364,6 +393,52 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
         }
       });
       log(agr, owner, "VERSION_BUMPED", `Kesepakatan diperbarui menjadi versi ${v.versionNumber}. Kedua pihak perlu menyetujui ulang.`);
+      break;
+    }
+    case "uploadStampedDocument": {
+      if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
+      if (action.copyType !== "freelancer_copy" && action.copyType !== "client_copy") {
+        throw new AgreementError("Pilihan salinan dokumen tidak valid.");
+      }
+      const safeFileName = text(action.fileName, "Nama file dokumen", { required: true, max: 200 });
+      const safeUrl = documentDataUrl(action.fileUrl, "File dokumen bermeterai");
+      const safeNotes = action.notes ? text(action.notes, "Catatan dokumen", { max: 500 }) : undefined;
+
+      const newDoc: StampedDocumentRecord = {
+        id: newId("doc"),
+        agreementId: agr.id,
+        copyType: action.copyType,
+        fileName: safeFileName,
+        fileUrl: safeUrl,
+        fileSize: typeof action.fileSize === "number" ? action.fileSize : undefined,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: owner,
+        notes: safeNotes,
+      };
+
+      const existingDocs = agr.stampedDocuments ? [...agr.stampedDocuments] : [];
+      const filtered = existingDocs.filter((d) => d.copyType !== action.copyType);
+      filtered.push(newDoc);
+      agr.stampedDocuments = filtered;
+
+      const copyLabel =
+        action.copyType === "freelancer_copy"
+          ? "Salinan Freelancer (e-Meterai pada pihak Klien)"
+          : "Salinan Klien (e-Meterai pada pihak Freelancer)";
+      log(agr, owner, "VERSION_BUMPED", `${owner} mengunggah berkas ${copyLabel} yang sudah bermeterai resmi (${safeFileName})`);
+      break;
+    }
+    case "removeStampedDocument": {
+      if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
+      const existingDocs = agr.stampedDocuments ? [...agr.stampedDocuments] : [];
+      const found = existingDocs.find((d) => d.copyType === action.copyType);
+      if (!found) {
+        throw new AgreementError("Berkas dokumen salinan ini belum diunggah.");
+      }
+      agr.stampedDocuments = existingDocs.filter((d) => d.copyType !== action.copyType);
+      const copyLabel =
+        action.copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien";
+      log(agr, owner, "VERSION_BUMPED", `${owner} menghapus berkas ${copyLabel} bermeterai`);
       break;
     }
     case "ematerai": {

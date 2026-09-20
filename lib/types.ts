@@ -156,6 +156,18 @@ export interface EMateraiRecord {
   uploadedBy: string;
 }
 
+export interface StampedDocumentRecord {
+  id: string;
+  agreementId: string;
+  copyType: "freelancer_copy" | "client_copy";
+  fileName: string;
+  fileUrl: string; // Base64 data URL atau URL berkas PDF yang sudah bermeterai
+  fileSize?: number; // Ukuran file dalam bytes
+  uploadedAt: string;
+  uploadedBy: string;
+  notes?: string;
+}
+
 export interface SignatureRecord {
   id: string;
   agreementId?: string;
@@ -185,7 +197,9 @@ export interface AgreementRecord {
   approvals: AgreementApprovalRecord[];
   changeRequests: ChangeRequestRecord[];
   activityLogs: ActivityLogItem[];
-  // e-Materai & Visual Signature records (bisa menampung hingga 2 e-Materai untuk kedua salinan)
+  // Dokumen bermeterai resmi (hasil unggah ulang setelah bermeterai di portal eksternal)
+  stampedDocuments?: StampedDocumentRecord[];
+  // e-Materai & Visual Signature records (fallback / legacy)
   ematerai?: EMateraiRecord;
   emateraiList?: EMateraiRecord[];
   signatures?: SignatureRecord[];

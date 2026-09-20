@@ -166,7 +166,19 @@ export default function PublicContractVerificationPage() {
         </div>
 
         {agreementRecord && (
-          <div className="bg-slate-50 px-6 sm:px-8 py-4 border-t border-slate-100 flex flex-wrap items-center justify-end gap-3">
+          <div className="bg-slate-50 px-6 sm:px-8 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            {agreementRecord.stampedDocuments && agreementRecord.stampedDocuments.length > 0 ? (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-full">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {agreementRecord.stampedDocuments.length === 2
+                  ? "2/2 Salinan Berkas Bermeterai Resmi Tersedia"
+                  : "Berkas Bermeterai Resmi Tersedia"}
+              </span>
+            ) : (
+              <span className="text-xs text-slate-500">
+                Pencatatan integritas kriptografis SHA-256
+              </span>
+            )}
             <Link href={`/agreements/${agreementRecord.id}/print`} className="btn btn-secondary btn-sm">
               <Printer className="w-4 h-4" />
               Lihat Dokumen

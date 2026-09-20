@@ -304,6 +304,36 @@ export async function createNewVersion(
   return ownerAction(id, { type: "newVersion", content });
 }
 
+export async function uploadStampedDocument(
+  id: string,
+  data: {
+    copyType: "freelancer_copy" | "client_copy";
+    fileName: string;
+    fileUrl: string;
+    fileSize?: number;
+    notes?: string;
+  }
+): Promise<AgreementRecord> {
+  return ownerAction(id, {
+    type: "uploadStampedDocument",
+    copyType: data.copyType,
+    fileName: data.fileName,
+    fileUrl: data.fileUrl,
+    fileSize: data.fileSize,
+    notes: data.notes,
+  });
+}
+
+export async function removeStampedDocument(
+  id: string,
+  copyType: "freelancer_copy" | "client_copy"
+): Promise<AgreementRecord> {
+  return ownerAction(id, {
+    type: "removeStampedDocument",
+    copyType,
+  });
+}
+
 export async function uploadEMaterai(
   id: string,
   data: { imageUrl: string; serialNumber?: string; targetCopy: CopyType; uploadedBy?: string }

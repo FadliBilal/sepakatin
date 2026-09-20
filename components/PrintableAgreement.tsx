@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, CheckCircle2, Download } from "lucide-react";
 import { AgreementRecord, CopyType } from "@/lib/types";
 import { QRCodeViewer } from "@/components/QRCodeViewer";
 import { Logo } from "@/components/Logo";
@@ -46,10 +46,13 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
       ? `${window.location.origin}/verify/${agreement.contractId}`
       : `https://sepakatin.id/verify/${agreement.contractId}`;
 
+  // Cari berkas PDF bermeterai resmi jika sudah diunggah
+  const currentStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === copyType);
+
   return (
     <div className="bg-slate-100 min-h-screen py-8 print:py-0 print:bg-white text-slate-950">
       {/* Top Floating Print Controller (Hidden in Print) */}
-      <div className="max-w-4xl mx-auto mb-6 px-4 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
+      <div className="max-w-4xl mx-auto mb-4 px-4 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
         <Link href={backHref} className="back-link">
           <ArrowLeft className="w-4 h-4" />
           {backLabel}
@@ -76,6 +79,28 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
           Cetak / Simpan PDF
         </button>
       </div>
+
+      {/* Banner jika dokumen ini sudah memiliki berkas PDF bermeterai resmi */}
+      {currentStampedDoc && (
+        <div className="max-w-4xl mx-auto mb-5 px-4 no-print">
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+            <div className="flex items-center gap-2.5 text-emerald-950">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span>
+                Berkas <strong>{copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien"}</strong> ini telah memiliki dokumen PDF bermeterai resmi yang diunggah (<strong>{currentStampedDoc.fileName}</strong>).
+              </span>
+            </div>
+            <a
+              href={currentStampedDoc.fileUrl}
+              download={currentStampedDoc.fileName}
+              className="btn btn-primary btn-sm self-start sm:self-auto flex-shrink-0"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Unduh PDF Bermeterai
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* A4 Sheet Paper Simulation */}
       <div className="max-w-4xl mx-auto bg-white p-8 sm:p-14 shadow-md border border-slate-200 rounded-2xl print-sheet print:rounded-none print:border-0 print:shadow-none print:max-w-none">
