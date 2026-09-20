@@ -368,10 +368,10 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
     }
     case "ematerai": {
       if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
-      if (action.targetCopy !== "freelancer_copy" && action.targetCopy !== "client_copy") {
+      if (action.targetCopy !== "freelancer_copy" && action.targetCopy !== "client_copy" && action.targetCopy !== "both") {
         throw new AgreementError("Pilihan salinan tidak valid.");
       }
-      agr.ematerai = {
+      const emtRecord = {
         id: newId("emt"),
         agreementId: agr.id,
         versionNumber: agr.currentVersionNumber,
@@ -381,13 +381,33 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
         uploadedAt: new Date().toISOString(),
         uploadedBy: owner,
       };
-      const where = action.targetCopy === "freelancer_copy" ? "salinan freelancer (di kolom tanda tangan klien)" : "salinan klien (di kolom tanda tangan freelancer)";
+
+      const list = agr.emateraiList ? [...agr.emateraiList] : (agr.ematerai ? [agr.ematerai] : []);
+      if (action.targetCopy === "both") {
+        // Jika "both", berlaku untuk kedua salinan
+        agr.emateraiList = [emtRecord];
+      } else {
+        const filtered = list.filter((m) => m.targetCopy !== action.targetCopy && m.targetCopy !== "both");
+        filtered.push(emtRecord);
+        agr.emateraiList = filtered;
+      }
+      agr.ematerai = emtRecord;
+
+      const where =
+        action.targetCopy === "both"
+          ? "kedua salinan dokumen (Salinan Freelancer & Salinan Klien)"
+          : action.targetCopy === "freelancer_copy"
+          ? "salinan freelancer (di kolom tanda tangan klien)"
+          : "salinan klien (di kolom tanda tangan freelancer)";
       log(agr, owner, "VERSION_BUMPED", `${owner} menempelkan e-Materai Rp10.000 pada ${where}`);
       break;
     }
     case "removeEmaterai": {
-      if (!agr.ematerai) throw new AgreementError("Belum ada e-Materai di dokumen ini.");
+      if (!agr.ematerai && (!agr.emateraiList || agr.emateraiList.length === 0)) {
+        throw new AgreementError("Belum ada e-Materai di dokumen ini.");
+      }
       agr.ematerai = undefined;
+      agr.emateraiList = [];
       log(agr, owner, "VERSION_BUMPED", "e-Materai dilepas dari dokumen oleh freelancer");
       break;
     }

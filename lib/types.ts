@@ -143,7 +143,7 @@ export interface ActivityLogItem {
   createdAt: string;
 }
 
-export type CopyType = "freelancer_copy" | "client_copy";
+export type CopyType = "freelancer_copy" | "client_copy" | "both";
 
 export interface EMateraiRecord {
   id: string;
@@ -151,7 +151,7 @@ export interface EMateraiRecord {
   versionNumber: number;
   imageUrl: string; // Base64 data url or file path of official e-meterai
   serialNumber?: string;
-  targetCopy: CopyType; // "freelancer_copy" (on Client col) or "client_copy" (on Freelancer col)
+  targetCopy: CopyType; // "freelancer_copy" (on Client col), "client_copy" (on Freelancer col), or "both"
   uploadedAt: string;
   uploadedBy: string;
 }
@@ -185,8 +185,9 @@ export interface AgreementRecord {
   approvals: AgreementApprovalRecord[];
   changeRequests: ChangeRequestRecord[];
   activityLogs: ActivityLogItem[];
-  // e-Materai & Visual Signature records
+  // e-Materai & Visual Signature records (bisa menampung hingga 2 e-Materai untuk kedua salinan)
   ematerai?: EMateraiRecord;
+  emateraiList?: EMateraiRecord[];
   signatures?: SignatureRecord[];
 }
 

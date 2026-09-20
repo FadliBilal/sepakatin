@@ -6,7 +6,7 @@
 
 "use client";
 
-import { AgreementRecord, ContractContentJSON, PlanId, PublicVerificationData } from "./types";
+import { AgreementRecord, ContractContentJSON, CopyType, PlanId, PublicVerificationData } from "./types";
 import {
   ClientAction,
   OwnerAction,
@@ -306,7 +306,7 @@ export async function createNewVersion(
 
 export async function uploadEMaterai(
   id: string,
-  data: { imageUrl: string; serialNumber?: string; targetCopy: "freelancer_copy" | "client_copy"; uploadedBy?: string }
+  data: { imageUrl: string; serialNumber?: string; targetCopy: CopyType; uploadedBy?: string }
 ): Promise<AgreementRecord> {
   return ownerAction(id, {
     type: "ematerai",

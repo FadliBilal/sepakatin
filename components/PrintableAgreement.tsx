@@ -36,6 +36,11 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
   const freelancerVisualSig = agreement.signatures?.find((s) => s.signerRole === "freelancer");
   const clientVisualSig = agreement.signatures?.find((s) => s.signerRole === "client");
 
+  // Cari e-Materai yang sesuai dengan salinan yang sedang dilihat
+  const currentMaterai =
+    (agreement.emateraiList?.find((m) => m.targetCopy === copyType || m.targetCopy === "both")) ??
+    agreement.ematerai;
+
   const verifyUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/verify/${agreement.contractId}`
@@ -265,11 +270,11 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
                     <div className="flex items-center justify-center space-x-3 w-full">
                       {/* e-Materai on the Left */}
                       <div className="flex flex-col items-center flex-shrink-0">
-                        {agreement.ematerai ? (
+                        {currentMaterai ? (
                           <div className="w-20 h-20 border border-slate-300 p-0.5 flex items-center justify-center bg-white shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={agreement.ematerai.imageUrl}
+                              src={currentMaterai.imageUrl}
                               alt="e-Materai Rp10.000"
                               className="max-h-full max-w-full object-contain"
                             />
@@ -282,9 +287,9 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
                         <span className="text-[8px] text-slate-500 mt-1 font-semibold">
                           e-Materai
                         </span>
-                        {agreement.ematerai?.serialNumber && (
+                        {currentMaterai?.serialNumber && (
                           <span className="text-[7px] text-slate-400 truncate max-w-[90px]">
-                            {agreement.ematerai.serialNumber}
+                            {currentMaterai.serialNumber}
                           </span>
                         )}
                       </div>
@@ -370,11 +375,11 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
                     <div className="flex items-center justify-center space-x-3 w-full">
                       {/* e-Materai on the Left */}
                       <div className="flex flex-col items-center flex-shrink-0">
-                        {agreement.ematerai ? (
+                        {currentMaterai ? (
                           <div className="w-20 h-20 border border-slate-300 p-0.5 flex items-center justify-center bg-white shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={agreement.ematerai.imageUrl}
+                              src={currentMaterai.imageUrl}
                               alt="e-Materai Rp10.000"
                               className="max-h-full max-w-full object-contain"
                             />
@@ -387,9 +392,9 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
                         <span className="text-[8px] text-slate-500 mt-1 font-semibold">
                           e-Materai
                         </span>
-                        {agreement.ematerai?.serialNumber && (
+                        {currentMaterai?.serialNumber && (
                           <span className="text-[7px] text-slate-400 truncate max-w-[90px]">
-                            {agreement.ematerai.serialNumber}
+                            {currentMaterai.serialNumber}
                           </span>
                         )}
                       </div>

@@ -422,6 +422,18 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
             <textarea rows={2} value={revisionTerms} onChange={(e) => setRevisionTerms(e.target.value)} className="input leading-relaxed" />
           </div>
 
+          <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 leading-relaxed space-y-1">
+            <p className="font-semibold text-blue-950 flex items-center gap-1.5">
+              <span>📋</span> Prinsip Hukum Revisi di Sepakatin
+            </p>
+            <p>
+              Revisi selama masih dalam jatah (<strong>{revisionCount}x</strong>) cukup dicatat mandiri tanpa biaya &amp; tanpa perlu dokumen baru bermaterai.
+            </p>
+            <p className="text-blue-800">
+              Jika terjadi revisi di tengah jalan yang <strong>melebihi jatah {revisionCount}x</strong> atau ada penambahan ruang lingkup pekerjaan, freelancer dapat menerbitkan <strong>Dokumen Kesepakatan Baru (Addendum) bermaterai</strong> dengan biaya tambahan Rp{(extraRevisionRate || 0).toLocaleString("id-ID")}/revisi.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="label">Tanggal mulai</label>
@@ -451,13 +463,13 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
               <Sparkles className="w-4 h-4" />
             </span>
             <div>
-              <h2 className="card-title">Paket untuk kesepakatan ini</h2>
+              <h2 className="card-title">Pilihan Paket Kesepakatan</h2>
               <p className="text-sm text-slate-500 mt-0.5">
                 {!usage
                   ? "Memeriksa kuota akun Anda..."
                   : isPro
-                  ? "Akun Anda Pro: semua fitur aktif dan tanpa batas jumlah kesepakatan."
-                  : "e-Materai, tanda tangan online, dan permintaan perubahan dari klien hanya tersedia di kesepakatan Per Proyek."}
+                  ? "Akun Anda Pro: semua kesepakatan otomatis berfitur lengkap (2 e-Materai, tanda tangan digital, addendum revisi tanpa batas)."
+                  : "Akun Anda berstatus Gratis dengan saldo kredit. Pilih jenis kesepakatan yang ingin Anda terbitkan:"}
               </p>
             </div>
           </div>
@@ -467,14 +479,18 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
               {[
                 {
                   credit: false,
-                  title: "Gratis",
+                  title: "Gratis (Rp0)",
+                  badge: null,
                   note: `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan Gratis aktif`,
+                  features: "Draf teks standar, persetujuan online dasar, tanpa e-Materai resmi.",
                   disabled: freeFull,
                 },
                 {
                   credit: true,
-                  title: "Per Proyek (1 kredit)",
-                  note: `Sisa ${usage.credits} kredit · fitur lengkap`,
+                  title: "Per Proyek (Pakai 1 Kredit)",
+                  badge: "Kekuatan Hukum Penuh",
+                  note: `Sisa saldo ${usage.credits} kredit proyek`,
+                  features: "2 e-Materai resmi (Freelancer & Klien), tanda tangan online, & tiket addendum revisi berbayar.",
                   disabled: usage.credits < 1,
                 },
               ].map((opt) => (
@@ -487,8 +503,16 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                     useCredit === opt.credit ? "border-brand-600 bg-brand-50/60 ring-4 ring-brand-600/10" : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <p className="text-sm font-semibold text-slate-900">{opt.title}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{opt.note}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-slate-900">{opt.title}</p>
+                    {opt.badge && (
+                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
+                        {opt.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-brand-700 mt-1">{opt.note}</p>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.features}</p>
                 </button>
               ))}
             </div>

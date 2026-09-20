@@ -439,19 +439,25 @@ function AgreementDetail() {
 
             <div>
               <p className="label">Ditempel di salinan milik siapa?</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
                   {
                     id: "freelancer_copy" as CopyType,
-                    title: "Salinan untuk Freelancer",
+                    title: "Salinan Freelancer",
                     tag: "Di kolom klien",
-                    desc: "e-Materai ditempel di kolom tanda tangan klien. Salinan ini Anda simpan.",
+                    desc: "e-Materai ditempel di kolom tanda tangan klien. Salinan ini disimpan oleh Anda.",
                   },
                   {
                     id: "client_copy" as CopyType,
-                    title: "Salinan untuk Klien",
-                    tag: "Di kolom freelancer",
-                    desc: "e-Materai ditempel di kolom tanda tangan Anda. Salinan ini disimpan klien.",
+                    title: "Salinan Klien",
+                    tag: "Di kolom Anda",
+                    desc: "e-Materai ditempel di kolom tanda tangan Anda. Salinan ini disimpan oleh klien.",
+                  },
+                  {
+                    id: "both" as CopyType,
+                    title: "Kedua Salinan (Rangkap 2)",
+                    tag: "2 e-Materai Sah",
+                    desc: "Menempelkan e-Materai pada kedua salinan (Salinan Freelancer & Klien).",
                   },
                 ]).map((opt) => (
                   <button
@@ -464,12 +470,28 @@ function AgreementDetail() {
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span className="text-sm font-semibold text-slate-900">{opt.title}</span>
-                      <span className="text-[11px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">{opt.tag}</span>
+                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">{opt.tag}</span>
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed">{opt.desc}</p>
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 leading-relaxed space-y-1">
+              <p className="font-semibold flex items-center gap-1.5 text-blue-900">
+                <span>⚖️</span> Aturan Hukum Bea Meterai (UU No. 10 Tahun 2020)
+              </p>
+              <p>
+                Surat perjanjian timbal balik dibuat rangkap 2 (dua) agar masing-masing pihak memegang 1 dokumen asli berkekuatan pembuktian perdata:
+              </p>
+              <ul className="list-disc list-inside pl-1 text-blue-800 space-y-0.5">
+                <li><strong>Salinan Freelancer:</strong> e-Materai ditempel pada kolom tanda tangan Klien.</li>
+                <li><strong>Salinan Klien:</strong> e-Materai ditempel pada kolom tanda tangan Freelancer.</li>
+              </ul>
+              <p className="text-[11px] text-blue-700 pt-0.5">
+                Idealnya digunakan <strong>2 e-Materai</strong> (1 untuk salinan freelancer, 1 untuk salinan klien).
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -633,8 +655,58 @@ function AgreementDetail() {
             </div>
             <button onClick={() => setShowNewVersionModal(true)} className="btn btn-primary btn-sm">
               <PlusCircle className="w-4 h-4" />
-              Ubah Kesepakatan
+              {agreement.changeRequests.length > content.revision.count
+                ? "Buat Dokumen Addendum Bermaterai"
+                : "Ubah Kesepakatan"}
             </button>
+          </div>
+
+          {/* Tracker Jatah Revisi & Aturan Hukum */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pemantauan Jatah Revisi</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-2xl font-extrabold text-slate-900">
+                    {agreement.changeRequests.length} / {content.revision.count}
+                  </span>
+                  <span className="text-sm text-slate-600">revisi diajukan</span>
+                </div>
+              </div>
+              <div>
+                {agreement.changeRequests.length <= content.revision.count ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Dalam Jatah Kesepakatan (Dicatat Mandiri)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    Melebihi Jatah ({agreement.changeRequests.length - content.revision.count}x di luar batas)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-xs leading-relaxed p-3.5 rounded-xl bg-white border border-slate-200 space-y-1">
+              {agreement.changeRequests.length <= content.revision.count ? (
+                <p className="text-slate-600">
+                  <strong className="text-slate-900">Aturan:</strong> Revisi yang masih dalam jatah <strong>{content.revision.count} kali</strong> cukup dicatat &amp; dikerjakan mandiri oleh freelancer <em>tanpa perlu menerbitkan dokumen baru bermaterai</em>.
+                </p>
+              ) : (
+                <div className="space-y-1 text-amber-900">
+                  <p className="font-semibold text-amber-950">
+                    ⚠️ Revisi di Tengah Jalan Melebihi Batas Kesepakatan Awal:
+                  </p>
+                  <p>
+                    Karena revisi melebihi batas <strong>{content.revision.count} kali</strong>, revisi tambahan dikenakan biaya <strong>Rp{(content.revision.extraRevisionRate || 0).toLocaleString("id-ID")}</strong>/revisi.
+                  </p>
+                  <p className="text-amber-800">
+                    Freelancer perlu membuat <strong>Dokumen Kesepakatan Baru (Addendum)</strong> yang memuat penambahan tersebut dan disahkan kembali dengan e-Materai agar memiliki kekuatan hukum sah.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {agreement.changeRequests.length === 0 ? (
