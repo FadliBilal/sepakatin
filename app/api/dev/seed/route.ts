@@ -64,7 +64,7 @@ export async function POST(req: Request) {
           plan: record.plan,
           record,
         },
-        { onConflict: "contract_id", ignoreDuplicates: true }
+        { onConflict: "contract_id", ignoreDuplicates: false }
       );
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
       report.push(`Contoh dokumen ${record.contractId} tersedia untuk ${acc.email}.`);

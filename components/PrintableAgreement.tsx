@@ -72,18 +72,6 @@ export function PrintableAgreement({ agreement, backHref, backLabel }: Printable
         </button>
       </div>
 
-      {/* Tips Cetak Rapi (Hidden in Print) */}
-      <div className="max-w-4xl mx-auto mb-5 px-4 no-print">
-        <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 flex items-center justify-between gap-3 shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-base flex-shrink-0">💡</span>
-            <span>
-              <strong>Tips Cetak PDF Rapi:</strong> Pada jendela cetak browser, gunakan <strong>Margins: Default</strong> (atau Standar) dan centang <strong>Background graphics</strong> agar format, warna status, dan e-Materai tercetak sempurna.
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* A4 Sheet Paper Simulation */}
       <div className="max-w-4xl mx-auto bg-white p-8 sm:p-14 shadow-md border border-slate-200 rounded-2xl print-sheet print:rounded-none print:border-0 print:shadow-none print:max-w-none">
         <table className="w-full border-collapse border-0 print:table">
