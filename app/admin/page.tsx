@@ -19,6 +19,7 @@ import {
   History,
   CreditCard,
   Star,
+  Trash2,
 } from "lucide-react";
 import { isAdmin, useSession } from "@/lib/auth";
 import {
@@ -32,6 +33,7 @@ import {
   adminModerateAgreement,
   adminUpdateUserCredits,
   adminUpdateUserPlan,
+  adminDeleteUser,
   AdminPlatformStats,
   AdminUserView,
   errorMessage,
@@ -184,6 +186,36 @@ export default function AdminPage() {
     await adminUpdateUserCredits(u.id, u.credits + amount);
     showNotification(`Kredit ${u.fullName} berhasil ditambah +${amount} kredit.`);
     loadAdminData();
+  };
+
+  const handleDeleteUser = (u: AdminUserView) => {
+    showConfirm({
+      title: "Hapus Pengguna Permanen",
+      description: (
+        <div className="space-y-2">
+          <p>
+            Apakah Anda yakin ingin menghapus akun pengguna <strong>{u.fullName}</strong> ({u.email})?
+          </p>
+          <p className="text-xs text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+            Perhatian: Tindakan ini tidak dapat dibatalkan. Akun login, profil, seluruh draf &amp; dokumen kesepakatan, serta riwayat pesanan milik pengguna ini akan dihapus secara permanen dari basis data.
+          </p>
+        </div>
+      ),
+      type: "danger",
+      confirmText: "Ya, Hapus Akun",
+      onConfirm: async () => {
+        setDialogState((prev) => ({ ...prev, isLoading: true }));
+        try {
+          await adminDeleteUser(u.id);
+          showNotification(`Pengguna ${u.fullName} (${u.email}) berhasil dihapus.`);
+          loadAdminData();
+        } catch (err) {
+          showNotification(`Gagal menghapus pengguna: ${errorMessage(err)}`);
+        } finally {
+          closeDialog();
+        }
+      },
+    });
   };
 
   const handleModerate = (agreementId: string, action: "cancel" | "delete") => {
@@ -476,6 +508,16 @@ export default function AdminPage() {
                         <button onClick={() => handleAddCredits(u, 3)} className="btn btn-secondary btn-sm" title="Tambah 3 kredit proyek">
                           +3 Kredit
                         </button>
+                        {u.id !== user.id && (
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            className="btn btn-ghost btn-sm text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            title="Hapus akun pengguna secara permanen"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Hapus
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

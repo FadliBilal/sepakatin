@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { errorMessage, getAccountUsage, getAgreements } from "@/lib/store";
 import { AgreementRecord } from "@/lib/types";
@@ -38,21 +39,26 @@ function Dashboard({ user }: { user: SessionUser }) {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [copyFailedUrl, setCopyFailedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [buyPlanModal, setBuyPlanModal] = useState<PaymentPackageType | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [list, u] = await Promise.all([getAgreements(), getAccountUsage()]);
-        setAgreements(list);
-        setUsage(u);
-      } catch (err) {
-        setLoadError(errorMessage(err));
-      } finally {
-        setIsLoading(false);
-      }
+  async function loadData(quiet = false) {
+    if (!quiet) setIsLoading(true);
+    else setIsRefreshing(true);
+    try {
+      const [list, u] = await Promise.all([getAgreements(), getAccountUsage()]);
+      setAgreements(list);
+      setUsage(u);
+    } catch (err) {
+      setLoadError(errorMessage(err));
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
+  }
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -83,9 +89,9 @@ function Dashboard({ user }: { user: SessionUser }) {
     ? "Memuat..."
     : isPro
     ? usage.planExpiresAt
-      ? `Aktif sampai ${formatDateID(usage.planExpiresAt)}`
-      : "Kesepakatan tanpa batas"
-    : `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan Gratis aktif · ${usage.credits} kredit`;
+      ? `Aktif sampai ${formatDateID(usage.planExpiresAt)} · ${usage.credits} kredit proyek`
+      : `Akses tanpa batas · Tersedia ${usage.credits} kredit proyek`
+    : `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif · ${usage.credits} kredit proyek`;
 
   const stats = [
     { icon: Wallet, label: "Total nilai proyek", value: formatCurrencyIDR(totalValue), note: `${counted.length} proyek tercatat`, color: "text-brand-600 bg-brand-50" },
@@ -98,14 +104,45 @@ function Dashboard({ user }: { user: SessionUser }) {
     <div className="container-page py-10">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-slate-200">
         <div>
-          <p className="kicker">Halo, {firstName}!</p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <p className="kicker">Halo, {firstName}!</p>
+            {usage && (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                    isPro
+                      ? "bg-brand-50 text-brand-700 border border-brand-200"
+                      : "bg-slate-100 text-slate-700 border border-slate-200"
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 text-brand-600" />
+                  {isPro ? "Paket Pro" : "Paket Gratis"}
+                </span>
+                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  {usage.credits} Kredit Proyek
+                </span>
+              </div>
+            )}
+          </div>
           <h1 className="page-title mt-1">Kesepakatan Saya</h1>
           <p className="text-sm text-slate-500 mt-1">Pantau semua proyek dan status persetujuannya di sini.</p>
         </div>
-        <Link href="/agreements/new" className="btn btn-primary">
-          <Plus className="w-4 h-4" />
-          Buat Kesepakatan Baru
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => loadData(true)}
+            disabled={isRefreshing}
+            className="btn btn-secondary btn-sm"
+            title="Segarkan data profil & kesepakatan terbaru"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-brand-600" : ""}`} />
+            Segarkan
+          </button>
+          <Link href="/agreements/new" className="btn btn-primary">
+            <Plus className="w-4 h-4" />
+            Buat Kesepakatan Baru
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-8">

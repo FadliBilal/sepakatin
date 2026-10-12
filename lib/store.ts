@@ -682,6 +682,18 @@ export async function adminUpdateUserCredits(userId: string, credits: number): P
   updateLocalAccount(userId, { credits });
 }
 
+export async function adminDeleteUser(userId: string): Promise<void> {
+  if (isSupabaseConfigured) {
+    await api("/api/admin", {
+      method: "DELETE",
+      body: JSON.stringify({ action: "deleteUser", userId }),
+    });
+    return;
+  }
+  const list = readRegisteredUsers().filter((u) => u.id !== userId);
+  localStorage.setItem("sepakatin_users_v2", JSON.stringify(list));
+}
+
 export async function adminGetAllAgreements(): Promise<AgreementRecord[]> {
   if (isSupabaseConfigured) {
     try {

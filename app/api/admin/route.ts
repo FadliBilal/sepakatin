@@ -17,7 +17,7 @@ async function requireAdmin(req: Request) {
 async function logAdminAction(params: {
   adminId: string;
   adminEmail: string;
-  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT";
+  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT" | "DELETE_USER";
   targetType: "USER" | "AGREEMENT";
   targetId: string;
   details: Record<string, unknown>;
@@ -237,9 +237,36 @@ export async function DELETE(req: Request) {
   return handle(async () => {
     const { user, profile } = await requireAdmin(req);
     const db = getAdmin();
-    const body = await readJson<{ action: string; agreementId: string }>(req);
+    const body = await readJson<{ action: string; agreementId?: string; userId?: string }>(req);
 
-    if (body.action === "cancel") {
+    if (body.action === "deleteUser" && body.userId) {
+      if (body.userId === user.id) {
+        throw new AgreementError("Anda tidak dapat menghapus akun administrator Anda sendiri.", 400);
+      }
+
+      const { data: targetProfile } = await db.from("profiles").select("email").eq("id", body.userId).maybeSingle();
+      if (targetProfile && isAdminEmail(targetProfile.email)) {
+        throw new AgreementError("Akun sesama administrator tidak dapat dihapus.", 403);
+      }
+
+      // Hapus user di Supabase Auth (secara otomatis cascade ke profiles, agreements, dsb.)
+      const { error: deleteAuthError } = await db.auth.admin.deleteUser(body.userId);
+      if (deleteAuthError) throw deleteAuthError;
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "DELETE_USER",
+        targetType: "USER",
+        targetId: body.userId,
+        details: { targetEmail: targetProfile?.email || "unknown" },
+        req,
+      });
+
+      return ok({ success: true, message: "Pengguna berhasil dihapus secara permanen." });
+    }
+
+    if (body.action === "cancel" && body.agreementId) {
       const { error } = await db.from("agreements").update({ status: "CANCELLED", updated_at: new Date().toISOString() }).eq("id", body.agreementId);
       if (error) throw error;
 
@@ -256,7 +283,7 @@ export async function DELETE(req: Request) {
       return ok({ success: true, message: "Kesepakatan berhasil dibatalkan." });
     }
 
-    if (body.action === "delete") {
+    if (body.action === "delete" && body.agreementId) {
       const { error } = await db.from("agreements").delete().eq("id", body.agreementId);
       if (error) throw error;
 

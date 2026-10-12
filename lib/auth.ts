@@ -401,13 +401,17 @@ export async function logout() {
 }
 
 /** Hook untuk membaca pengguna yang sedang masuk. `ready` = sudah selesai dicek. */
-export function useSession(): { user: SessionUser | null; ready: boolean } {
-  const [state, setState] = useState<{ user: SessionUser | null; ready: boolean }>({ user: null, ready: false });
+export function useSession(): { user: SessionUser | null; ready: boolean; usage?: AccountUsage | null } {
+  const [state, setState] = useState<{ user: SessionUser | null; ready: boolean; usage?: AccountUsage | null }>({
+    user: null,
+    ready: false,
+    usage: null,
+  });
 
   useEffect(() => {
     const sync = () => {
-      if (isSupabaseConfigured) setState({ user: remoteUser, ready: remoteReady });
-      else setState({ user: getLocalSession(), ready: true });
+      if (isSupabaseConfigured) setState({ user: remoteUser, ready: remoteReady, usage: remoteUsage });
+      else setState({ user: getLocalSession(), ready: true, usage: null });
     };
     initRemote();
     sync();

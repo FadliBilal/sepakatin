@@ -10,7 +10,7 @@ import { isAdmin, logout, useSession } from "@/lib/auth";
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, ready } = useSession();
+  const { user, ready, usage } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const admin = isAdmin(user);
@@ -73,7 +73,20 @@ export function Navbar() {
                   {initials}
                 </span>
                 <div className="leading-tight hidden lg:block">
-                  <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                    {usage && (
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          usage.plan === "pro"
+                            ? "bg-brand-50 text-brand-700 border border-brand-200"
+                            : "bg-slate-100 text-slate-600 border border-slate-200"
+                        }`}
+                      >
+                        {usage.plan === "pro" ? "PRO" : `${usage.credits} Kredit`}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">{user.email}</p>
                 </div>
                 <button
@@ -117,7 +130,20 @@ export function Navbar() {
                 {initials}
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                  {usage && (
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        usage.plan === "pro"
+                          ? "bg-brand-50 text-brand-700 border border-brand-200"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                      }`}
+                    >
+                      {usage.plan === "pro" ? "PRO" : `${usage.credits} Kredit`}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-slate-500">{user.email}</p>
               </div>
             </div>
