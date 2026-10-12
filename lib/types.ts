@@ -263,7 +263,7 @@ export interface AdminAuditLogItem {
   id: string;
   adminId: string;
   adminEmail: string;
-  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT";
+  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT" | "DELETE_USER";
   targetType: "USER" | "AGREEMENT";
   targetId: string;
   details: Record<string, unknown>;
