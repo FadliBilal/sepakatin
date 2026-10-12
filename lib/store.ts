@@ -13,9 +13,13 @@ import { generateContractId } from "./crypto";
 import { AccountUsage, FREE_RULES, isActiveStatus } from "./plans";
 import { isSupabaseConfigured } from "./supabase";
 import { getAccessToken, getCachedRemoteUsage, getSession, localAccounts, refreshAccount, updateLocalAccount } from "./auth";
-import { buildSealedDemoAgreement } from "./demo-data";
 import { DEMO_ACCOUNTS } from "./demo-accounts";
 import { saveLocalDocument, getLocalDocument, removeLocalDocument } from "./local-storage-db";
+
+async function loadDemoAgreement(userId: string): Promise<AgreementRecord> {
+  const { buildSealedDemoAgreement } = await import("./demo-data");
+  return buildSealedDemoAgreement(userId);
+}
 
 export type { OwnerAction, ClientAction };
 
@@ -66,7 +70,7 @@ async function readLocal(): Promise<AgreementRecord[]> {
     // data rusak → mulai ulang dari contoh
   }
   const fadli = DEMO_ACCOUNTS.find((a) => a.hasSampleAgreement);
-  const seed = fadli ? [await buildSealedDemoAgreement(fadli.id)] : [];
+  const seed = fadli ? [await loadDemoAgreement(fadli.id)] : [];
   writeLocal(seed);
   return seed;
 }
@@ -172,7 +176,7 @@ export async function getAgreement(id: string): Promise<AgreementRecord | null> 
       return (await api<{ agreement: AgreementRecord }>(`/api/agreements/${encodeURIComponent(id)}`)).agreement;
     } catch (err) {
       if (err instanceof StoreError && err.status === 404) {
-        if (id === "agr_default_001") return buildSealedDemoAgreement("usr_freelancer_fadli");
+        if (id === "agr_default_001") return await loadDemoAgreement("usr_freelancer_fadli");
         return null;
       }
       throw err;
@@ -183,7 +187,7 @@ export async function getAgreement(id: string): Promise<AgreementRecord | null> 
     const list = await readLocal();
     const found = list.find((a) => a.id === "agr_default_001");
     if (found) return found;
-    return buildSealedDemoAgreement("usr_freelancer_fadli");
+    return await loadDemoAgreement("usr_freelancer_fadli");
   }
   if (!user) return null;
   let found = (await readLocal()).find((a) => a.id === id && a.ownerId === user.id) ?? null;

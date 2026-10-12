@@ -15,9 +15,13 @@ export async function GET(req: Request, { params }: { params: { contractId: stri
       );
     }
     const record = await getByContractId(params.contractId);
-    return ok({
+    const res = ok({
       verification: await toVerificationData(record),
     });
+    if (["AGREED", "ACTIVE", "COMPLETED"].includes(record.status)) {
+      res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=600");
+    }
+    return res;
   });
 }
 

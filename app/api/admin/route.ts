@@ -60,10 +60,18 @@ export async function GET(req: Request) {
 
     const profiles = profilesRes.data || [];
     const agreementsRows = agreementsRes.data || [];
-    const agreements: AgreementRecord[] = agreementsRows.map((r: { record: AgreementRecord; status: string }) => ({
-      ...r.record,
-      status: r.status as AgreementRecord["status"],
-    }));
+    const agreements: AgreementRecord[] = agreementsRows.map((r: { record: AgreementRecord; status: string }) => {
+      const rec = r.record;
+      return {
+        ...rec,
+        status: r.status as AgreementRecord["status"],
+        // Optimasi: Kosongkan string base64 berat dari list admin agar respons JSON tetap super kencang & ringan
+        signatures: (rec.signatures || []).map((s) => ({ ...s, signatureDataUrl: "" })),
+        ematerai: rec.ematerai ? { ...rec.ematerai, imageUrl: "" } : undefined,
+        emateraiList: (rec.emateraiList || []).map((e) => ({ ...e, imageUrl: "" })),
+        stampedDocuments: (rec.stampedDocuments || []).map((d) => ({ ...d, fileUrl: "" })),
+      };
+    });
 
     const agreed = agreements.filter((a) => a.status === "AGREED" || a.status === "ACTIVE" || a.status === "COMPLETED").length;
     const pending = agreements.filter(
