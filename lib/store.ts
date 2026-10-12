@@ -690,8 +690,11 @@ export async function adminDeleteUser(userId: string): Promise<void> {
     });
     return;
   }
-  const list = readRegisteredUsers().filter((u) => u.id !== userId);
-  localStorage.setItem("sepakatin_users_v2", JSON.stringify(list));
+  try {
+    const raw = localStorage.getItem("sepakatin_users_v2");
+    const list = raw ? JSON.parse(raw) : [];
+    localStorage.setItem("sepakatin_users_v2", JSON.stringify(list.filter((u: { id: string }) => u.id !== userId)));
+  } catch {}
 }
 
 export async function adminGetAllAgreements(): Promise<AgreementRecord[]> {
