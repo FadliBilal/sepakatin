@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Sepakatin",
   },
   description:
-    "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan e-Materai dan tanda tangan digital sah.",
+    "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan tanda tangan digital sah dan verifikasi resmi.",
   keywords: [
     "sepakatin",
     "kesepakatan kerja",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Sepakatin — Kesepakatan Kerja Freelancer yang Jelas & Aman",
     description:
-      "Ubah deal di chat WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan e-Materai dan tanda tangan online.",
+      "Ubah deal di chat WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan tanda tangan digital sah dan verifikasi resmi.",
     url: "https://sepakatin.id",
     siteName: "Sepakatin",
     images: [
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Sepakatin — Kesepakatan Kerja Freelancer yang Jelas & Aman",
     description:
-      "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi dengan e-Materai dan tanda tangan online.",
+      "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi dengan tanda tangan digital sah dan verifikasi resmi.",
     images: ["/icon.png"],
   },
   robots: {

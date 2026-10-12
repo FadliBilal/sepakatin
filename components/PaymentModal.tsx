@@ -10,9 +10,12 @@ import {
   AlertCircle,
   Zap,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
 import { PaymentPackageType } from "@/lib/types";
 import { formatCurrencyIDR } from "@/lib/crypto";
+import { isAdmin, useSession } from "@/lib/auth";
+import { whatsappLink } from "@/lib/contact";
 
 export interface PaymentModalProps {
   isOpen: boolean;
@@ -31,6 +34,7 @@ interface CheckoutData {
 }
 
 export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: PaymentModalProps) {
+  const { user } = useSession();
   const [step, setStep] = useState<"loading" | "ready" | "simulating" | "success" | "error">("loading");
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -189,24 +193,40 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
               )}
             </div>
 
-            {/* Mode Sandbox Tester / Demo */}
+            {/* Mode Sandbox Tester / WhatsApp Activation */}
             {checkoutData.isSandbox && (
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 space-y-2 text-xs">
-                <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <Zap className="w-4 h-4 text-amber-600" />
-                  Mode Sandbox / Simulasi Uji Coba
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs text-left">
+                <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                  <Zap className="w-4 h-4 text-brand-600" />
+                  Aktivasi Instan via WhatsApp
                 </div>
-                <p className="text-amber-800 text-[11px] leading-relaxed">
-                  API Key Mayar live belum dipasang di environment. Anda dapat menguji alur aktivasi instan dengan tombol simulasi di bawah:
+                <p className="text-slate-600 text-[11px] leading-relaxed">
+                  Gerbang pembayaran QRIS otomatis sedang dalam proses aktivasi KYC merchant. Anda dapat melakukan aktivasi instan untuk <strong>{packageName}</strong> ({formatCurrencyIDR(packagePrice)}) langsung melalui WhatsApp resmi kami:
                 </p>
-                <button
-                  type="button"
-                  onClick={handleSimulatePayment}
-                  className="btn btn-primary btn-sm w-full text-xs bg-amber-600 hover:bg-amber-700 text-white"
+                <a
+                  href={whatsappLink(
+                    `Halo Admin Sepakatin, saya ingin aktivasi ${packageName} (${formatCurrencyIDR(packagePrice)}) dengan Order ID: ${checkoutData.orderId}. Mohon info transfer rekening / QRIS manual.`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-whatsapp btn-sm w-full text-xs font-semibold flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Simulasikan Pembayaran Berhasil
-                </button>
+                  <MessageCircle className="w-4 h-4" />
+                  Konfirmasi &amp; Aktivasi via WhatsApp
+                </a>
+
+                {user && isAdmin(user) && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <button
+                      type="button"
+                      onClick={handleSimulatePayment}
+                      className="btn btn-secondary btn-sm w-full text-xs text-amber-800 border-amber-300 hover:bg-amber-50"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      [Khusus Admin] Uji Aktivasi Simulasi
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

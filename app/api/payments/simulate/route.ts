@@ -1,4 +1,4 @@
-import { handle, ok, requireUser, getAdmin } from "@/lib/server/repo";
+import { handle, ok, requireUser, getAdmin, isAdminEmail } from "@/lib/server/repo";
 import { sendTransactionalEmail } from "@/lib/server/notifications";
 import { AgreementError } from "@/lib/agreement-logic";
 
@@ -7,10 +7,15 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser(req);
+    const userIsAdmin = isAdminEmail(user.email);
 
-    if (process.env.NODE_ENV === "production" && process.env.ALLOW_PAYMENT_SIMULATION !== "true") {
+    if (
+      process.env.NODE_ENV === "production" &&
+      process.env.ALLOW_PAYMENT_SIMULATION !== "true" &&
+      !userIsAdmin
+    ) {
       throw new AgreementError(
-        "Simulasi pembayaran sandbox dinonaktifkan di lingkungan produksi demi keamanan transaksi.",
+        "Simulasi pembayaran otomatis sandbox di lingkungan produksi dinonaktifkan demi keamanan transaksi. Silakan hubungi admin via WhatsApp untuk aktivasi paket Anda.",
         403,
         "SIMULATION_DISABLED"
       );

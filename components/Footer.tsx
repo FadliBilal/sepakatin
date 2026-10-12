@@ -45,11 +45,6 @@ export function Footer() {
                   Tim Pengembang
                 </Link>
               </li>
-              <li>
-                <Link href="/admin" className="hover:text-brand-600 transition-colors text-xs text-slate-400 hover:text-brand-600">
-                  Panel Admin
-                </Link>
-              </li>
             </ul>
           </div>
 

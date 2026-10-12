@@ -49,7 +49,7 @@ export default function HomePage() {
   const solutions = [
     { title: "Satu link, semua jelas", desc: "Tertulis rapi dalam satu dokumen." },
     { title: "Disetujui kedua pihak", desc: "Tiap versi dokumen yang disetujui." },
-    { title: "e-Materai & tanda tangan", desc: "Profesional dan legal." },
+    { title: "Tanda tangan digital sah", desc: "Kekuatan hukum mengikat & profesional." },
     { title: "Transparan", desc: "Memiliki riwayat perubahan yang jelas." },
   ];
 
@@ -100,8 +100,8 @@ export default function HomePage() {
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
               Ubah obrolan WhatsApp menjadi surat kesepakatan kerja yang rapi: apa yang dikerjakan,
-              berapa kali revisi, kapan dibayar, lengkap dengan <strong className="text-slate-900">e-Materai
-              dan tanda tangan online</strong>.
+              berapa kali revisi, kapan dibayar, lengkap dengan <strong className="text-slate-900">tanda tangan digital sah
+              dan verifikasi resmi</strong>.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
