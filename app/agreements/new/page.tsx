@@ -956,74 +956,107 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           </div>
         </FormSection>
 
-        <section className="card p-6 sm:p-7 space-y-4">
-          <div className="flex items-start gap-3">
-            <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+        {isPro ? (
+          <div className="card p-5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-200 flex items-center gap-3.5">
+            <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
               <Sparkles className="w-4 h-4" />
             </span>
             <div>
-              <h2 className="card-title">Pilihan Paket Kesepakatan</h2>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {!usage
-                  ? "Memeriksa kuota akun Anda..."
-                  : isPro
-                  ? "Akun Anda Pro: semua kesepakatan otomatis berfitur lengkap (2 e-Materai, tanda tangan digital, addendum revisi tanpa batas)."
-                  : "Akun Anda berstatus Gratis dengan saldo kredit. Pilih jenis kesepakatan yang ingin Anda terbitkan:"}
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-emerald-950">Status: Langganan Pro Aktif</h3>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  Fitur Resmi Penuh
+                </span>
+              </div>
+              <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed">
+                Dokumen ini otomatis berfitur resmi lengkap: Tanda Tangan Digital Resmi, bersih tanpa watermark, pengunci batas revisi, dan riwayat addendum tanpa batas.
               </p>
             </div>
           </div>
-
-          {usage && !isPro && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                {
-                  credit: false,
-                  title: "Gratis (Rp0)",
-                  badge: null,
-                  note: `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan Gratis aktif`,
-                  features: "Draf teks standar, persetujuan online dasar, tanpa e-Materai resmi.",
-                  disabled: freeFull,
-                },
-                {
-                  credit: true,
-                  title: "Per Proyek (Pakai 1 Kredit)",
-                  badge: "Kekuatan Hukum Penuh",
-                  note: `Sisa saldo ${usage.credits} kredit proyek`,
-                  features: "2 e-Materai resmi (Freelancer & Klien), tanda tangan online, & tiket addendum revisi berbayar.",
-                  disabled: usage.credits < 1,
-                },
-              ].map((opt) => (
-                <button
-                  type="button"
-                  key={opt.title}
-                  disabled={opt.disabled}
-                  onClick={() => setUseCredit(opt.credit)}
-                  className={`text-left p-4 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                    useCredit === opt.credit ? "border-brand-600 bg-brand-50/60 ring-4 ring-brand-600/10" : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-bold text-slate-900">{opt.title}</p>
-                    {opt.badge && (
-                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
-                        {opt.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs font-medium text-brand-700 mt-1">{opt.note}</p>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.features}</p>
-                </button>
-              ))}
+        ) : (
+          <section className="card p-6 sm:p-7 space-y-4">
+            <div className="flex items-start gap-3">
+              <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </span>
+              <div>
+                <h2 className="card-title">Tipe Penerbitan Kesepakatan</h2>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Pilih apakah kesepakatan ini diterbitkan dengan kuota Gratis atau menggunakan saldo kredit Per Proyek berfitur resmi:
+                </p>
+              </div>
             </div>
-          )}
 
-          {blocked && (
-            <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              Kuota paket Gratis sudah penuh dan kredit Per Proyek habis. Selesaikan atau batalkan kesepakatan lama di
-              dashboard, atau <Link href="/#harga" className="font-semibold underline">tambah kredit / upgrade ke Pro</Link>.
-            </p>
-          )}
-        </section>
+            {usage && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {[
+                  {
+                    credit: false,
+                    title: "Paket Gratis (Rp0)",
+                    badge: null,
+                    note: `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif`,
+                    features: [
+                      "Draf standar & konfirmasi centang online",
+                      "Maksimal 1 kali revisi draf",
+                      "PDF memuat watermark Sepakatin",
+                    ],
+                    disabled: freeFull,
+                  },
+                  {
+                    credit: true,
+                    title: "Per Proyek (Pakai 1 Kredit)",
+                    badge: "Fitur Resmi Penuh",
+                    note: `Sisa saldo: ${usage.credits} kredit proyek`,
+                    features: [
+                      "Tanda Tangan Digital Resmi (gores layar)",
+                      "Dokumen bersih 100% tanpa watermark",
+                      "Pengunci batas revisi & anti-revisi liar",
+                      "Format 2 salinan resmi & verifikasi SHA-256",
+                    ],
+                    disabled: usage.credits < 1,
+                  },
+                ].map((opt) => (
+                  <button
+                    type="button"
+                    key={opt.title}
+                    disabled={opt.disabled}
+                    onClick={() => setUseCredit(opt.credit)}
+                    className={`text-left p-4 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      useCredit === opt.credit
+                        ? "border-brand-600 bg-brand-50/60 ring-4 ring-brand-600/10 shadow-xs"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-bold text-slate-900">{opt.title}</p>
+                      {opt.badge && (
+                        <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
+                          {opt.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-brand-700 mt-1">{opt.note}</p>
+                    <ul className="mt-2.5 space-y-1 text-xs text-slate-600">
+                      {opt.features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-1.5">
+                          <span className="text-brand-600 font-bold">•</span>
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {blocked && (
+              <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                Kuota paket Gratis sudah penuh dan kredit Per Proyek habis. Selesaikan atau batalkan kesepakatan lama di
+                dashboard, atau <Link href="/#harga" className="font-semibold underline">tambah kredit / upgrade ke Pro</Link>.
+              </p>
+            )}
+          </section>
+        )}
 
         {submitError && (
           <p className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">{submitError}</p>

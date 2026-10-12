@@ -27,7 +27,7 @@ export function isActiveStatus(status: AgreementStatus): boolean {
   return !CLOSED_STATUSES.includes(status);
 }
 
-/** Kesepakatan berbayar (Per Proyek / Pro) membuka e-Materai, tanda tangan, dan permintaan perubahan klien. */
+/** Kesepakatan berbayar (Per Proyek / Pro) membuka tanda tangan digital, revisi tanpa batas, dan verifikasi resmi. */
 export function isPremiumPlan(plan: PlanId | undefined): boolean {
   return plan === "per-proyek" || plan === "pro";
 }
@@ -54,32 +54,36 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: "gratis",
     name: "Gratis",
-    tagline: "Untuk mencoba",
+    tagline: "Draf Santai & Coba-Coba",
     price: "Rp0",
     period: "selamanya",
-    description: "Cocok untuk freelancer yang ingin merapikan kesepakatan proyek pertamanya.",
+    description: "Cocok untuk proyek santai atau teman yang butuh rekap kesepakatan tertulis agar tidak lupa.",
     features: [
-      `Maksimal ${FREE_RULES.maxActiveAgreements} kesepakatan aktif`,
-      "Persetujuan online oleh kedua pihak",
-      `Ubah isi kesepakatan ${FREE_RULES.maxVersions - 1} kali`,
-      "Nomor dokumen & cek keaslian",
-      "Cetak atau simpan sebagai PDF",
+      `Maksimal ${FREE_RULES.maxActiveAgreements} kesepakatan aktif bersamaan`,
+      "Format kesepakatan sah (KUHPerdata Pasal 1320)",
+      "Persetujuan online dasar (konfirmasi centang via tautan)",
+      `Maksimal ${FREE_RULES.maxVersions} versi draf (1 kali revisi)`,
+      "Nomor seri dokumen & cek keaslian publik",
+      "Cetak atau simpan draf PDF (tanda air Sepakatin)",
     ],
     cta: "Daftar Gratis",
   },
   {
     id: "per-proyek",
     name: "Per Proyek",
-    tagline: "Bayar sekali",
+    tagline: "Kontrak Resmi 1 Proyek",
     price: "Rp19.000",
-    period: "per kesepakatan",
-    description: "Untuk freelancer yang proyeknya datang sesekali, tanpa biaya bulanan.",
+    period: "sekali bayar",
+    description: "Untuk mengamankan proyek nyata tanpa komitmen bulanan. Kredit tidak pernah hangus sampai dipakai.",
     features: [
       "Semua fitur paket Gratis",
-      "Tidak dihitung dalam batas paket Gratis",
-      "Tempel e-Materai & tanda tangan online",
-      "Riwayat perubahan tanpa batas",
-      "Klien bisa minta perubahan langsung",
+      "Tidak memotong kuota paket Gratis (1 kredit = 1 proyek)",
+      "Tanda Tangan Digital Resmi (gores jari di layar HP/laptop)",
+      "Dokumen PDF bersih 100% tanpa tanda air (watermark)",
+      "Pengunci batas revisi & biaya revisi tambahan (anti-revisi liar)",
+      "Klien bisa ajukan catatan perubahan langsung via tautan",
+      "Format siap cetak 2 salinan resmi (Freelancer & Klien)",
+      "QR Code & verifikasi integritas kriptografis SHA-256",
     ],
     cta: "Pesan Kredit",
     highlighted: true,
@@ -87,14 +91,16 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: "pro",
     name: "Pro",
-    tagline: "Langganan bulanan",
+    tagline: "Langganan Freelancer & Studio",
     price: "Rp49.000",
     period: "per bulan",
-    description: "Untuk freelancer penuh waktu dan studio kreatif dengan banyak proyek.",
+    description: "Untuk freelancer penuh waktu dan studio kreatif dengan banyak klien. Bebas terbitkan kontrak sepuasnya.",
     features: [
-      "Kesepakatan tanpa batas",
-      "Semua fitur paket Per Proyek di setiap kesepakatan",
-      "Bantuan prioritas",
+      "Kesepakatan tanpa batas (Unlimited projects sebulan penuh)",
+      "Semua fitur resmi paket Per Proyek di setiap dokumen",
+      "Dukungan penerbitan Addendum (perjanjian lingkup tambahan)",
+      "Riwayat perubahan dan komparasi versi tak terbatas",
+      "Arsip digital permanen & bantuan operasional prioritas",
     ],
     cta: "Langganan Pro",
   },
