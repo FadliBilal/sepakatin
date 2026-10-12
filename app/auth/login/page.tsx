@@ -7,13 +7,9 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
-  KeyRound,
   Lock,
   LogIn,
   Mail,
-  ShieldCheck,
-  Star,
-  UserCheck,
 } from "lucide-react";
 import { isAdmin, login, useSession } from "@/lib/auth";
 
@@ -53,12 +49,6 @@ export default function LoginPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const fillCredentials = (userValue: string, passValue: string) => {
-    setIdentifier(userValue);
-    setPassword(passValue);
-    setError("");
   };
 
   return (
@@ -156,55 +146,6 @@ export default function LoginPage() {
               {isSubmitting ? "Memverifikasi..." : "Masuk ke Akun"}
             </button>
           </form>
-
-          {/* Opsi Akses Cepat Akun Demo untuk Penilaian / Pengujian */}
-          <div className="pt-4 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-brand-600" />
-                Uji Coba Cepat (Akun Demo)
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">Klik untuk isi otomatis</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => fillCredentials("admin@sepakatin.id", "Admin12345!")}
-                className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 transition text-left group"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-brand-700">
-                  <ShieldCheck className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
-                  <span className="truncate">Admin</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Akses Penuh</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillCredentials("fadli@sepakatin.id", "Admin12345!")}
-                className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 transition text-left group"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-brand-700">
-                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
-                  <span className="truncate">Pro</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Ada Dokumen</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillCredentials("demo@sepakatin.id", "Admin12345!")}
-                className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-brand-50 hover:border-brand-300 transition text-left group"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-brand-700">
-                  <UserCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                  <span className="truncate">Gratis</span>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Kredit Baru</p>
-              </button>
-            </div>
-          </div>
 
           <div className="pt-4 border-t border-slate-100 text-center">
             <p className="text-xs sm:text-sm text-slate-600">
