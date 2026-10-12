@@ -1,20 +1,18 @@
-// ==============================================================================
-// Sepakatin — Akses database di server (service role). Semua aturan izin ada di sini.
-// ==============================================================================
-
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { AgreementError, buildNewAgreement } from "@/lib/agreement-logic";
 import { generateContractId } from "@/lib/crypto";
 import { AccountUsage, FREE_RULES, effectiveAccountPlan } from "@/lib/plans";
-import type { AgreementRecord, ContractContentJSON, PlanId } from "@/lib/types";
+import type { AgreementRecord, ContractContentJSON, PlanId, StampedDocumentRecord } from "@/lib/types";
 import { getAdmin } from "./supabase-admin";
+export { getAdmin };
 
 interface AgreementRow {
   id: string;
   owner_id: string;
   contract_id: string;
   review_token: string;
+  review_token_expires_at?: string | null;
   status: AgreementRecord["status"];
   plan: PlanId;
   record: AgreementRecord;
@@ -73,6 +71,22 @@ export async function requireUser(req: Request): Promise<User> {
   return data.user;
 }
 
+// Daftar email administrator dari server environment (fail-closed)
+export function adminEmails(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+export function isAdminEmail(email: string | null | undefined): boolean {
+  const normalized = (email || "").toLowerCase().trim();
+  if (!normalized) return false;
+  return adminEmails().has(normalized);
+}
+
 export async function getProfile(user: User): Promise<ProfileRow> {
   const db = getAdmin();
   const { data, error } = await db.from("profiles").select("*").eq("id", user.id).maybeSingle();
@@ -118,9 +132,30 @@ function toRecord(row: AgreementRow): AgreementRecord {
     ownerId: row.owner_id,
     contractId: row.contract_id,
     reviewToken: row.review_token,
+    reviewTokenExpiresAt: row.review_token_expires_at || row.record?.reviewTokenExpiresAt || undefined,
     status: row.status,
     plan: row.plan,
   };
+}
+
+// Payload detail: fileUrl dikosongkan agar payload tetap ringan
+export function toDetailItem(agr: AgreementRecord): AgreementRecord {
+  return {
+    ...agr,
+    stampedDocuments: (agr.stampedDocuments ?? []).map((d) => ({ ...d, fileUrl: "" })),
+  };
+}
+
+/** Berkas satu salinan bermeterai, diambil hanya saat benar-benar diunduh. */
+export function stampedDocumentOf(
+  agr: AgreementRecord,
+  copyType: "freelancer_copy" | "client_copy"
+): StampedDocumentRecord {
+  const doc = agr.stampedDocuments?.find((d) => d.copyType === copyType);
+  if (!doc || (!doc.fileUrl && !doc.storagePath)) {
+    throw new AgreementError("Berkas dokumen ini belum diunggah.", 404, "NOT_FOUND");
+  }
+  return doc;
 }
 
 /** Versi ringan untuk daftar di dashboard: gambar e-Materai, berkas bermeterai, & tanda tangan tidak ikut dikirim. */
@@ -160,6 +195,17 @@ export async function getOwned(id: string, ownerId: string): Promise<AgreementRe
 export async function getByToken(token: string): Promise<AgreementRecord> {
   const row = await findRow("review_token", token);
   if (!row) throw new AgreementError("Link tidak berlaku.", 404, "NOT_FOUND");
+  if (
+    row.review_token_expires_at &&
+    new Date(row.review_token_expires_at) < new Date() &&
+    !["AGREED", "ACTIVE", "COMPLETED"].includes(row.status)
+  ) {
+    throw new AgreementError(
+      "Tautan review ini telah kedaluwarsa (masa berlaku 14 hari). Silakan minta tautan baru kepada freelancer.",
+      410,
+      "TOKEN_EXPIRED"
+    );
+  }
   return toRecord(row);
 }
 
@@ -173,10 +219,7 @@ export async function getByContractId(contractId: string): Promise<AgreementReco
 // Tulis kesepakatan
 // ------------------------------------------------------------------------------
 
-/**
- * Membaca baris, menjalankan `change`, lalu menyimpan hanya jika tidak ada perubahan lain
- * di antaranya (optimistic locking). Diulang otomatis bila bertabrakan.
- */
+// Mutasi dokumen dengan optimistic locking (auto-retry)
 export async function mutate(
   column: "id" | "review_token",
   value: string,
@@ -190,7 +233,13 @@ export async function mutate(
     const updated = await change(toRecord(row), row.owner_id);
     const { data, error } = await db
       .from("agreements")
-      .update({ record: updated, status: updated.status, rev: row.rev + 1 })
+      .update({
+        record: updated,
+        status: updated.status,
+        review_token: updated.reviewToken,
+        review_token_expires_at: updated.reviewTokenExpiresAt || null,
+        rev: row.rev + 1,
+      })
       .eq("id", row.id)
       .eq("rev", row.rev)
       .select("id");
@@ -239,6 +288,7 @@ export async function createForUser(
         owner_id: user.id,
         contract_id: record.contractId,
         review_token: record.reviewToken,
+        review_token_expires_at: record.reviewTokenExpiresAt || null,
         status: record.status,
         plan: record.plan,
         record,
@@ -262,3 +312,124 @@ function freeLimitError() {
     "FREE_LIMIT"
   );
 }
+
+export async function deleteOwned(id: string, ownerId: string): Promise<void> {
+  const row = await findRow("id", id);
+  if (!row || row.owner_id !== ownerId) {
+    throw new AgreementError("Kesepakatan tidak ditemukan.", 404, "NOT_FOUND");
+  }
+  if (row.status !== "DRAFT") {
+    throw new AgreementError("Hanya kesepakatan berstatus Draf yang dapat dihapus.", 400);
+  }
+  const { error } = await getAdmin().from("agreements").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export interface SettlementResult {
+  success: boolean;
+  status: "SETTLED" | "ALREADY_PAID";
+  orderId: string;
+  userId: string;
+  userEmail: string;
+  packageType: string;
+  amount: number;
+}
+
+// Selesaikan transaksi pembayaran secara atomik
+export async function settlePaymentOrder(
+  orderId: string,
+  gatewayTxId?: string | null,
+  webhookPayload: Record<string, unknown> = {}
+): Promise<SettlementResult> {
+  const db = getAdmin();
+
+  // 1. Coba jalankan RPC settle_payment_order terlebih dahulu
+  try {
+    const { data, error } = await db.rpc("settle_payment_order", {
+      p_order_id: orderId,
+      p_gateway_tx_id: gatewayTxId || null,
+      p_webhook_payload: webhookPayload,
+    });
+
+    if (!error && data && data.success) {
+      return {
+        success: true,
+        status: data.status,
+        orderId: data.order_id,
+        userId: data.user_id,
+        userEmail: data.user_email,
+        packageType: data.package_type,
+        amount: Number(data.amount) || 0,
+      };
+    }
+  } catch (rpcErr) {
+    console.warn("RPC settle_payment_order fallback ke transaksi terpadu:", rpcErr);
+  }
+
+  // 2. Fallback jika RPC database belum diaplikasikan
+  const { data: order, error: orderErr } = await db
+    .from("payment_orders")
+    .select("*")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  if (orderErr) throw orderErr;
+  if (!order) throw new AgreementError("Pesanan pembayaran tidak ditemukan.", 404, "ORDER_NOT_FOUND");
+
+  if (order.status === "PAID") {
+    return {
+      success: true,
+      status: "ALREADY_PAID",
+      orderId: order.order_id,
+      userId: order.user_id,
+      userEmail: order.user_email,
+      packageType: order.package_type,
+      amount: Number(order.amount) || 0,
+    };
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateErr } = await db
+    .from("payment_orders")
+    .update({
+      status: "PAID",
+      paid_at: now,
+      gateway_transaction_id: gatewayTxId || order.gateway_transaction_id,
+      metadata: {
+        ...order.metadata,
+        webhook_payload: webhookPayload,
+      },
+      updated_at: now,
+    })
+    .eq("id", order.id);
+
+  if (updateErr) throw updateErr;
+
+  const { data: profile } = await db.from("profiles").select("*").eq("id", order.user_id).single();
+  if (profile) {
+    if (order.package_type === "credit_1") {
+      const currentCredits = Number(profile.project_credits) || 0;
+      await db
+        .from("profiles")
+        .update({ project_credits: currentCredits + 1, updated_at: now })
+        .eq("id", profile.id);
+    } else if (order.package_type === "pro_monthly") {
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await db
+        .from("profiles")
+        .update({ plan: "pro", plan_expires_at: expiresAt, updated_at: now })
+        .eq("id", profile.id);
+    }
+  }
+
+  return {
+    success: true,
+    status: "SETTLED",
+    orderId: order.order_id,
+    userId: order.user_id,
+    userEmail: order.user_email || profile?.email || "",
+    packageType: order.package_type,
+    amount: Number(order.amount) || 0,
+  };
+}
+

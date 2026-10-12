@@ -1,22 +1,46 @@
 import { AgreementError } from "@/lib/agreement-logic";
 import { getAdmin } from "@/lib/server/supabase-admin";
-import { getProfile, handle, ok, readJson, requireUser } from "@/lib/server/repo";
-import { AgreementRecord } from "@/lib/types";
+import { getProfile, handle, isAdminEmail, ok, readJson, requireUser, settlePaymentOrder } from "@/lib/server/repo";
+import { AgreementRecord, AdminAuditLogItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 async function requireAdmin(req: Request) {
   const user = await requireUser(req);
   const profile = await getProfile(user);
-  const isAdmin =
-    profile.skill?.toLowerCase() === "admin" ||
-    profile.email?.toLowerCase().startsWith("admin@") ||
-    profile.email?.toLowerCase() === "admin@sepakatin.id";
-
-  if (!isAdmin) {
+  if (!isAdminEmail(profile.email || user.email)) {
     throw new AgreementError("Hanya akun Administrator yang memiliki akses ke endpoint ini.", 403, "FORBIDDEN");
   }
   return { user, profile };
+}
+
+async function logAdminAction(params: {
+  adminId: string;
+  adminEmail: string;
+  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT";
+  targetType: "USER" | "AGREEMENT";
+  targetId: string;
+  details: Record<string, unknown>;
+  req: Request;
+}) {
+  try {
+    const forwarded = params.req.headers.get("x-forwarded-for") || "";
+    const ipAddress = (forwarded.split(",")[0] || params.req.headers.get("x-real-ip") || "").trim() || undefined;
+    const userAgent = params.req.headers.get("user-agent") || undefined;
+
+    await getAdmin().from("admin_audit_logs").insert({
+      admin_id: params.adminId,
+      admin_email: params.adminEmail,
+      action: params.action,
+      target_type: params.targetType,
+      target_id: params.targetId,
+      details: params.details,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+    });
+  } catch (err) {
+    console.warn("Gagal mencatat jejak audit admin ke database:", err);
+  }
 }
 
 export async function GET(req: Request) {
@@ -24,9 +48,11 @@ export async function GET(req: Request) {
     await requireAdmin(req);
     const db = getAdmin();
 
-    const [profilesRes, agreementsRes] = await Promise.all([
+    const [profilesRes, agreementsRes, auditRes, ordersRes] = await Promise.all([
       db.from("profiles").select("*").order("created_at", { ascending: false }),
       db.from("agreements").select("*").order("created_at", { ascending: false }),
+      db.from("admin_audit_logs").select("*").order("created_at", { ascending: false }).limit(50),
+      db.from("payment_orders").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
 
     if (profilesRes.error) throw profilesRes.error;
@@ -82,26 +108,125 @@ export async function GET(req: Request) {
       };
     });
 
-    return ok({ stats, users, agreements });
+    const auditLogs: AdminAuditLogItem[] = (auditRes.data || []).map((log: {
+      id: string;
+      admin_id: string;
+      admin_email: string;
+      action: AdminAuditLogItem["action"];
+      target_type: AdminAuditLogItem["targetType"];
+      target_id: string;
+      details: Record<string, unknown>;
+      ip_address?: string;
+      user_agent?: string;
+      created_at: string;
+    }) => ({
+      id: log.id,
+      adminId: log.admin_id,
+      adminEmail: log.admin_email,
+      action: log.action,
+      targetType: log.target_type,
+      targetId: log.target_id,
+      details: log.details || {},
+      ipAddress: log.ip_address,
+      userAgent: log.user_agent,
+      createdAt: log.created_at,
+    }));
+
+    const paymentOrders = (ordersRes.data || []).map((o: {
+      id: string;
+      order_id: string;
+      user_id: string;
+      user_email: string;
+      package_type: string;
+      amount: number;
+      payment_method: string;
+      payment_gateway: string;
+      status: string;
+      paid_at?: string;
+      created_at: string;
+    }) => ({
+      id: o.id,
+      orderId: o.order_id,
+      userId: o.user_id,
+      userEmail: o.user_email,
+      packageType: o.package_type,
+      amount: o.amount,
+      paymentMethod: o.payment_method,
+      paymentGateway: o.payment_gateway,
+      status: o.status,
+      paidAt: o.paid_at,
+      createdAt: o.created_at,
+    }));
+
+    return ok({ stats, users, agreements, auditLogs, paymentOrders });
   });
 }
 
 export async function PATCH(req: Request) {
   return handle(async () => {
-    await requireAdmin(req);
+    const { user, profile } = await requireAdmin(req);
     const db = getAdmin();
-    const body = await readJson<{ action: string; userId: string; plan?: string; credits?: number }>(req);
+    const body = await readJson<{
+      action: string;
+      userId?: string;
+      orderId?: string;
+      plan?: string;
+      credits?: number;
+    }>(req);
 
-    if (body.action === "updatePlan" && body.plan) {
+    if (body.action === "updatePlan" && body.userId && body.plan) {
       const { error } = await db.from("profiles").update({ plan: body.plan, updated_at: new Date().toISOString() }).eq("id", body.userId);
       if (error) throw error;
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "UPDATE_PLAN",
+        targetType: "USER",
+        targetId: body.userId,
+        details: { plan: body.plan },
+        req,
+      });
+
       return ok({ success: true, message: `Paket berhasil diubah menjadi ${body.plan}` });
     }
 
-    if (body.action === "updateCredits" && typeof body.credits === "number") {
+    if (body.action === "updateCredits" && body.userId && typeof body.credits === "number") {
       const { error } = await db.from("profiles").update({ project_credits: body.credits, updated_at: new Date().toISOString() }).eq("id", body.userId);
       if (error) throw error;
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "UPDATE_CREDITS",
+        targetType: "USER",
+        targetId: body.userId,
+        details: { credits: body.credits },
+        req,
+      });
+
       return ok({ success: true, message: `Kredit berhasil diubah menjadi ${body.credits}` });
+    }
+
+    if (body.action === "approveOrder" && body.orderId) {
+      const settlement = await settlePaymentOrder(body.orderId, "MANUAL_APPROVAL", { manual_admin_id: user.id });
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "UPDATE_CREDITS",
+        targetType: "USER",
+        targetId: settlement.userId,
+        details: { orderId: settlement.orderId, packageType: settlement.packageType, manualApproval: true },
+        req,
+      });
+
+      return ok({ success: true, message: `Pesanan ${settlement.orderId} berhasil diverifikasi manual.` });
+    }
+
+    if (body.action === "rejectOrder" && body.orderId) {
+      await db.from("payment_orders").update({ status: "FAILED", updated_at: new Date().toISOString() }).eq("order_id", body.orderId);
+      return ok({ success: true, message: `Pesanan ${body.orderId} telah ditolak.` });
     }
 
     throw new AgreementError("Aksi tidak valid.");
@@ -110,19 +235,41 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   return handle(async () => {
-    await requireAdmin(req);
+    const { user, profile } = await requireAdmin(req);
     const db = getAdmin();
     const body = await readJson<{ action: string; agreementId: string }>(req);
 
     if (body.action === "cancel") {
       const { error } = await db.from("agreements").update({ status: "CANCELLED", updated_at: new Date().toISOString() }).eq("id", body.agreementId);
       if (error) throw error;
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "CANCEL_AGREEMENT",
+        targetType: "AGREEMENT",
+        targetId: body.agreementId,
+        details: { status: "CANCELLED" },
+        req,
+      });
+
       return ok({ success: true, message: "Kesepakatan berhasil dibatalkan." });
     }
 
     if (body.action === "delete") {
       const { error } = await db.from("agreements").delete().eq("id", body.agreementId);
       if (error) throw error;
+
+      await logAdminAction({
+        adminId: user.id,
+        adminEmail: profile.email || user.email || "admin@sepakatin.id",
+        action: "DELETE_AGREEMENT",
+        targetType: "AGREEMENT",
+        targetId: body.agreementId,
+        details: { deleted: true },
+        req,
+      });
+
       return ok({ success: true, message: "Kesepakatan berhasil dihapus." });
     }
 

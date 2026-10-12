@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, Save, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, Send, Sparkles, ClipboardList } from "lucide-react";
 import { createAgreement, errorMessage, getAccountUsage } from "@/lib/store";
 import { AccountUsage } from "@/lib/plans";
 import { ContractContentJSON, MilestoneItem } from "@/lib/types";
 import { formatCurrencyIDR, generateContractId } from "@/lib/crypto";
 import { RequireAuth } from "@/components/RequireAuth";
 import { SessionUser } from "@/lib/auth";
+import { ModalDialog, ModalType } from "@/components/ModalDialog";
 
 export default function NewAgreementPage() {
   return <RequireAuth>{(user) => <NewAgreementForm user={user} />}</RequireAuth>;
@@ -38,6 +39,35 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const [usage, setUsage] = useState<AccountUsage | null>(null);
   const [useCredit, setUseCredit] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    type?: ModalType;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
+  const closeDialog = () => setDialogState((prev) => ({ ...prev, isOpen: false }));
+
+  const showAlert = ({
+    title,
+    description,
+    type = "warning",
+  }: {
+    title: string;
+    description: React.ReactNode;
+    type?: ModalType;
+  }) => {
+    setDialogState({
+      isOpen: true,
+      title,
+      description,
+      type,
+    });
+  };
 
   useEffect(() => {
     getAccountUsage()
@@ -127,7 +157,11 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const handleSubmit = async (e: React.FormEvent, sendDirectly: boolean) => {
     e.preventDefault();
     if (!projectName.trim() || !clientName.trim() || !clientEmail.trim()) {
-      alert("Mohon isi Nama Proyek, Nama Klien, dan Email Klien terlebih dahulu.");
+      showAlert({
+        title: "Lengkapi Data Wajib",
+        description: "Mohon isi Nama Proyek, Nama Klien, dan Email Klien terlebih dahulu sebelum menyimpan.",
+        type: "warning",
+      });
       return;
     }
 
@@ -424,7 +458,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
 
           <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 leading-relaxed space-y-1">
             <p className="font-semibold text-blue-950 flex items-center gap-1.5">
-              <span>📋</span> Prinsip Hukum Revisi di Sepakatin
+              <ClipboardList className="w-4 h-4 text-blue-700" /> Prinsip Hukum Revisi di Sepakatin
             </p>
             <p>
               Revisi selama masih dalam jatah (<strong>{revisionCount}x</strong>) cukup dicatat mandiri tanpa biaya &amp; tanpa perlu dokumen baru bermaterai.
@@ -546,6 +580,8 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           </div>
         </div>
       </form>
+
+      <ModalDialog onClose={closeDialog} {...dialogState} />
     </div>
   );
 }

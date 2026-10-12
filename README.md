@@ -86,17 +86,34 @@ flowchart LR
 
 ---
 
-## 👥 Akun Demo untuk Pengujian
+## 👥 Akun & Akses
 
-Aplikasi telah dilengkapi dengan **3 akun bawaan** untuk memudahkan penguji dan juri mencoba seluruh alur kerja dalam 1 klik:
+Sepakatin berjalan sebagai aplikasi produksi. **Tidak ada kredensial bawaan** di dalam kode
+maupun di halaman login — silakan daftar akun sendiri di `/auth/register`.
 
-| Peran Akun | Username / Email | Kata Sandi | Status Paket | Kegunaan Pengujian |
-| :--- | :--- | :--- | :---: | :--- |
-| **Freelancer Pro** | `fadli` / `fadli@sepakatin.id` | `sepakatin123` | **⭐ Pro** | Sudah memiliki contoh dokumen kesepakatan resmi (`SPK-2026-00124`) yang lengkap dengan e-Materai, tanda tangan, dan segel hash. |
-| **Freelancer Baru** | `demo` / `demo@sepakatin.id` | `demo1234` | **Gratis** (+3 kredit) | Akun kosong untuk menguji alur pembuatan kesepakatan baru dari awal hingga pengiriman ke klien. |
-| **Administrator** | `admin` / `admin@sepakatin.id` | `admin123` | **🛡️ Admin** | Akses penuh ke **Panel Admin (`/admin`)** untuk melihat analitik platform, memoderasi kontrak, dan mengubah paket pengguna. |
+### Administrator
 
-> 💡 *Di halaman login (`/auth/login`), terdapat tombol cepat **"Pakai"** untuk masing-masing akun di atas tanpa perlu mengetik manual.*
+Akses ke Panel Admin (`/admin`) ditentukan **hanya** lewat variabel lingkungan sisi server:
+
+```bash
+ADMIN_EMAILS=email-anda@domain.com
+```
+
+Ketentuan:
+
+- Akun administrator dibuat manual lewat dashboard Supabase dengan kata sandi yang kuat.
+  Jangan pernah menaruhnya di `lib/demo-accounts.ts` — berkas itu ikut terbaca publik.
+- Jangan memakai `NEXT_PUBLIC_ADMIN_EMAILS`. Nilai berawalan `NEXT_PUBLIC_` ikut terbundel
+  ke JavaScript yang bisa dibaca siapa pun, sehingga membocorkan email mana yang harus diserang.
+- Bila `ADMIN_EMAILS` kosong, **tidak ada** akun yang dianggap admin (aman secara bawaan).
+- Setiap permintaan ke `/api/admin` memverifikasi ulang hak akses di server. Menyembunyikan
+  menu di browser bukan pengaman.
+
+### Akun contoh untuk pengembangan lokal
+
+`lib/demo-accounts.ts` berisi akun contoh yang **hanya** dipakai saat Supabase belum
+dikonfigurasi (mode lokal) dan untuk menghasilkan dokumen contoh publik.
+Jangan pernah menjalankan `npm run seed:demo` terhadap database produksi.
 
 ---
 

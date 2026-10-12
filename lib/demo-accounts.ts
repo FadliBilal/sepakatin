@@ -1,12 +1,24 @@
 // ==============================================================================
-// Sepakatin — Akun demo (dipakai halaman login, mode lokal, dan seed Supabase)
+// Sepakatin — Akun contoh untuk mode lokal (tanpa Supabase) & dokumen contoh publik
 // ==============================================================================
+//
+// PENTING — JANGAN menambahkan akun administrator di sini.
+// Berkas ini ikut terbaca publik bila repositori dibuka, dan dipakai oleh
+// `npm run seed:demo`. Akun admin ditentukan lewat env `ADMIN_EMAILS` di server,
+// dan kata sandinya dibuat manual lewat dashboard Supabase.
+//
+// Berkas ini TIDAK memuat kata sandi. Isinya ikut terbundel ke JavaScript yang
+// dikirim ke browser, sehingga kata sandi apa pun di sini otomatis terbaca publik
+// dari situs yang sudah tayang — cukup dengan membuka DevTools.
+//
+// Untuk mode lokal, kata sandi diambil dari `NEXT_PUBLIC_LOCAL_DEMO_PASSWORD`
+// yang hanya diisi di berkas .env.local pengembang. Bila kosong, akun contoh
+// ini tidak bisa dipakai masuk sama sekali.
 
 export interface DemoAccount {
   id: string; // id untuk mode lokal
   username: string;
   email: string;
-  password: string;
   fullName: string;
   role: string;
   phone: string;
@@ -21,7 +33,6 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     id: "usr_freelancer_fadli",
     username: "fadli",
     email: "fadli@sepakatin.id",
-    password: "sepakatin123",
     fullName: "Fadli Bilal",
     role: "Fullstack Web Developer",
     phone: "+62 812-3456-7890",
@@ -33,24 +44,11 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
     id: "usr_demo",
     username: "demo",
     email: "demo@sepakatin.id",
-    password: "demo1234",
     fullName: "Pengguna Demo",
     role: "Desainer Grafis",
     phone: "+62 811-0000-1234",
     plan: "gratis",
     credits: 3,
-    hasSampleAgreement: false,
-  },
-  {
-    id: "usr_admin_sepakatin",
-    username: "admin",
-    email: "admin@sepakatin.id",
-    password: "admin123",
-    fullName: "Admin Sepakatin",
-    role: "admin",
-    phone: "+62 853-3933-3616",
-    plan: "pro",
-    credits: 999,
     hasSampleAgreement: false,
   },
 ];

@@ -1,8 +1,3 @@
-// ==============================================================================
-// Sepakatin — Aturan bisnis kesepakatan (murni, tanpa database)
-// Dipakai oleh API server (Supabase) dan mode lokal agar hasilnya selalu sama.
-// ==============================================================================
-
 import {
   AgreementRecord,
   AgreementStatus,
@@ -25,17 +20,24 @@ export class AgreementError extends Error {
     this.status = status;
     this.code = code;
   }
+  get statusCode(): number {
+    return this.status;
+  }
 }
+
+export const REVIEW_TOKEN_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 hari TTL
 
 export type OwnerAction =
   | { type: "send" }
   | { type: "approve" }
   | { type: "newVersion"; content: ContractContentJSON }
+  | { type: "regenerateReviewToken" }
   | {
       type: "uploadStampedDocument";
       copyType: "freelancer_copy" | "client_copy";
       fileName: string;
-      fileUrl: string;
+      fileUrl?: string;
+      storagePath?: string;
       fileSize?: number;
       notes?: string;
     }
@@ -59,8 +61,8 @@ const LOCKED_STATUSES: AgreementStatus[] = ["AGREED", "ACTIVE", "COMPLETED", "CA
 const CLOSED_FOR_CLIENT: AgreementStatus[] = ["DRAFT", "COMPLETED", "CANCELLED", "EXPIRED", "REJECTED"];
 
 const MAX_IMAGE_CHARS = 1_500_000; // ± 1,1 MB gambar base64
-const PREMIUM_MESSAGE =
-  "Fitur ini khusus kesepakatan Per Proyek atau Pro. Kesepakatan paket Gratis tidak bisa memakai fitur ini.";
+
+const MAX_OPEN_CHANGE_REQUESTS = 3;
 
 let idCounter = 0;
 export function newId(prefix: string): string {
@@ -142,6 +144,17 @@ export function sanitizeContent(raw: ContractContentJSON, contractId: string): C
     throw new AgreementError("Tenggat selesai tidak boleh sebelum tanggal mulai.");
   }
 
+  const validFrom = date(raw.validFrom, "Berlaku mulai") || startDate;
+  const validUntil = date(raw.validUntil, "Berlaku sampai") || deadline;
+  if (new Date(validUntil) < new Date(validFrom)) {
+    throw new AgreementError("Tanggal berlaku sampai tidak boleh sebelum tanggal berlaku mulai.");
+  }
+
+  const deliverables = list(raw.scope?.deliverables, "Hasil kerja");
+  if (deliverables.length === 0) {
+    throw new AgreementError("Hasil kerja yang diserahkan minimal 1 baris.");
+  }
+
   return {
     contractId,
     projectName: text(raw.projectName, "Nama proyek", { required: true, max: 200 }),
@@ -161,7 +174,7 @@ export function sanitizeContent(raw: ContractContentJSON, contractId: string): C
     },
     scope: {
       description: text(raw.scope?.description, "Gambaran pekerjaan", { required: true, max: 3000 }),
-      deliverables: list(raw.scope?.deliverables, "Hasil kerja"),
+      deliverables,
       exclusions: list(raw.scope?.exclusions, "Yang tidak termasuk"),
       acceptanceCriteria: list(raw.scope?.acceptanceCriteria, "Kriteria selesai"),
     },
@@ -209,13 +222,38 @@ function documentDataUrl(value: unknown, label: string): string {
     throw new AgreementError(`${label} wajib diisi.`);
   }
   const v = value.trim();
-  if (!v.startsWith("data:") && !v.startsWith("http://") && !v.startsWith("https://")) {
-    throw new AgreementError(`${label} harus berupa berkas dokumen PDF yang valid.`);
-  }
   if (v.length > MAX_DOCUMENT_CHARS) {
     throw new AgreementError(`${label} terlalu besar. Maksimal sekitar 7 MB.`);
   }
-  return v;
+
+  if (v.startsWith("data:")) {
+    // Validasi prefix Data URL harus application/pdf dengan encoding base64
+    if (!v.toLowerCase().startsWith("data:application/pdf;base64,")) {
+      throw new AgreementError(`${label} harus berupa berkas berformat PDF resmi (application/pdf).`);
+    }
+    const base64Data = v.slice("data:application/pdf;base64,".length).trim();
+    // Validasi Magic Bytes: Setiap berkas PDF asli diawali dengan biner "%PDF-" yang dalam base64 dikodekan sebagai "JVBERi0"
+    if (!base64Data.startsWith("JVBERi0")) {
+      throw new AgreementError(`${label} tidak valid atau rusak. Berkas bukan dokumen PDF asli yang terverifikasi.`);
+    }
+    return v;
+  }
+
+  if (v.startsWith("http://") || v.startsWith("https://")) {
+    return v;
+  }
+
+  // Mendukung format path Supabase Storage atau IndexedDB lokal
+  if (
+    v.startsWith("storage://") ||
+    v.startsWith("indexeddb://") ||
+    v.startsWith("agreement-documents/") ||
+    /^agreements\/[\w-]+\/[\w.-]+\.pdf$/i.test(v)
+  ) {
+    return v;
+  }
+
+  throw new AgreementError(`${label} harus berupa berkas dokumen PDF yang valid.`);
 }
 
 // ------------------------------------------------------------------------------
@@ -273,6 +311,9 @@ export async function buildNewAgreement(params: {
     status,
     currentVersionNumber: 1,
     reviewToken: newReviewToken(),
+    reviewTokenExpiresAt: params.sendDirectly
+      ? new Date(Date.now() + REVIEW_TOKEN_TTL_MS).toISOString()
+      : undefined,
     ownerId: params.ownerId,
     plan: params.plan,
     validFrom: content.validFrom,
@@ -293,10 +334,6 @@ export async function buildNewAgreement(params: {
 // Aksi pada kesepakatan
 // ------------------------------------------------------------------------------
 
-function requirePremium(agr: AgreementRecord) {
-  if (!isPremiumPlan(agr.plan)) throw new AgreementError(PREMIUM_MESSAGE, 403, "PREMIUM_REQUIRED");
-}
-
 function log(agr: AgreementRecord, actorName: string, eventType: AgreementRecord["activityLogs"][number]["eventType"], description: string) {
   agr.activityLogs.push({ id: newId("log"), agreementId: agr.id, actorName, eventType, description, createdAt: new Date().toISOString() });
 }
@@ -305,7 +342,19 @@ function hasApproved(agr: AgreementRecord, role: "freelancer" | "client") {
   return agr.approvals.some((ap) => ap.versionId === agr.currentVersion.id && ap.role === role && ap.status === "APPROVED");
 }
 
-function addApproval(agr: AgreementRecord, role: "freelancer" | "client", name: string, emailAddr: string) {
+/** Jejak teknis yang hanya boleh diisi server. */
+export interface RequestContext {
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+function addApproval(
+  agr: AgreementRecord,
+  role: "freelancer" | "client",
+  name: string,
+  emailAddr: string,
+  ctx?: RequestContext
+) {
   const v = agr.currentVersion;
   if (hasApproved(agr, role)) return;
   agr.approvals.push({
@@ -319,6 +368,8 @@ function addApproval(agr: AgreementRecord, role: "freelancer" | "client", name: 
     status: "APPROVED",
     documentHash: v.documentHash,
     approvedAt: new Date().toISOString(),
+    ...(ctx?.ipAddress ? { ipAddress: ctx.ipAddress } : {}),
+    ...(ctx?.userAgent ? { userAgent: ctx.userAgent.slice(0, 300) } : {}),
   });
   log(agr, name, role === "freelancer" ? "FREELANCER_APPROVED" : "CLIENT_APPROVED", `${name} (${role === "freelancer" ? "freelancer" : "klien"}) menyetujui versi ${v.versionNumber}`);
 
@@ -328,9 +379,23 @@ function addApproval(agr: AgreementRecord, role: "freelancer" | "client", name: 
   }
 }
 
-function upsertSignature(agr: AgreementRecord, role: "freelancer" | "client", name: string, dataUrl: string) {
+function upsertSignature(
+  agr: AgreementRecord,
+  role: "freelancer" | "client",
+  name: string,
+  dataUrl: string,
+  ctx?: RequestContext
+) {
   const sigs = agr.signatures ?? [];
-  const record = { id: newId("sig"), signerRole: role, signerName: name, signatureDataUrl: dataUrl, signedAt: new Date().toISOString() };
+  const record = {
+    id: newId("sig"),
+    signerRole: role,
+    signerName: name,
+    signatureDataUrl: dataUrl,
+    signedAt: new Date().toISOString(),
+    ...(ctx?.ipAddress ? { ipAddress: ctx.ipAddress } : {}),
+    ...(ctx?.userAgent ? { userAgent: ctx.userAgent.slice(0, 300) } : {}),
+  };
   const idx = sigs.findIndex((s) => s.signerRole === role);
   if (idx >= 0) sigs[idx] = record;
   else sigs.push(record);
@@ -339,7 +404,11 @@ function upsertSignature(agr: AgreementRecord, role: "freelancer" | "client", na
 }
 
 /** Aksi yang dilakukan freelancer pemilik kesepakatan. Mengubah `agr` dan mengembalikannya. */
-export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction): Promise<AgreementRecord> {
+export async function applyOwnerAction(
+  agr: AgreementRecord,
+  action: OwnerAction,
+  ctx?: RequestContext
+): Promise<AgreementRecord> {
   const content = agr.currentVersion.contentJson;
   const owner = content.freelancer.name;
   const closed = ["COMPLETED", "CANCELLED", "EXPIRED", "REJECTED"].includes(agr.status);
@@ -348,18 +417,48 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
     case "send": {
       if (agr.status !== "DRAFT") throw new AgreementError("Kesepakatan ini sudah pernah dikirim ke klien.");
       agr.status = "PENDING_CLIENT";
+      agr.reviewTokenExpiresAt = new Date(Date.now() + REVIEW_TOKEN_TTL_MS).toISOString();
       log(agr, owner, "SENT_TO_CLIENT", `Link kesepakatan dikirim ke klien (${content.client.email})`);
+      break;
+    }
+    case "regenerateReviewToken": {
+      if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
+      agr.reviewToken = newReviewToken();
+      agr.reviewTokenExpiresAt = new Date(Date.now() + REVIEW_TOKEN_TTL_MS).toISOString();
+      log(
+        agr,
+        owner,
+        "SENT_TO_CLIENT",
+        `${owner} menerbitkan ulang tautan review klien. Tautan sebelumnya otomatis dinonaktifkan.`
+      );
       break;
     }
     case "approve": {
       if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
       if (hasApproved(agr, "freelancer")) throw new AgreementError("Anda sudah menyetujui versi ini.");
-      addApproval(agr, "freelancer", owner, content.freelancer.email);
+      addApproval(agr, "freelancer", owner, content.freelancer.email, ctx);
       break;
     }
     case "newVersion": {
       if (LOCKED_STATUSES.includes(agr.status)) {
         throw new AgreementError("Kesepakatan yang sudah disepakati atau ditutup tidak bisa diubah lagi.", 409);
+      }
+      if (agr.status === "DRAFT") {
+        // Draf yang belum dikirim ke klien diedit langsung in-place tanpa menaikkan versi
+        const updated = sanitizeContent(action.content, agr.contractId);
+        const hash = await generateDocumentHash(updated);
+        agr.currentVersion.contentJson = updated;
+        agr.currentVersion.documentHash = hash;
+        agr.currentVersion.createdAt = new Date().toISOString();
+        const vIdx = agr.versions.findIndex((v) => v.id === agr.currentVersion.id);
+        if (vIdx >= 0) {
+          agr.versions[vIdx] = agr.currentVersion;
+        }
+        agr.validFrom = updated.validFrom;
+        agr.validUntil = updated.validUntil;
+        agr.signatures = [];
+        log(agr, owner, "VERSION_BUMPED", `${owner} memperbarui isi draf kesepakatan`);
+        break;
       }
       if (!isPremiumPlan(agr.plan) && agr.currentVersionNumber >= FREE_RULES.maxVersions) {
         throw new AgreementError(
@@ -385,7 +484,7 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
       agr.validUntil = updated.validUntil;
       // Tanda tangan lama milik isi versi sebelumnya — harus ditandatangani ulang
       agr.signatures = [];
-      agr.status = agr.status === "DRAFT" ? "DRAFT" : "PENDING_APPROVAL";
+      agr.status = "PENDING_APPROVAL";
       agr.changeRequests.forEach((cr) => {
         if (cr.status === "OPEN") {
           cr.status = "APPLIED";
@@ -401,7 +500,14 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
         throw new AgreementError("Pilihan salinan dokumen tidak valid.");
       }
       const safeFileName = text(action.fileName, "Nama file dokumen", { required: true, max: 200 });
-      const safeUrl = documentDataUrl(action.fileUrl, "File dokumen bermeterai");
+      let safeUrl = "";
+      const safeStoragePath = action.storagePath ? text(action.storagePath, "Path penyimpanan", { max: 500 }) : undefined;
+
+      if (action.fileUrl) {
+        safeUrl = documentDataUrl(action.fileUrl, "File dokumen bermeterai");
+      } else if (!safeStoragePath) {
+        throw new AgreementError("Berkas dokumen atau path penyimpanan wajib diisi.");
+      }
       const safeNotes = action.notes ? text(action.notes, "Catatan dokumen", { max: 500 }) : undefined;
 
       const newDoc: StampedDocumentRecord = {
@@ -410,6 +516,7 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
         copyType: action.copyType,
         fileName: safeFileName,
         fileUrl: safeUrl,
+        storagePath: safeStoragePath,
         fileSize: typeof action.fileSize === "number" ? action.fileSize : undefined,
         uploadedAt: new Date().toISOString(),
         uploadedBy: owner,
@@ -487,8 +594,10 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
       break;
     }
     case "signature": {
-      if (closed) throw new AgreementError("Kesepakatan ini sudah ditutup.");
-      upsertSignature(agr, "freelancer", owner, imageDataUrl(action.dataUrl, "Tanda tangan"));
+      if (closed || LOCKED_STATUSES.includes(agr.status)) {
+        throw new AgreementError("Kesepakatan sudah disetujui dan dikunci. Tanda tangan tidak dapat diubah lagi.", 409);
+      }
+      upsertSignature(agr, "freelancer", owner, imageDataUrl(action.dataUrl, "Tanda tangan"), ctx);
       break;
     }
     case "complete": {
@@ -514,7 +623,11 @@ export async function applyOwnerAction(agr: AgreementRecord, action: OwnerAction
 }
 
 /** Aksi yang dilakukan klien lewat link undangan (tanpa akun). */
-export async function applyClientAction(agr: AgreementRecord, action: ClientAction): Promise<AgreementRecord> {
+export async function applyClientAction(
+  agr: AgreementRecord,
+  action: ClientAction,
+  ctx?: RequestContext
+): Promise<AgreementRecord> {
   if (CLOSED_FOR_CLIENT.includes(agr.status)) {
     throw new AgreementError(
       agr.status === "DRAFT" ? "Kesepakatan ini masih draf dan belum dikirim oleh freelancer." : "Kesepakatan ini sudah ditutup.",
@@ -522,15 +635,43 @@ export async function applyClientAction(agr: AgreementRecord, action: ClientActi
     );
   }
 
+  // Cek masa berlaku tautan review klien (14 hari TTL)
+  if (
+    agr.reviewTokenExpiresAt &&
+    new Date(agr.reviewTokenExpiresAt) < new Date() &&
+    !["AGREED", "ACTIVE", "COMPLETED"].includes(agr.status)
+  ) {
+    throw new AgreementError(
+      "Tautan review ini telah kedaluwarsa (masa berlaku 14 hari). Silakan hubungi freelancer untuk menerbitkan tautan baru.",
+      410,
+      "TOKEN_EXPIRED"
+    );
+  }
+
   switch (action?.type) {
     case "approve": {
       if (hasApproved(agr, "client")) throw new AgreementError("Anda sudah menyetujui versi ini.");
-      addApproval(agr, "client", text(action.name, "Nama", { required: true, max: 120 }), email(action.email, "Email"));
+      addApproval(agr, "client", text(action.name, "Nama", { required: true, max: 120 }), email(action.email, "Email"), ctx);
       break;
     }
     case "requestChange": {
-      requirePremium(agr);
       if (LOCKED_STATUSES.includes(agr.status)) throw new AgreementError("Kesepakatan sudah dikunci, tidak bisa minta perubahan lagi.", 409);
+      if (!isPremiumPlan(agr.plan) && agr.currentVersionNumber >= FREE_RULES.maxVersions) {
+        throw new AgreementError(
+          "Kesepakatan paket Gratis telah mencapai batas perubahan (maksimal 2 versi). Silakan diskusikan langsung dengan freelancer Anda via WhatsApp.",
+          403,
+          "VERSION_LIMIT"
+        );
+      }
+      const openCount = agr.changeRequests.filter((cr) => cr.status === "OPEN").length;
+      if (openCount >= MAX_OPEN_CHANGE_REQUESTS) {
+        throw new AgreementError(
+          `Masih ada ${openCount} permintaan perubahan yang belum ditindaklanjuti. ` +
+            "Tunggu freelancer memperbarui kesepakatan dulu sebelum mengirim permintaan baru.",
+          429,
+          "TOO_MANY_OPEN_REQUESTS"
+        );
+      }
       const name = text(action.name, "Nama", { required: true, max: 120 });
       const title = text(action.title, "Judul perubahan", { required: true, max: 200 });
       agr.changeRequests.unshift({
@@ -548,7 +689,10 @@ export async function applyClientAction(agr: AgreementRecord, action: ClientActi
       break;
     }
     case "signature": {
-      upsertSignature(agr, "client", text(action.name, "Nama", { required: true, max: 120 }), imageDataUrl(action.dataUrl, "Tanda tangan"));
+      if (LOCKED_STATUSES.includes(agr.status)) {
+        throw new AgreementError("Kesepakatan sudah disetujui dan dikunci. Tanda tangan tidak dapat diubah lagi.", 409);
+      }
+      upsertSignature(agr, "client", text(action.name, "Nama", { required: true, max: 120 }), imageDataUrl(action.dataUrl, "Tanda tangan"), ctx);
       break;
     }
     default:
@@ -582,6 +726,8 @@ export async function toVerificationData(agr: AgreementRecord): Promise<PublicVe
     validUntil: v.contentJson.validUntil,
     freelancerName: v.contentJson.freelancer.name,
     clientName: v.contentJson.client.name,
+    hasStampedDocuments: Boolean(agr.stampedDocuments && agr.stampedDocuments.length > 0),
+    stampedDocumentsCount: agr.stampedDocuments?.length ?? 0,
     verifiedAt: new Date().toISOString(),
   };
 }

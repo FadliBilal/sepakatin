@@ -9,6 +9,16 @@ interface SignaturePadProps {
   width?: number;
   height?: number;
   className?: string;
+  /**
+   * Jika diisi, tanda tangan baru dikirim saat tombol ini ditekan (bukan tiap goresan).
+   * Dipakai di tempat yang langsung menyimpan ke server agar pengguna sempat meninjau dulu.
+   */
+  confirmLabel?: string;
+  /** Dipanggil saat kanvas dikosongkan, supaya tanda tangan tersimpan ikut dibatalkan. */
+  onClear?: () => void;
+  /** Mematikan kanvas, misalnya ketika dokumen sudah terkunci. */
+  disabled?: boolean;
+  isSaving?: boolean;
 }
 
 export function SignaturePad({
@@ -17,10 +27,15 @@ export function SignaturePad({
   width = 240,
   height = 100,
   className = "",
+  confirmLabel,
+  onClear,
+  disabled = false,
+  isSaving = false,
 }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasStroke, setHasStroke] = useState(false);
+  const needsConfirm = Boolean(confirmLabel);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,6 +68,7 @@ export function SignaturePad({
   };
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    if (disabled || isSaving) return;
     e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -82,7 +98,9 @@ export function SignaturePad({
   const stopDrawing = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
-    if (canvasRef.current) {
+    // Dengan tombol konfirmasi, goresan hanya disimpan di kanvas dulu supaya
+    // pengguna bisa meninjau dan mengulang sebelum tanda tangan benar-benar dikirim.
+    if (!needsConfirm && canvasRef.current) {
       onSave(canvasRef.current.toDataURL("image/png"));
     }
   };
@@ -94,6 +112,13 @@ export function SignaturePad({
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasStroke(false);
+    onClear?.();
+  };
+
+  const confirmSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !hasStroke) return;
+    onSave(canvas.toDataURL("image/png"));
   };
 
   const generateCursiveSignature = () => {
@@ -110,12 +135,16 @@ export function SignaturePad({
     ctx.fillText(signerName || "Tanda Tangan", canvas.width / 2, canvas.height / 2);
 
     setHasStroke(true);
-    onSave(canvas.toDataURL("image/png"));
+    if (!needsConfirm) onSave(canvas.toDataURL("image/png"));
   };
 
   return (
     <div className={`space-y-2 select-none ${className}`}>
-      <div className="relative border border-dashed border-slate-300 rounded-xl bg-white overflow-hidden hover:border-brand-600 transition-colors">
+      <div
+        className={`relative border border-dashed rounded-xl overflow-hidden transition-colors ${
+          disabled ? "border-slate-200 bg-slate-100" : "border-slate-300 bg-white hover:border-brand-600"
+        }`}
+      >
         <canvas
           ref={canvasRef}
           width={width}
@@ -127,12 +156,13 @@ export function SignaturePad({
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
-          className="cursor-crosshair w-full touch-none block"
+          aria-label={`Kotak tanda tangan untuk ${signerName || "penanda tangan"}`}
+          className={`w-full touch-none block ${disabled ? "cursor-not-allowed" : "cursor-crosshair"}`}
         />
 
         {!hasStroke && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-400 text-xs">
-            Tanda tangan di sini
+            {disabled ? "Tanda tangan terkunci" : "Tanda tangan di sini"}
           </div>
         )}
       </div>
@@ -141,7 +171,8 @@ export function SignaturePad({
         <button
           type="button"
           onClick={clearCanvas}
-          className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-rose-600 transition-colors"
+          disabled={disabled || isSaving || !hasStroke}
+          className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-rose-600 transition-colors disabled:opacity-40 disabled:hover:text-slate-500"
         >
           <RotateCcw className="w-3 h-3" />
           <span>Ulangi</span>
@@ -150,12 +181,30 @@ export function SignaturePad({
         <button
           type="button"
           onClick={generateCursiveSignature}
-          className="inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold"
+          disabled={disabled || isSaving}
+          className="inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold disabled:opacity-40 disabled:no-underline"
         >
           <Sparkles className="w-3 h-3" />
           <span>Isi otomatis dari nama</span>
         </button>
       </div>
+
+      {needsConfirm && (
+        <button
+          type="button"
+          onClick={confirmSignature}
+          disabled={disabled || isSaving || !hasStroke}
+          className="btn btn-primary btn-sm w-full"
+        >
+          {isSaving ? "Menyimpan..." : confirmLabel}
+        </button>
+      )}
+
+      {needsConfirm && !hasStroke && !disabled && (
+        <p className="text-[11px] text-slate-400 text-center">
+          Goreskan tanda tangan dulu, lalu tekan tombol di atas untuk menyimpan.
+        </p>
+      )}
     </div>
   );
 }

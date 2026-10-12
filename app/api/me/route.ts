@@ -1,8 +1,7 @@
-import { getProfile, getUsage, handle, ok, requireUser } from "@/lib/server/repo";
+import { getProfile, getUsage, handle, isAdminEmail, ok, requireUser } from "@/lib/server/repo";
 
 export const dynamic = "force-dynamic";
 
-/** Profil & pemakaian paket akun yang sedang masuk. */
 export async function GET(req: Request) {
   return handle(async () => {
     const user = await requireUser(req);
@@ -15,6 +14,7 @@ export async function GET(req: Request) {
         fullName: profile.full_name,
         role: profile.skill,
         phone: profile.phone,
+        isAdmin: isAdminEmail(profile.email || user.email),
       },
       usage: await getUsage(profile),
     });

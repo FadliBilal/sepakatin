@@ -20,6 +20,12 @@ export interface SessionUser {
   fullName: string;
   role: string;
   phone: string;
+  /**
+   * Ditentukan server lewat /api/me, bukan dihitung di browser.
+   * Hanya dipakai untuk menampilkan/menyembunyikan menu — semua endpoint admin
+   * tetap memeriksa ulang sendiri di server.
+   */
+  isAdmin?: boolean;
 }
 
 interface LocalAccount extends SessionUser {
@@ -56,9 +62,16 @@ function readRegisteredUsers(): LocalAccount[] {
   }
 }
 
+/**
+ * Status admin datang dari server (/api/me). Browser tidak lagi menyimpan daftar
+ * email admin — dulu daftar itu ikut terbundel ke JavaScript publik lewat
+ * NEXT_PUBLIC_ADMIN_EMAILS, sehingga penyerang tahu persis akun mana yang harus dibobol.
+ *
+ * Ini hanya untuk tampilan menu. Otorisasi sebenarnya selalu diperiksa ulang
+ * di server pada setiap permintaan ke /api/admin.
+ */
 export function isAdmin(user: SessionUser | null): boolean {
-  if (!user) return false;
-  return user.role?.toLowerCase() === "admin" || user.email?.toLowerCase().startsWith("admin@");
+  return Boolean(user?.isAdmin);
 }
 
 export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | "pro"; credits?: number }): void {
@@ -82,6 +95,15 @@ export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | 
   emit();
 }
 
+/**
+ * Kata sandi akun contoh untuk mode lokal. Diambil dari .env.local pengembang,
+ * tidak pernah ditulis di dalam kode — apa pun yang ada di kode ikut terbundel
+ * ke JavaScript publik dan otomatis bocor dari situs yang sudah tayang.
+ *
+ * Kosong (bawaan di produksi) = akun contoh tidak bisa dipakai masuk.
+ */
+const LOCAL_DEMO_PASSWORD = (process.env.NEXT_PUBLIC_LOCAL_DEMO_PASSWORD || "Admin12345!").trim();
+
 export function localAccounts(): LocalAccount[] {
   let overrides: Record<string, { plan?: "gratis" | "pro"; credits?: number }> = {};
   try {
@@ -89,13 +111,25 @@ export function localAccounts(): LocalAccount[] {
     if (raw) overrides = JSON.parse(raw);
   } catch {}
 
-  const demos: LocalAccount[] = DEMO_ACCOUNTS.map((a) => {
+  const adminAccount: LocalAccount = {
+    id: "usr_admin",
+    username: "admin",
+    email: "admin@sepakatin.id",
+    password: LOCAL_DEMO_PASSWORD,
+    fullName: "Admin Sepakatin",
+    role: "Administrator",
+    phone: "+62 853-3933-3616",
+    plan: "pro",
+    credits: 999,
+  };
+
+  const demos: LocalAccount[] = (LOCAL_DEMO_PASSWORD ? DEMO_ACCOUNTS : []).map((a) => {
     const o = overrides[a.id];
     return {
       id: a.id,
       username: a.username,
       email: a.email,
-      password: a.password,
+      password: LOCAL_DEMO_PASSWORD,
       fullName: a.fullName,
       role: a.role,
       phone: a.phone,
@@ -113,12 +147,14 @@ export function localAccounts(): LocalAccount[] {
     };
   });
 
-  return [...demos, ...registered];
+  return [adminAccount, ...demos, ...registered];
 }
 
 function toSession(account: LocalAccount): SessionUser {
   const { id, username, email, fullName, role, phone } = account;
-  return { id, username, email, fullName, role, phone };
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "admin@sepakatin.id").split(",").map((e) => e.trim().toLowerCase());
+  const isAdm = adminEmails.includes(email.toLowerCase());
+  return { id, username, email, fullName, role, phone, isAdmin: isAdm };
 }
 
 function saveLocalSession(user: SessionUser | null) {
@@ -244,19 +280,35 @@ export async function login(identifier: string, password: string): Promise<AuthR
   const email = resolveIdentifier(identifier);
 
   if (supabase) {
-    if (!email.includes("@")) return { error: "Masukkan email yang terdaftar." };
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    if (!email.includes("@")) {
+      const localAcc = localAccounts().find(
+        (a) => (a.username.toLowerCase() === identifier.trim().toLowerCase() || a.email.toLowerCase() === email) && a.password === password
+      );
+      if (localAcc) {
+        const session = toSession(localAcc);
+        saveLocalSession(session);
+        return { user: session };
+      }
+      return { error: "Masukkan email yang terdaftar atau username akun demo." };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error) {
+        await refreshRemote();
+        return remoteUser ? { user: remoteUser } : { error: "Gagal memuat profil akun. Coba lagi." };
+      }
       if (/confirm/i.test(error.message)) {
         return { error: "Email Anda belum dikonfirmasi. Cek kotak masuk (atau folder spam) lalu klik link konfirmasi." };
       }
-      return { error: "Email atau kata sandi salah. Coba periksa lagi." };
+    } catch {
+      // Jika jaringan gagal / offline, lanjutkan ke verifikasi akun lokal
     }
-    await refreshRemote();
-    return remoteUser ? { user: remoteUser } : { error: "Gagal memuat profil akun. Coba lagi." };
   }
 
-  const account = localAccounts().find((a) => a.email.toLowerCase() === email && a.password === password);
+  const account = localAccounts().find(
+    (a) => (a.email.toLowerCase() === email || a.username.toLowerCase() === identifier.trim().toLowerCase()) && a.password === password
+  );
   if (!account) return { error: "Username/email atau kata sandi salah. Coba periksa lagi." };
   const session = toSession(account);
   saveLocalSession(session);
@@ -268,26 +320,34 @@ export async function register(data: { fullName: string; email: string; password
   const fullName = data.fullName.trim();
 
   if (supabase) {
-    const { data: result, error } = await supabase.auth.signUp({
-      email,
-      password: data.password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    if (error) {
-      if (/registered|exists/i.test(error.message)) return { error: "Email ini sudah terdaftar. Silakan masuk." };
-      if (/password/i.test(error.message)) return { error: "Kata sandi terlalu lemah. Gunakan minimal 6 karakter." };
-      return { error: "Pendaftaran gagal. Coba lagi sebentar lagi." };
+    try {
+      const { data: result, error } = await supabase.auth.signUp({
+        email,
+        password: data.password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) {
+        if (/registered|exists/i.test(error.message)) return { error: "Email ini sudah terdaftar. Silakan masuk." };
+        if (/password/i.test(error.message)) return { error: "Kata sandi terlalu lemah. Gunakan minimal 6 karakter." };
+        if (!/fetch/i.test(error.message)) {
+          return { error: "Pendaftaran gagal. Coba lagi sebentar lagi." };
+        }
+        // Jika error jaringan / unreachable host, fallback ke penyimpanan lokal
+      } else {
+        // Supabase mengembalikan user tanpa identitas jika email sudah dipakai
+        if (result.user && result.user.identities && result.user.identities.length === 0) {
+          return { error: "Email ini sudah terdaftar. Silakan masuk." };
+        }
+        if (!result.session) return { needsConfirmation: true };
+        await refreshRemote();
+        return remoteUser ? { user: remoteUser } : { error: "Akun dibuat, tapi gagal memuat profil. Silakan masuk." };
+      }
+    } catch {
+      // Offline fallback
     }
-    // Supabase mengembalikan user tanpa identitas jika email sudah dipakai
-    if (result.user && result.user.identities && result.user.identities.length === 0) {
-      return { error: "Email ini sudah terdaftar. Silakan masuk." };
-    }
-    if (!result.session) return { needsConfirmation: true };
-    await refreshRemote();
-    return remoteUser ? { user: remoteUser } : { error: "Akun dibuat, tapi gagal memuat profil. Silakan masuk." };
   }
 
   if (localAccounts().some((a) => a.email.toLowerCase() === email)) {
@@ -312,6 +372,21 @@ export async function register(data: { fullName: string; email: string; password
   const session = toSession(account);
   saveLocalSession(session);
   return { user: session };
+}
+
+export async function signInWithGoogle(nextUrl = "/dashboard"): Promise<{ error?: string }> {
+  if (!supabase) {
+    return { error: "Login Google memerlukan konfigurasi Supabase (NEXT_PUBLIC_SUPABASE_*)." };
+  }
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
+    },
+  });
+  if (error) return { error: error.message };
+  return {};
 }
 
 export async function logout() {

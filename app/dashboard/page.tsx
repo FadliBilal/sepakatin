@@ -22,6 +22,11 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { RequireAuth } from "@/components/RequireAuth";
 import { formatCurrencyIDR, formatDateID } from "@/lib/crypto";
 import { SessionUser } from "@/lib/auth";
+import { copyText } from "@/lib/clipboard";
+import { reviewUrlFor } from "@/lib/app-url";
+import { ModalDialog } from "@/components/ModalDialog";
+import { PaymentModal } from "@/components/PaymentModal";
+import { PaymentPackageType } from "@/lib/types";
 
 export default function DashboardPage() {
   return <RequireAuth>{(user) => <Dashboard user={user} />}</RequireAuth>;
@@ -31,8 +36,10 @@ function Dashboard({ user }: { user: SessionUser }) {
   const [agreements, setAgreements] = useState<AgreementRecord[]>([]);
   const [usage, setUsage] = useState<AccountUsage | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [copyFailedUrl, setCopyFailedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [buyPlanModal, setBuyPlanModal] = useState<PaymentPackageType | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -49,8 +56,15 @@ function Dashboard({ user }: { user: SessionUser }) {
     loadData();
   }, []);
 
-  const copyReviewLink = (token: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/review/${token}`);
+  const copyReviewLink = async (token: string) => {
+    const url = reviewUrlFor(token);
+    const ok = await copyText(url);
+    if (!ok) {
+      // Jangan pernah bilang "Tersalin!" kalau papan klip sebenarnya kosong —
+      // freelancer bisa mengira link sudah terkirim ke klien padahal belum.
+      setCopyFailedUrl(url);
+      return;
+    }
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2500);
   };
@@ -110,14 +124,27 @@ function Dashboard({ user }: { user: SessionUser }) {
       </div>
 
       {freeLimitReached && (
-        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p className="text-sm text-amber-900">
+        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <p className="text-sm text-amber-900 leading-relaxed">
             <strong>Kuota paket Gratis penuh.</strong> Tandai selesai atau batalkan kesepakatan lama
-            {usage && usage.credits > 0 ? `, atau pakai 1 dari ${usage.credits} kredit Per Proyek Anda` : ", atau tambah kredit Per Proyek / upgrade ke Pro"}.
+            {usage && usage.credits > 0 ? `, atau pakai 1 dari ${usage.credits} kredit Per Proyek Anda` : ", atau tambah kredit Per Proyek / upgrade ke Pro instan via QRIS"}.
           </p>
-          <Link href="/#harga" className="btn btn-secondary btn-sm self-start sm:self-auto">
-            Lihat Paket
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setBuyPlanModal("credit_1")}
+              className="btn btn-primary btn-sm text-xs"
+            >
+              + 1 Kredit (Rp19.000)
+            </button>
+            <button
+              type="button"
+              onClick={() => setBuyPlanModal("pro_monthly")}
+              className="btn btn-secondary btn-sm text-xs"
+            >
+              Upgrade Pro (Rp49.000)
+            </button>
+          </div>
         </div>
       )}
 
@@ -191,23 +218,34 @@ function Dashboard({ user }: { user: SessionUser }) {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => copyReviewLink(agr.reviewToken)}
-                      className="btn btn-secondary btn-sm"
-                      title="Salin link untuk dikirim ke klien"
-                    >
-                      {copiedToken === agr.reviewToken ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="text-emerald-700">Tersalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          Salin Link Klien
-                        </>
-                      )}
-                    </button>
+                    {agr.status === "DRAFT" ? (
+                      <Link
+                        href={`/agreements/${agr.id}`}
+                        className="btn btn-secondary btn-sm text-slate-600"
+                        title="Buka kesepakatan untuk ditinjau dan dikirim ke klien"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                        Draf (Kirim Dulu)
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => copyReviewLink(agr.reviewToken)}
+                        className="btn btn-secondary btn-sm"
+                        title="Salin link untuk dikirim ke klien"
+                      >
+                        {copiedToken === agr.reviewToken ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-emerald-700">Tersalin!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            Salin Link Klien
+                          </>
+                        )}
+                      </button>
+                    )}
                     <Link href={`/agreements/${agr.id}/print`} className="btn btn-secondary btn-sm px-2.5" title="Cetak / simpan PDF">
                       <Printer className="w-4 h-4" />
                     </Link>
@@ -225,6 +263,33 @@ function Dashboard({ user }: { user: SessionUser }) {
           </div>
         )}
       </div>
+
+      <ModalDialog
+        isOpen={Boolean(copyFailedUrl)}
+        onClose={() => setCopyFailedUrl(null)}
+        title="Link Tidak Bisa Disalin Otomatis"
+        type="warning"
+        description={
+          <>
+            Browser Anda memblokir penyalinan otomatis. Silakan salin link ini secara manual:
+            <span className="block mt-2 p-2.5 rounded-lg bg-slate-100 border border-slate-200 break-all text-slate-800 text-xs">
+              {copyFailedUrl}
+            </span>
+          </>
+        }
+      />
+
+      {buyPlanModal && (
+        <PaymentModal
+          isOpen={true}
+          onClose={() => setBuyPlanModal(null)}
+          packageType={buyPlanModal}
+          onSuccess={() => {
+            setBuyPlanModal(null);
+            getAccountUsage().then((u) => setUsage(u));
+          }}
+        />
+      )}
     </div>
   );
 }

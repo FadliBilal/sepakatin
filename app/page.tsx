@@ -15,6 +15,7 @@ import {
   Handshake,
   Stamp,
   Printer,
+  Users,
 } from "lucide-react";
 import { useSession } from "@/lib/auth";
 import { PricingCards } from "@/components/PricingCards";
@@ -40,24 +41,47 @@ export default function HomePage() {
 
   const problems = [
     "Rincian pekerjaan tercecer di ratusan chat dan voice note.",
-    "Revisi diminta terus-menerus dengan alasan “masih satu paket”.",
-    "Pelunasan molor karena tidak ada tanggal bayar yang disepakati.",
+    "Revisi diminta terus-menerus dengan alasan “masih kurang”.",
+    "Pelunasan molor karena tidak pasti bayar yang disepakati.",
     "Saat ada selisih paham, tidak ada bukti tertulis yang kuat.",
   ];
 
   const solutions = [
-    { title: "Satu link, semua jelas", desc: "Pekerjaan, harga, jadwal, dan jatah revisi tertulis rapi dalam satu dokumen." },
-    { title: "Disetujui kedua pihak", desc: "Tercatat siapa yang setuju, kapan, dan untuk versi dokumen yang mana." },
-    { title: "e-Materai & tanda tangan", desc: "Tempel e-Materai resmi Rp10.000 dan tanda tangan langsung dari HP." },
-    { title: "Tidak bisa diubah diam-diam", desc: "Setiap perubahan tersimpan sebagai versi baru. Versi lama tetap bisa dilihat." },
+    { title: "Satu link, semua jelas", desc: "Tertulis rapi dalam satu dokumen." },
+    { title: "Disetujui kedua pihak", desc: "Tiap versi dokumen yang disetujui." },
+    { title: "e-Materai & tanda tangan", desc: "Profesional dan legal." },
+    { title: "Transparan", desc: "Memiliki riwayat perubahan yang jelas." },
   ];
 
+  // Urutan ini mengikuti 5 langkah yang sama persis di halaman kesepakatan,
+  // supaya yang dijanjikan di beranda tidak berbeda dengan yang dijalani pengguna.
   const steps = [
     { icon: PenLine, title: "Isi formulir", desc: "Tulis pekerjaan, harga, DP, jatah revisi, dan tenggat waktu." },
     { icon: Send, title: "Kirim ke klien", desc: "Bagikan link lewat WhatsApp. Klien tidak perlu daftar akun." },
-    { icon: Handshake, title: "Setujui bersama", desc: "Klien bisa langsung setuju atau minta perubahan dulu." },
-    { icon: Stamp, title: "Materai & tanda tangan", desc: "Tempel e-Materai dan tanda tangan kedua pihak." },
-    { icon: Printer, title: "Simpan & cetak", desc: "Dokumen terkunci, punya kode QR, dan siap diunduh PDF." },
+    { icon: Handshake, title: "Tanda tangan & setuju", desc: "Kedua pihak tanda tangan online, lalu dokumen dikunci." },
+    { icon: Stamp, title: "Bubuhkan e-Meterai", desc: "Unduh 2 salinan, bubuhkan e-Meterai resmi di portal Peruri." },
+    { icon: Printer, title: "Unggah & simpan", desc: "Unggah balik 2 berkas final. Klien langsung bisa mengunduhnya." },
+  ];
+
+  const teamMembers = [
+    {
+      name: "Dwi Hendra",
+      role: "Bisnis & Kemitraan",
+      subrole: "Pengembangan Bisnis & Operasional",
+      image: "/team/team-1.png",
+    },
+    {
+      name: "Fadli Bilal",
+      role: "Engineer & System Architect",
+      subrole: "Arsitektur Sistem & Developer Platform",
+      image: "/team/team-3.png",
+    },
+    {
+      name: "Bima Putra",
+      role: "UI/UX Designer & Technical Support",
+      subrole: "Desain Antarmuka & Dukungan Teknis",
+      image: "/team/team-2.png",
+    },
   ];
 
   return (
@@ -92,15 +116,30 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Animasi 3D SepakatIn */}
-          <div className="lg:col-span-5 flex justify-center items-center">
+          {/* Animasi 3D SepakatIn dengan Pencahayaan Studio Hangat */}
+          <div className="lg:col-span-5 flex justify-center items-center relative py-4">
+            {/* Halo Sinar Cahaya Hangat Studio di Belakang (Halus, Alami & Tidak Berkedip) */}
+            <div
+              className="absolute inset-0 max-w-[500px] max-h-[500px] m-auto rounded-full pointer-events-none -z-0"
+              style={{
+                background: "radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.24) 0%, rgba(245, 158, 11, 0.12) 38%, rgba(254, 215, 170, 0.04) 62%, transparent 75%)",
+              }}
+              aria-hidden="true"
+            />
+
+            {/* Pendaran Cahaya di Bawah Dokumen (Floating Ground Glow) */}
+            <div
+              className="absolute bottom-4 sm:bottom-6 w-56 sm:w-72 h-10 rounded-full bg-gradient-to-r from-amber-400/25 via-orange-400/35 to-amber-400/25 blur-xl pointer-events-none -z-0"
+              aria-hidden="true"
+            />
+
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/SepakatIn_3D.gif"
               alt="Animasi 3D Sepakatin — Kesepakatan Kerja Aman & Jelas"
               width={512}
               height={512}
-              className="w-full max-w-[440px] h-auto object-contain select-none"
+              className="w-full max-w-[440px] h-auto object-contain select-none relative z-10 transition-transform duration-300 hover:scale-[1.02]"
               draggable={false}
             />
           </div>
@@ -118,6 +157,54 @@ export default function HomePage() {
                   <span className="text-slate-400 select-none text-xs">•</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SUPPORTED BY / DUKUNGAN EKOSISTEM */}
+      <section className="border-b border-slate-200/80 bg-gradient-to-b from-slate-50/70 to-white py-12 sm:py-14">
+        <div className="container-page">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-10 shadow-sm hover:shadow-md transition-shadow">
+            <div className="text-center lg:text-left max-w-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Didukung oleh Ekosistem Inovasi Digital
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+                Sepakatin dikembangkan dan didukung oleh program inkubasi talenta serta jejaring kolaborasi inovasi teknologi terkemuka di Indonesia.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 w-full lg:w-auto">
+              {/* Garuda Spark Innovation Hub by KOMDIGI */}
+              <div className="flex items-center justify-center px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/garuda-spark.png"
+                  alt="Garuda Spark Innovation Hub by KOMDIGI"
+                  className="h-12 sm:h-14 w-auto object-contain max-w-[210px] select-none"
+                  draggable={false}
+                />
+              </div>
+
+              {/* Ngalup.co */}
+              <div className="flex items-center gap-3.5 px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/ngalup.png"
+                  alt="Ngalup.co Collaborative Hub"
+                  className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-full shadow-sm select-none"
+                  draggable={false}
+                />
+                <div className="text-left">
+                  <span className="block text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                    Ngalup.co
+                  </span>
+                  <span className="block text-xs font-medium text-slate-500">
+                    Collaborative Hub
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -223,43 +310,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTOH NYATA */}
-      <section className="border-b border-slate-200 bg-slate-50">
-        <div className="container-page py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <p className="kicker mb-2">Contoh nyata</p>
-            <h2 className="section-title mb-4">Website profil perusahaan: Fadli & PT Solusi Digital</h2>
-            <p className="text-slate-600 leading-relaxed mb-8">
-              Proyek senilai <strong className="text-slate-900">Rp8.000.000</strong> dengan DP 50%, jatah 3 kali
-              revisi, dan persetujuan dari kedua pihak. Semua tercatat rapi dan bisa dicek kapan saja.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/agreements/agr_default_001/print" className="btn btn-primary">
-                <FileText className="w-4 h-4" />
-                Lihat Dokumen
-              </Link>
-              <Link href={`/verify/${DEMO_CONTRACT_ID}`} className="btn btn-secondary">
-                <ShieldCheck className="w-4 h-4" />
-                Cek Keaslian
-              </Link>
+      {/* TIM PENGEMBANG */}
+      <section id="tim" className="border-b border-slate-200 bg-white scroll-mt-16">
+        <div className="container-page py-20">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-xs font-semibold text-brand-700 uppercase tracking-wider mb-3">
+              <Users className="w-3.5 h-3.5 text-brand-600" />
+              Tim Inovator Sepakatin
             </div>
+            <h2 className="section-title">Di Balik Layar Sepakatin</h2>
+            <p className="text-slate-500 mt-3 text-base leading-relaxed">
+              Dikembangkan oleh talenta digital Indonesia yang berdedikasi membangun kepastian hukum dan perlindungan kerja bagi jutaan pekerja lepas digital.
+            </p>
           </div>
 
-          <div className="card p-6">
-            <dl className="divide-y divide-slate-100 text-sm">
-              {[
-                ["Nomor dokumen", <span key="id" className="font-semibold text-brand-600">{DEMO_CONTRACT_ID}</span>],
-                ["Status", <span key="st" className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Sudah Disepakati</span>],
-                ["Versi dokumen", "Versi 1"],
-                ["Persetujuan", <span key="ap" className="font-semibold text-emerald-700">2 dari 2 pihak</span>],
-                ["e-Materai", "Bisa ditempel di samping tanda tangan"],
-              ].map(([k, v], i) => (
-                <div key={i} className="flex justify-between items-center gap-4 py-3">
-                  <dt className="text-slate-500">{k}</dt>
-                  <dd className="font-medium text-slate-900 text-right">{v}</dd>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {teamMembers.map((member, idx) => (
+              <div
+                key={idx}
+                className="group card p-5 flex flex-col items-center text-center hover:border-brand-300 hover:shadow-lg transition-all duration-300"
+              >
+                {/* Frame Foto Studio */}
+                <div className="relative aspect-[3/4] w-full max-w-[280px] rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200/90 border border-slate-200 shadow-inner mb-5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover object-top select-none transition-transform duration-500 group-hover:scale-105"
+                    draggable={false}
+                  />
                 </div>
-              ))}
-            </dl>
+
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                  {member.name}
+                </h3>
+                <p className="text-sm font-semibold text-brand-600 mt-1">
+                  {member.role}
+                </p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  {member.subrole}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

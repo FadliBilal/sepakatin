@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, ArrowRight, Search, FileCheck2, Lock, BadgeCheck } from "lucide-react";
+import { ShieldCheck, Search, FileCheck2, Lock, BadgeCheck } from "lucide-react";
 
 const DEMO_CONTRACT_ID = "SPK-2026-00124";
 
@@ -56,17 +56,6 @@ export default function VerifyIndexPage() {
             </button>
           </div>
         </form>
-
-        <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-          <span>Coba contoh:</span>
-          <button
-            onClick={() => router.push(`/verify/${DEMO_CONTRACT_ID}`)}
-            className="inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline"
-          >
-            {DEMO_CONTRACT_ID}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8">

@@ -1,10 +1,5 @@
-// ==============================================================================
-// Sepakatin — Cryptographic & Canonical Hashing Utilities
-// ==============================================================================
-
 /**
- * Deterministically sorts all object keys recursively to produce a canonical JSON string.
- * This guarantees that differences in property order do not affect the SHA-256 hash.
+ * Canonical JSON stringify (deterministik berdasarkan sort key).
  */
 export function canonicalJsonStringify(obj: unknown): string {
   if (obj === null || typeof obj !== "object") {
@@ -16,7 +11,9 @@ export function canonicalJsonStringify(obj: unknown): string {
   }
 
   const record = obj as Record<string, unknown>;
-  const sortedKeys = Object.keys(record).sort();
+  const sortedKeys = Object.keys(record)
+    .filter((k) => record[k] !== undefined)
+    .sort();
   const pairs = sortedKeys.map(
     (key) => `${JSON.stringify(key)}:${canonicalJsonStringify(record[key])}`
   );

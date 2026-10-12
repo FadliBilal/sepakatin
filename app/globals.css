@@ -128,17 +128,25 @@ body {
 }
 
 /* ==========================================================================
-   Aturan Cetak & Simpan PDF (A4 dengan Margin Resmi Rapi)
+   Aturan Cetak & Simpan PDF Presisi Tinggi (Standar ISO 216 - A4 Portrait)
    ========================================================================== */
-@page {
-  size: A4 portrait;
-  margin: 12mm 14mm 12mm 14mm;
+.a4-page {
+  width: 794px;
+  min-width: 794px;
+  max-width: 794px;
+  height: 1123px;
+  min-height: 1123px;
+  max-height: 1123px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  background-color: #ffffff;
 }
 
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 14mm 12mm 14mm;
+    margin: 0;
   }
 
   html,
@@ -149,7 +157,7 @@ body {
     padding: 0 !important;
     min-height: 0 !important;
     height: auto !important;
-    width: 100% !important;
+    width: 210mm !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -169,37 +177,40 @@ body {
     -webkit-print-color-adjust: exact;
   }
 
-  .print-sheet {
+  .a4-page {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
     box-sizing: border-box !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    padding: 6mm 10mm !important;
+    padding: 12mm 15mm !important;
+    margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     background: #ffffff !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
-  .print-sheet * {
-    min-width: 0;
+  .a4-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
-  /* Mencegah pemotongan pasal / kotak tanda tangan di tengah lembaran */
+  .print-page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
   .print-keep {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-  }
-
-  .print-sheet h1,
-  .print-sheet h2,
-  .print-sheet h3 {
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  .print-sheet img {
-    max-width: 100%;
   }
 }
 

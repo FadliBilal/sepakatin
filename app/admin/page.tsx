@@ -9,7 +9,6 @@ import {
   FileText,
   Wallet,
   CheckCircle2,
-  Sparkles,
   Database,
   Search,
   ExternalLink,
@@ -17,51 +16,151 @@ import {
   RefreshCw,
   AlertTriangle,
   Settings,
+  History,
+  CreditCard,
+  Star,
 } from "lucide-react";
 import { isAdmin, useSession } from "@/lib/auth";
 import {
   adminGetAllAgreements,
   adminGetAllUsers,
   adminGetPlatformStats,
+  adminGetAuditLogs,
+  adminGetAllPaymentOrders,
+  adminApprovePaymentOrder,
+  adminRejectPaymentOrder,
   adminModerateAgreement,
   adminUpdateUserCredits,
   adminUpdateUserPlan,
   AdminPlatformStats,
   AdminUserView,
+  errorMessage,
 } from "@/lib/store";
-import { AgreementRecord } from "@/lib/types";
+import { AdminAuditLogItem, AgreementRecord, PaymentOrderRecord } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatCurrencyIDR, formatDateID } from "@/lib/crypto";
+import { formatCurrencyIDR, formatDateID, formatDateTimeID } from "@/lib/crypto";
+import { ModalDialog, ModalType } from "@/components/ModalDialog";
 
 export default function AdminPage() {
   const { user, ready } = useSession();
 
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "agreements" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "agreements" | "orders" | "audit" | "settings">("overview");
   const [stats, setStats] = useState<AdminPlatformStats | null>(null);
   const [usersList, setUsersList] = useState<AdminUserView[]>([]);
   const [agreementsList, setAgreementsList] = useState<AgreementRecord[]>([]);
+  const [paymentOrdersList, setPaymentOrdersList] = useState<PaymentOrderRecord[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLogItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    type?: ModalType;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void | Promise<void>;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
+  const closeDialog = () => setDialogState((prev) => ({ ...prev, isOpen: false, isLoading: false }));
+
+  const showConfirm = ({
+    title,
+    description,
+    type = "danger",
+    confirmText = "Ya, Lanjutkan",
+    cancelText = "Batal",
+    onConfirm,
+  }: {
+    title: string;
+    description: React.ReactNode;
+    type?: ModalType;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => Promise<void> | void;
+  }) => {
+    setDialogState({
+      isOpen: true,
+      title,
+      description,
+      type,
+      confirmText,
+      cancelText,
+      onConfirm,
+    });
+  };
 
   async function loadAdminData() {
     setIsLoading(true);
+    setLoadError("");
     try {
-      const [s, u, a] = await Promise.all([
+      const [s, u, a, l, o] = await Promise.all([
         adminGetPlatformStats(),
         adminGetAllUsers(),
         adminGetAllAgreements(),
+        adminGetAuditLogs(),
+        adminGetAllPaymentOrders(),
       ]);
       setStats(s);
       setUsersList(u);
       setAgreementsList(a);
+      setAuditLogs(l);
+      setPaymentOrdersList(o);
     } catch (err) {
+      // Tanpa ini, gagal memuat tampak sama persis dengan "memang tidak ada data".
       console.error(err);
+      setLoadError(errorMessage(err));
     } finally {
       setIsLoading(false);
     }
   }
+
+  const handleApproveOrder = (orderId: string) => {
+    showConfirm({
+      title: "Verifikasi Manual Pembayaran",
+      description: `Apakah Anda yakin ingin memverifikasi pesanan ${orderId}? Saldo kredit proyek atau paket Pro akan otomatis ditambahkan ke akun pengguna terkait.`,
+      type: "info",
+      confirmText: "Ya, Verifikasi",
+      onConfirm: async () => {
+        setDialogState((prev) => ({ ...prev, isLoading: true }));
+        try {
+          await adminApprovePaymentOrder(orderId);
+          showNotification(`Pesanan ${orderId} berhasil diverifikasi dan diaktifkan.`);
+          loadAdminData();
+        } finally {
+          closeDialog();
+        }
+      },
+    });
+  };
+
+  const handleRejectOrder = (orderId: string) => {
+    showConfirm({
+      title: "Batalkan / Tolak Pesanan",
+      description: `Apakah Anda yakin ingin membatalkan pesanan ${orderId}?`,
+      type: "danger",
+      confirmText: "Ya, Tolak",
+      onConfirm: async () => {
+        setDialogState((prev) => ({ ...prev, isLoading: true }));
+        try {
+          await adminRejectPaymentOrder(orderId);
+          showNotification(`Pesanan ${orderId} telah ditolak.`);
+          loadAdminData();
+        } finally {
+          closeDialog();
+        }
+      },
+    });
+  };
 
   useEffect(() => {
     if (ready && user && isAdmin(user)) {
@@ -87,11 +186,26 @@ export default function AdminPage() {
     loadAdminData();
   };
 
-  const handleModerate = async (agreementId: string, action: "cancel" | "delete") => {
-    if (!confirm(action === "delete" ? "Hapus dokumen ini dari sistem?" : "Batalkan status kesepakatan ini?")) return;
-    await adminModerateAgreement(agreementId, action);
-    showNotification(action === "delete" ? "Dokumen berhasil dihapus." : "Status dokumen diubah menjadi Dibatalkan.");
-    loadAdminData();
+  const handleModerate = (agreementId: string, action: "cancel" | "delete") => {
+    showConfirm({
+      title: action === "delete" ? "Hapus Dokumen" : "Batalkan Kesepakatan",
+      description:
+        action === "delete"
+          ? "Apakah Anda yakin ingin menghapus dokumen ini secara permanen dari sistem?"
+          : "Apakah Anda yakin ingin membatalkan status kesepakatan ini?",
+      type: "danger",
+      confirmText: action === "delete" ? "Ya, Hapus" : "Ya, Batalkan",
+      onConfirm: async () => {
+        setDialogState((prev) => ({ ...prev, isLoading: true }));
+        try {
+          await adminModerateAgreement(agreementId, action);
+          showNotification(action === "delete" ? "Dokumen berhasil dihapus." : "Status dokumen diubah menjadi Dibatalkan.");
+          loadAdminData();
+        } finally {
+          closeDialog();
+        }
+      },
+    });
   };
 
   if (!ready) {
@@ -182,6 +296,19 @@ export default function AdminPage() {
         </button>
       </div>
 
+      {loadError && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-rose-900">Gagal memuat data panel</p>
+            <p className="text-sm text-rose-800 mt-0.5">{loadError}</p>
+          </div>
+          <button onClick={loadAdminData} disabled={isLoading} className="btn btn-secondary btn-sm self-start sm:self-auto">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            Coba Lagi
+          </button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200">
         <button
@@ -201,6 +328,18 @@ export default function AdminPage() {
           className={`tab ${activeTab === "agreements" ? "tab-active" : "tab-idle"}`}
         >
           Semua Kesepakatan ({agreementsList.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("orders")}
+          className={`tab ${activeTab === "orders" ? "tab-active" : "tab-idle"}`}
+        >
+          Transaksi Pembayaran ({paymentOrdersList.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("audit")}
+          className={`tab ${activeTab === "audit" ? "tab-active" : "tab-idle"}`}
+        >
+          Jejak Audit ({auditLogs.length})
         </button>
         <button
           onClick={() => setActiveTab("settings")}
@@ -267,23 +406,6 @@ export default function AdminPage() {
               <p className="text-xs text-slate-500">Rasio kontrak yang disetujui kedua pihak</p>
             </div>
           </div>
-
-          {/* Quick Guidance Box */}
-          <div className="card p-6 bg-gradient-to-br from-brand-50/50 to-indigo-50/30 border-brand-100 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 text-sm">Hak & Tanggung Jawab Administrator</h3>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Sesuai PRD Sepakatin Bab 4.3, Admin memiliki hak moderasi pengguna, mengaktifkan paket langganan Pro,
-                  memberikan kuota kredit proyek, dan memantau integritas kontrak. Admin <strong>dilarang</strong> mengubah
-                  isi pasal kesepakatan yang telah disetujui para pihak untuk menjaga keabsahan hash SHA-256 dokumen.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -329,7 +451,13 @@ export default function AdminPage() {
                               : "bg-slate-100 text-slate-700"
                           }`}
                         >
-                          {u.plan === "pro" ? "⭐ Pro" : "Gratis"}
+                          {u.plan === "pro" ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Star className="w-3 h-3 text-brand-600 fill-brand-600" /> Pro
+                            </span>
+                          ) : (
+                            "Gratis"
+                          )}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -477,6 +605,128 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* TAB: TRANSAKSI PEMBAYARAN */}
+      {activeTab === "orders" && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-brand-600" />
+                Daftar Transaksi Pembayaran (Mayar.id QRIS)
+              </h2>
+              <p className="text-xs text-slate-500">
+                Semua pesanan kredit proyek dan langganan paket Pro yang dibuat pengguna.
+              </p>
+            </div>
+          </div>
+
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <tr>
+                    <th className="px-5 py-3.5">ID Pesanan</th>
+                    <th className="px-5 py-3.5">Pengguna</th>
+                    <th className="px-5 py-3.5">Paket</th>
+                    <th className="px-5 py-3.5">Nominal</th>
+                    <th className="px-5 py-3.5">Metode</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5">Waktu</th>
+                    <th className="px-5 py-3.5 text-right">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {paymentOrdersList.map((order) => (
+                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="font-mono font-bold text-xs text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          {order.orderId}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="font-medium text-slate-900 text-xs">{order.userEmail}</div>
+                        <div className="text-[11px] text-slate-400 font-mono truncate max-w-[120px]">{order.userId}</div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="font-semibold text-xs text-slate-800">
+                          {order.packageType === "credit_1" ? "1 Kredit Proyek" : "Paket Pro Bulanan"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 font-bold text-slate-900 text-xs">
+                        {formatCurrencyIDR(order.amount)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                          {order.paymentMethod || "QRIS"} ({order.paymentGateway || "MAYAR"})
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            order.status === "PAID"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : order.status === "PENDING"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-rose-50 text-rose-700 border border-rose-200"
+                          }`}
+                        >
+                          {order.status === "PAID"
+                            ? "Lunas"
+                            : order.status === "PENDING"
+                            ? "Menunggu"
+                            : order.status === "FAILED"
+                            ? "Gagal/Ditolak"
+                            : order.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-xs text-slate-500 whitespace-nowrap">
+                        <div>{formatDateTimeID(order.createdAt)}</div>
+                        {order.paidAt && (
+                          <div className="text-[11px] text-emerald-600">Dibayar: {formatDateTimeID(order.paidAt)}</div>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-right space-x-2">
+                        {order.status === "PENDING" ? (
+                          <>
+                            <button
+                              onClick={() => handleApproveOrder(order.orderId)}
+                              className="btn btn-sm btn-primary text-xs"
+                              title="Verifikasi Manual & Tambahkan Saldo"
+                            >
+                              Verifikasi
+                            </button>
+                            <button
+                              onClick={() => handleRejectOrder(order.orderId)}
+                              className="btn btn-sm btn-secondary text-xs text-rose-600 hover:text-rose-700"
+                              title="Tolak Pesanan"
+                            >
+                              Tolak
+                            </button>
+                          </>
+                        ) : order.status === "PAID" ? (
+                          <span className="text-xs text-emerald-600 font-semibold inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Terverifikasi
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">Selesai</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {paymentOrdersList.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="px-5 py-8 text-center text-xs text-slate-500">
+                        Belum ada riwayat transaksi pembayaran.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TAB 4: PENGATURAN & CLOUD */}
       {activeTab === "settings" && (
         <div className="grid md:grid-cols-2 gap-6">
@@ -551,6 +801,86 @@ SUPABASE_SERVICE_ROLE_KEY=eyJh...`}
           </div>
         </div>
       )}
+
+      {/* TAB: JEJAK AUDIT ADMINISTRATOR */}
+      {activeTab === "audit" && (
+        <div className="card p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <History className="w-5 h-5 text-brand-600" />
+                Jejak Audit Administrator (Admin Audit Trail)
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Merekam riwayat pengubahan paket, penambahan kredit, pembatalan, dan penghapusan kontrak demi akuntabilitas platform.
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+              {auditLogs.length} Aktivitas Terekam
+            </span>
+          </div>
+
+          {auditLogs.length === 0 ? (
+            <div className="py-12 text-center text-sm text-slate-400">
+              Belum ada riwayat aktivitas administratif yang tercatat.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 font-medium">
+                    <th className="py-2.5 px-3">Waktu</th>
+                    <th className="py-2.5 px-3">Admin</th>
+                    <th className="py-2.5 px-3">Aksi</th>
+                    <th className="py-2.5 px-3">Target</th>
+                    <th className="py-2.5 px-3">Detail</th>
+                    <th className="py-2.5 px-3">IP / Jaringan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-mono text-[11px]">
+                        {formatDateTimeID(log.createdAt)}
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-900">
+                        {log.adminEmail}
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
+                            log.action === "DELETE_AGREEMENT"
+                              ? "bg-rose-100 text-rose-700"
+                              : log.action === "CANCEL_AGREEMENT"
+                              ? "bg-amber-100 text-amber-800"
+                              : log.action === "UPDATE_PLAN"
+                              ? "bg-brand-100 text-brand-800"
+                              : "bg-emerald-100 text-emerald-800"
+                          }`}
+                        >
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap text-slate-700">
+                        <span className="font-semibold text-slate-500">{log.targetType}:</span>{" "}
+                        <span className="font-mono">{log.targetId}</span>
+                      </td>
+                      <td className="py-3 px-3 text-slate-600 font-mono text-[11px] max-w-xs truncate">
+                        {JSON.stringify(log.details)}
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap text-slate-400 font-mono text-[11px]">
+                        {log.ipAddress || "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      <ModalDialog onClose={closeDialog} {...dialogState} />
     </div>
   );
 }

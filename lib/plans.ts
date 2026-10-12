@@ -1,8 +1,3 @@
-// ==============================================================================
-// Sepakatin — Paket harga & aturan pemakaian (satu sumber kebenaran)
-// Dipakai oleh halaman harga, UI, API server, dan mode lokal.
-// ==============================================================================
-
 import type { AgreementStatus, PlanId } from "./types";
 
 export interface PricingPlan {

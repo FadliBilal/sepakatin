@@ -1,15 +1,22 @@
-import { toVerificationData } from "@/lib/agreement-logic";
-import { getByContractId, handle, ok, toListItem } from "@/lib/server/repo";
+import { AgreementError, toVerificationData } from "@/lib/agreement-logic";
+import { getByContractId, handle, ok } from "@/lib/server/repo";
+import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-/** Cek keaslian publik — hanya ringkasan dan referensi dokumen. */
-export async function GET(_req: Request, { params }: { params: { contractId: string } }) {
+export async function GET(req: Request, { params }: { params: { contractId: string } }) {
   return handle(async () => {
+    const { allowed, retryAfterSeconds } = rateLimit(`verify:${clientIp(req)}`, 30, 60_000);
+    if (!allowed) {
+      throw new AgreementError(
+        `Terlalu banyak pengecekan. Coba lagi dalam ${retryAfterSeconds} detik.`,
+        429,
+        "RATE_LIMITED"
+      );
+    }
     const record = await getByContractId(params.contractId);
     return ok({
       verification: await toVerificationData(record),
-      agreement: toListItem(record),
     });
   });
 }

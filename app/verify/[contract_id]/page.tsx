@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, ShieldAlert, XCircle, ArrowLeft, CheckCircle2, Clock, Printer } from "lucide-react";
-import { getVerificationData, getAgreementByContractId } from "@/lib/store";
-import { PublicVerificationData, AgreementRecord } from "@/lib/types";
+import { ShieldCheck, ShieldAlert, XCircle, ArrowLeft, CheckCircle2, Clock, Check, AlertTriangle } from "lucide-react";
+import { getVerificationData } from "@/lib/store";
+import { PublicVerificationData } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
 import { QRCodeViewer } from "@/components/QRCodeViewer";
 import { formatDateID, formatDateTimeID } from "@/lib/crypto";
@@ -15,7 +15,6 @@ export default function PublicContractVerificationPage() {
   const contractIdParam = decodeURIComponent((params.contract_id as string) || "");
 
   const [verifyData, setVerifyData] = useState<PublicVerificationData | null>(null);
-  const [agreementRecord, setAgreementRecord] = useState<AgreementRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUrl, setCurrentUrl] = useState("");
 
@@ -23,7 +22,6 @@ export default function PublicContractVerificationPage() {
     async function load() {
       if (contractIdParam) {
         setVerifyData(await getVerificationData(contractIdParam));
-        setAgreementRecord(await getAgreementByContractId(contractIdParam));
       }
       setCurrentUrl(window.location.href);
       setIsLoading(false);
@@ -91,8 +89,16 @@ export default function PublicContractVerificationPage() {
               </h1>
             </div>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1.5 bg-white/20 rounded-lg text-sm font-semibold">
-            {isOriginal ? "✓ Asli, tidak diubah" : "⚠ Ada perubahan"}
+          <span className="self-start sm:self-auto px-3 py-1.5 bg-white/20 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5">
+            {isOriginal ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-300" /> Asli, tidak diubah
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="w-4 h-4 text-amber-300" /> Ada perubahan
+              </>
+            )}
           </span>
         </div>
 
@@ -165,26 +171,23 @@ export default function PublicContractVerificationPage() {
           </div>
         </div>
 
-        {agreementRecord && (
-          <div className="bg-slate-50 px-6 sm:px-8 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-            {agreementRecord.stampedDocuments && agreementRecord.stampedDocuments.length > 0 ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-full">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                {agreementRecord.stampedDocuments.length === 2
-                  ? "2/2 Salinan Berkas Bermeterai Resmi Tersedia"
-                  : "Berkas Bermeterai Resmi Tersedia"}
-              </span>
-            ) : (
-              <span className="text-xs text-slate-500">
-                Pencatatan integritas kriptografis SHA-256
-              </span>
-            )}
-            <Link href={`/agreements/${agreementRecord.id}/print`} className="btn btn-secondary btn-sm">
-              <Printer className="w-4 h-4" />
-              Lihat Dokumen
-            </Link>
-          </div>
-        )}
+        <div className="bg-slate-50 px-6 sm:px-8 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          {verifyData.hasStampedDocuments ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-full">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              {verifyData.stampedDocumentsCount === 2
+                ? "2/2 Salinan Berkas Bermeterai Resmi Tersedia"
+                : "Berkas Bermeterai Resmi Tersedia"}
+            </span>
+          ) : (
+            <span className="text-xs text-slate-500">
+              Pencatatan integritas kriptografis SHA-256
+            </span>
+          )}
+          <span className="text-xs text-slate-400">
+            Terverifikasi oleh Sepakatin Trust Network
+          </span>
+        </div>
       </div>
 
       <p className="text-xs text-slate-400 text-center max-w-xl mx-auto leading-relaxed mt-8">

@@ -33,6 +33,13 @@ async function main() {
     process.exit(1);
   }
 
+  // Kata sandi tidak lagi disimpan di dalam kode — ambil dari environment.
+  const demoPassword = (process.env.SEED_DEMO_PASSWORD || "").trim();
+  if (demoPassword.length < 12) {
+    console.error("Isi SEED_DEMO_PASSWORD (minimal 12 karakter) di .env.local sebelum menjalankan skrip ini.");
+    process.exit(1);
+  }
+
   console.log("1. Memeriksa pengguna Fadli Bilal di Supabase Auth...");
   const { data: usersData, error: listError } = await db.auth.admin.listUsers({ perPage: 1000 });
   if (listError) {
@@ -46,7 +53,7 @@ async function main() {
   if (userId) {
     console.log(`✓ Pengguna ditemukan (ID: ${userId}). Memastikan kata sandi & status email...`);
     await db.auth.admin.updateUserById(userId, {
-      password: fadliDemo.password,
+      password: demoPassword,
       email_confirm: true,
       user_metadata: { full_name: fadliDemo.fullName },
     });
@@ -54,7 +61,7 @@ async function main() {
     console.log(`Membuat pengguna baru untuk ${fadliDemo.email}...`);
     const { data: newUser, error: createError } = await db.auth.admin.createUser({
       email: fadliDemo.email,
-      password: fadliDemo.password,
+      password: demoPassword,
       email_confirm: true,
       user_metadata: { full_name: fadliDemo.fullName },
     });
@@ -127,7 +134,7 @@ async function main() {
   console.log("==================================================================");
   console.log("✅ BERHASIL SUNTIKKAN DOKUMEN 5 VERSI KE SUPABASE!");
   console.log(`   Akun       : ${fadliDemo.email}`);
-  console.log(`   Kata Sandi : ${fadliDemo.password}`);
+  console.log("   Kata Sandi : (sesuai SEED_DEMO_PASSWORD)");
   console.log(`   Paket      : Pro`);
   console.log(`   Kontrak ID : ${record.contractId}`);
   console.log(`   Total Versi: ${record.versions.length} versi`);

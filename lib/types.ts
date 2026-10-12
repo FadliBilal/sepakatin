@@ -100,6 +100,12 @@ export interface AgreementApprovalRecord {
   status: "APPROVED" | "PENDING" | "REJECTED";
   documentHash: string;
   approvedAt: string;
+  /**
+   * Jejak teknis saat persetujuan direkam, diisi server (tidak bisa dipalsukan browser).
+   * Berguna sebagai bukti tambahan bila salah satu pihak menyangkal telah menyetujui.
+   */
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 export interface ChangeRequestRecord {
@@ -123,6 +129,10 @@ export interface AgreementVersionRecord {
   createdBy: string;
   createdAt: string;
 }
+
+export type AgreementVersion = AgreementVersionRecord;
+export type ChangeRequest = ChangeRequestRecord;
+export type AgreementApproval = AgreementApprovalRecord;
 
 export interface ActivityLogItem {
   id: string;
@@ -161,7 +171,8 @@ export interface StampedDocumentRecord {
   agreementId: string;
   copyType: "freelancer_copy" | "client_copy";
   fileName: string;
-  fileUrl: string; // Base64 data URL atau URL berkas PDF yang sudah bermeterai
+  fileUrl: string; // Base64 data URL (legacy) atau signed download URL saat di-fetch
+  storagePath?: string; // Path penyimpanan objek di Supabase Storage (mis. "agreements/SPK-123/freelancer_copy.pdf")
   fileSize?: number; // Ukuran file dalam bytes
   uploadedAt: string;
   uploadedBy: string;
@@ -175,7 +186,11 @@ export interface SignatureRecord {
   signerName: string;
   signatureDataUrl: string; // Base64 data url of signature stroke or cursive
   signedAt: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
+
+export type VisualSignature = SignatureRecord;
 
 export interface AgreementRecord {
   id: string;
@@ -184,6 +199,7 @@ export interface AgreementRecord {
   status: AgreementStatus;
   currentVersionNumber: number;
   reviewToken: string; // Unique URL token for client review
+  reviewTokenExpiresAt?: string; // Masa berlaku tautan review klien (14 hari TTL)
   ownerId: string; // id akun freelancer pemilik
   plan: PlanId; // paket yang dipakai kesepakatan ini
   validFrom: string;
@@ -238,5 +254,51 @@ export interface PublicVerificationData {
   validUntil: string;
   freelancerName: string;
   clientName: string;
+  hasStampedDocuments: boolean;
+  stampedDocumentsCount: number;
   verifiedAt: string;
+}
+
+export interface AdminAuditLogItem {
+  id: string;
+  adminId: string;
+  adminEmail: string;
+  action: "UPDATE_PLAN" | "UPDATE_CREDITS" | "CANCEL_AGREEMENT" | "DELETE_AGREEMENT";
+  targetType: "USER" | "AGREEMENT";
+  targetId: string;
+  details: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export type PaymentPackageType = "credit_1" | "pro_monthly";
+export type PaymentOrderStatus = "PENDING" | "PAID" | "EXPIRED" | "FAILED";
+
+export interface PaymentOrderRecord {
+  id: string;
+  orderId: string;
+  userId: string;
+  userEmail: string;
+  packageType: PaymentPackageType;
+  amount: number;
+  paymentMethod: string;
+  paymentGateway: string;
+  gatewayTransactionId?: string;
+  paymentUrl?: string;
+  status: PaymentOrderStatus;
+  paidAt?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationLogRecord {
+  id: string;
+  recipientEmail: string;
+  notificationType: "VIEWED_BY_CLIENT" | "CHANGE_REQUESTED" | "AGREED_LOCKED" | "PAYMENT_SUCCESS";
+  agreementId?: string;
+  status: "SENT" | "FAILED" | "MOCKED";
+  errorMessage?: string;
+  sentAt: string;
 }
