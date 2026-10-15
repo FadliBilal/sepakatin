@@ -7,11 +7,8 @@ import { getAgreement, getAgreementByReviewToken } from "@/lib/store";
 import { AgreementRecord } from "@/lib/types";
 import { useSession } from "@/lib/auth";
 import { PrintableAgreement } from "@/components/PrintableAgreement";
-import { buildSealedDemoAgreement } from "@/lib/demo-data";
-
 /**
- * Versi cetak. Pemilik membuka lewat akunnya; klien membuka lewat `?token=<link undangan>`;
- * Dokumen contoh default (`agr_default_001`) bisa dibuka langsung oleh siapa saja.
+ * Versi cetak. Pemilik membuka lewat akunnya; klien membuka lewat `?token=<link undangan>`.
  */
 export default function AgreementPrintPage() {
   const params = useParams();
@@ -34,13 +31,8 @@ export default function AgreementPrintPage() {
           data = await getAgreement(id);
         }
 
-        // Fallback untuk contoh dokumen publik default
-        if (!data && (id === "agr_default_001" || id === "demo")) {
-          data = await buildSealedDemoAgreement("usr_freelancer_fadli");
-        }
-
         if (cancelled) return;
-        const valid = data && (data.id === id || id === "agr_default_001" || id === "demo") ? data : null;
+        const valid = data && data.id === id ? data : null;
         setAgreement(valid);
         setState(valid ? "ready" : "missing");
       } catch {
