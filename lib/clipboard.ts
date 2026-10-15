@@ -1,6 +1,4 @@
-// ==============================================================================
-// Sepakatin — Menyalin teks ke papan klip dengan hasil yang jujur
-// ==============================================================================
+// Sepakatin — Menyalin teks ke papan klip dengan fallback aman
 //
 // `navigator.clipboard` tidak selalu tersedia: butuh HTTPS (atau localhost),
 // izin browser, dan bisa ditolak di dalam WebView aplikasi lain. Kalau panggilannya

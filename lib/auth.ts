@@ -1,8 +1,4 @@
-// ==============================================================================
-// Sepakatin — Akun & sesi login
-// Mode Supabase: Supabase Auth (dipakai saat NEXT_PUBLIC_SUPABASE_* diisi).
-// Mode lokal   : akun disimpan di browser, untuk demo tanpa server.
-// ==============================================================================
+// Sepakatin — Akun & sesi login (Supabase Auth / Mode lokal)
 
 "use client";
 
@@ -49,10 +45,7 @@ function emit() {
   if (typeof window !== "undefined") window.dispatchEvent(new Event(AUTH_EVENT));
 }
 
-// ------------------------------------------------------------------------------
 // Mode lokal
-// ------------------------------------------------------------------------------
-
 function readRegisteredUsers(): LocalAccount[] {
   try {
     const raw = localStorage.getItem(USERS_KEY);
@@ -177,10 +170,7 @@ function getLocalSession(): SessionUser | null {
   }
 }
 
-// ------------------------------------------------------------------------------
 // Mode Supabase
-// ------------------------------------------------------------------------------
-
 let remoteUser: SessionUser | null = null;
 let remoteUsage: AccountUsage | null = null;
 let remoteReady = false;
@@ -259,10 +249,7 @@ export async function refreshAccount(): Promise<void> {
   else emit();
 }
 
-// ------------------------------------------------------------------------------
-// API publik
-// ------------------------------------------------------------------------------
-
+// API publik sesi & login
 export function getSession(): SessionUser | null {
   if (typeof window === "undefined") return null;
   return isSupabaseConfigured ? remoteUser : getLocalSession();

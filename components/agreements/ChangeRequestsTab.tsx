@@ -9,6 +9,8 @@ export interface ChangeRequestsTabProps {
   changeRequests: ChangeRequest[];
   revisionContent: ContractContentJSON["revision"];
   onOpenNewVersionModal: () => void;
+  agreementId?: string;
+  isLocked?: boolean;
 }
 
 const CHANGE_STATUS: Record<string, { label: string; style: string }> = {
@@ -26,6 +28,7 @@ export function ChangeRequestsTab({
   changeRequests,
   revisionContent,
   onOpenNewVersionModal,
+  isLocked,
 }: ChangeRequestsTabProps) {
   const isOverLimit = changeRequests.length > revisionContent.count;
   const overCount = Math.max(0, changeRequests.length - revisionContent.count);
@@ -41,7 +44,11 @@ export function ChangeRequestsTab({
         </div>
         <button onClick={onOpenNewVersionModal} className="btn btn-primary btn-sm flex-shrink-0">
           <PlusCircle className="w-4 h-4" />
-          {isOverLimit ? "Buat Dokumen Addendum" : "Ubah Kesepakatan"}
+          {isLocked
+            ? "Buat Amandemen (Versi Baru)"
+            : isOverLimit
+            ? "Buat Versi Baru (Penambahan Biaya)"
+            : "Ubah Kesepakatan"}
         </button>
       </div>
 
@@ -91,7 +98,7 @@ export function ChangeRequestsTab({
                 <strong>Rp{(revisionContent.extraRevisionRate || 0).toLocaleString("id-ID")}</strong> per revisi.
               </p>
               <p className="text-amber-800">
-                Freelancer disarankan membuat <strong>Dokumen Kesepakatan Baru (Addendum)</strong> yang memuat penambahan biaya tersebut dan disahkan kembali.
+                Freelancer dapat membuat <strong>Amandemen / Versi Baru</strong> yang memuat penambahan biaya tersebut langsung pada kesepakatan ini untuk disahkan kembali.
               </p>
             </div>
           )}

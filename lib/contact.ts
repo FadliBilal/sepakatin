@@ -1,6 +1,4 @@
-// ==============================================================================
 // Sepakatin — Kontak WhatsApp untuk paket harga & bantuan
-// ==============================================================================
 
 export const WHATSAPP_NUMBER_DISPLAY = "0853-3933-3616";
 const WHATSAPP_NUMBER_INTL = "6285339333616";

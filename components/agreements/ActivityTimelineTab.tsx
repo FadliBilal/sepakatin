@@ -43,6 +43,7 @@ export function ActivityTimelineTab({
         <div className="space-y-2">
           {versions.map((v) => {
             const isSelected = selectedVersionNum === v.versionNumber;
+            const isLatest = v.versionNumber === versions[versions.length - 1]?.versionNumber;
             return (
               <div
                 key={v.id}
@@ -54,12 +55,23 @@ export function ActivityTimelineTab({
                 }`}
               >
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Versi {v.versionNumber}</p>
-                  <p className="text-xs text-slate-500">{formatDateID(v.createdAt)}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-bold text-slate-900">Versi {v.versionNumber}</p>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        isLatest
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {isLatest ? "Aktif" : "Riwayat"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">{formatDateID(v.createdAt)}</p>
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  Tersimpan
+                  Hash Terverifikasi
                 </span>
               </div>
             );

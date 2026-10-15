@@ -153,6 +153,21 @@ export function SignatureTab({
           </div>
         ) : null}
 
+        {/* Banner Pembaruan Versi Baru (Amandemen / Revisi) */}
+        {agreement.status === "PENDING_APPROVAL" && !bothSigned && (
+          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2.5 text-xs text-blue-900">
+            <Clock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-blue-950">
+                Pembaruan Versi {agreement.currentVersionNumber} Menunggu Persetujuan &amp; Tanda Tangan Ulang
+              </p>
+              <p className="mt-0.5 text-blue-800 leading-relaxed">
+                Karena ada penyesuaian klausul atau amandemen ruang lingkup pada Versi {agreement.currentVersionNumber}, tanda tangan sebelumnya di-reset sesuai hukum agar sah mengikat klausul baru ini. Silakan bubuhkan tanda tangan Anda dan minta pihak klien menyetujui ulang via tautan review.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Grid 2 Kotak Tanda Tangan */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
           {/* Kotak Freelancer */}

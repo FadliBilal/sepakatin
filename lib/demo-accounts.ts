@@ -1,6 +1,4 @@
-// ==============================================================================
 // Sepakatin — Akun contoh untuk mode lokal (tanpa Supabase) & dokumen contoh publik
-// ==============================================================================
 //
 // PENTING — JANGAN menambahkan akun administrator di sini.
 // Berkas ini ikut terbaca publik bila repositori dibuka, dan dipakai oleh

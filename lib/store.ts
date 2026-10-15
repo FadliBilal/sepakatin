@@ -38,10 +38,7 @@ export function errorMessage(err: unknown): string {
   return err instanceof Error && err.message ? err.message : "Terjadi kesalahan. Coba lagi.";
 }
 
-// ------------------------------------------------------------------------------
 // Mode Supabase — pemanggil API
-// ------------------------------------------------------------------------------
-
 async function api<T>(path: string, init: RequestInit = {}, withAuth = true): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (withAuth) {
@@ -55,10 +52,7 @@ async function api<T>(path: string, init: RequestInit = {}, withAuth = true): Pr
   return body as T;
 }
 
-// ------------------------------------------------------------------------------
 // Mode lokal — penyimpanan di browser
-// ------------------------------------------------------------------------------
-
 const LOCAL_KEY = "sepakatin_agreements_v2";
 const CREDITS_KEY = "sepakatin_credits_v2";
 
@@ -158,11 +152,7 @@ async function updateLocal(
   return updated;
 }
 
-// ------------------------------------------------------------------------------
-// API untuk halaman
-// ------------------------------------------------------------------------------
-
-/** Kesepakatan milik akun yang sedang masuk. */
+// API publik store untuk komponen & halaman
 export async function getAgreements(): Promise<AgreementRecord[]> {
   if (isSupabaseConfigured) return (await api<{ agreements: AgreementRecord[] }>("/api/agreements")).agreements;
   const user = requireLocalUser();
@@ -371,10 +361,7 @@ export async function clientAction(token: string, action: ClientAction): Promise
   return updateLocal((a) => a.reviewToken === token, (a) => applyClientAction(a, action), "Link tidak berlaku.");
 }
 
-// ------------------------------------------------------------------------------
-// Helper fungsi kemudahan (backward-compatible)
-// ------------------------------------------------------------------------------
-
+// Helper fungsi kemudahan
 export async function sendAgreementToClient(id: string): Promise<AgreementRecord> {
   return ownerAction(id, { type: "send" });
 }
@@ -575,10 +562,7 @@ export async function requestChange(
   return clientAction(idOrToken, { type: "requestChange", name, email, title, description });
 }
 
-// ------------------------------------------------------------------------------
 // Admin Platform Management
-// ------------------------------------------------------------------------------
-
 export interface AdminPlatformStats {
   totalUsers: number;
   totalAgreements: number;

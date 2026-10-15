@@ -69,13 +69,13 @@ export function FinalConsensusTab({
                   {bothSigned ? "Kesepakatan Sah & Mengikat Penuh" : "Menunggu Konsensus Kedua Pihak"}
                 </h2>
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  {isUnder5Million ? "Bebas Bea Meterai (≤ Rp5 Juta)" : stampedCount === 2 ? "2/2 e-Meterai Resmi" : "Sah UU ITE & KUHPerdata"}
+                  {isUnder5Million ? "Bebas Bea Meterai (≤ Rp5 Jt)" : stampedCount === 2 ? "2/2 e-Meterai" : "Sah & Mengikat"}
                 </span>
               </div>
               <p className="text-xs text-emerald-900 mt-1 leading-relaxed max-w-2xl">
                 {bothSigned
-                  ? `Kedua belah pihak (${content.freelancer.name} & ${content.client.name}) telah resmi menyetujui dan menandatangani dokumen ini. Kesepakatan sah mengikat secara hukum perdata (Pasal 1320 KUHPerdata & UU ITE No. 1/2024).`
-                  : "Dokumen ini akan terkunci otomatis dan sah mengikat penuh begitu kedua belah pihak membubuhkan tanda tangan."}
+                  ? `Kedua belah pihak (${content.freelancer.name} & ${content.client.name}) telah resmi menandatangani dokumen ini. Kesepakatan sah dan mengikat secara hukum.`
+                  : "Dokumen ini akan terkunci otomatis dan sah mengikat begitu kedua pihak selesai menandatangani."}
               </p>
             </div>
           </div>
@@ -185,19 +185,19 @@ export function FinalConsensusTab({
           </p>
         </div>
 
-        {/* 3. Ringkasan Forensik & Verifikasi Publik */}
+        {/* 3. Ringkasan Keaslian & Verifikasi Dokumen */}
         <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-brand-600" />
-              Jejak Forensik Konsensus &amp; Keaslian Publik
+              Jejak Persetujuan &amp; Keaslian Dokumen
             </h4>
             <Link
               href={`/verify/${agreement.contractId}`}
               target="_blank"
               className="text-xs font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1"
             >
-              Cek Halaman Verifikasi Publik
+              Cek Keaslian Dokumen
               <ExternalLink className="w-3 h-3" />
             </Link>
           </div>

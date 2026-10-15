@@ -45,8 +45,10 @@ export default function ClientReviewPage() {
   const [isEditingSignature, setIsEditingSignature] = useState(false);
   const [isSavingPostSignature, setIsSavingPostSignature] = useState(false);
   const [isDownloadingDoc, setIsDownloadingDoc] = useState(false);
+  const [selectedVersionNum, setSelectedVersionNum] = useState<number | null>(null);
 
   const [showChangeModal, setShowChangeModal] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [changeTitle, setChangeTitle] = useState("");
   const [changeDescription, setChangeDescription] = useState("");
   const [isSubmittingChange, setIsSubmittingChange] = useState(false);
@@ -179,7 +181,11 @@ export default function ClientReviewPage() {
   }
 
   const currentVersion = agreement.currentVersion;
-  const content = currentVersion.contentJson;
+  const activeVersion =
+    selectedVersionNum !== null
+      ? agreement.versions?.find((v) => v.versionNumber === selectedVersionNum) ?? currentVersion
+      : currentVersion;
+  const content = activeVersion.contentJson;
   const clientApproval = agreement.approvals.find(
     (a) => a.versionId === currentVersion.id && a.role === "client" && a.status === "APPROVED"
   );
@@ -308,12 +314,15 @@ export default function ClientReviewPage() {
 
     setIsSubmittingChange(true);
     try {
-      const updated = await requestChange(token, clientSignerName || "Klien", changeTitle.trim(), changeDescription.trim(), clientSignerEmail);
+      const categoryTag = selectedCategories.length ? `[${selectedCategories.join(", ")}] ` : "";
+      const formattedTitle = `${categoryTag}${changeTitle.trim()}`;
+      const updated = await requestChange(token, clientSignerName || "Klien", formattedTitle, changeDescription.trim(), clientSignerEmail);
       if (updated) {
         setAgreement({ ...updated });
         setShowChangeModal(false);
         setChangeTitle("");
         setChangeDescription("");
+        setSelectedCategories([]);
         showAlert({
           title: "Permintaan Perubahan Terkirim!",
           description: "Permintaan perubahan telah berhasil dikirimkan kepada pihak freelancer.",
@@ -471,13 +480,53 @@ export default function ClientReviewPage() {
         </div>
       )}
 
-      <AgreementDocument content={content} versionNumber={currentVersion.versionNumber} status={agreement.status}>
+      {agreement.versions && agreement.versions.length > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500">Versi Dokumen:</span>
+            {agreement.versions.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setSelectedVersionNum(v.versionNumber)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeVersion.versionNumber === v.versionNumber
+                    ? "bg-brand-600 text-white"
+                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                Versi {v.versionNumber} {v.versionNumber === currentVersion.versionNumber ? "(Aktif)" : "(Riwayat)"}
+              </button>
+            ))}
+          </div>
+          {activeVersion.versionNumber !== currentVersion.versionNumber && (
+            <span className="text-xs text-amber-700 font-medium">
+              Sedang menampilkan arsip Versi {activeVersion.versionNumber}
+            </span>
+          )}
+        </div>
+      )}
+
+      <AgreementDocument content={content} versionNumber={activeVersion.versionNumber} status={agreement.status}>
         {agreement.status === "AGREED" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex items-center gap-3">
             <ShieldCheck className="w-6 h-6 text-emerald-600 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-semibold text-emerald-900">Kesepakatan ini sudah disetujui kedua pihak</p>
               <p className="text-emerald-700">Dokumen dikunci dan menjadi acuan resmi proyek.</p>
+            </div>
+          </div>
+        )}
+        {agreement.status === "PENDING_APPROVAL" && (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="font-semibold text-blue-900">
+                Pembaruan Versi {currentVersion.versionNumber} Menunggu Persetujuan
+              </p>
+              <p className="text-blue-800">
+                Freelancer telah memperbarui kesepakatan ini menjadi Versi {currentVersion.versionNumber}. Mohon periksa klausul terbaru di bawah ini dan berikan tanda tangan serta persetujuan Anda.
+              </p>
             </div>
           </div>
         )}
@@ -530,6 +579,11 @@ export default function ClientReviewPage() {
                     ? `Terima kasih! Anda dan ${content.freelancer.name} telah menyetujui kesepakatan ini. Sesuai Pasal 1320 KUHPerdata & UU ITE, dokumen ini telah sah mengikat secara hukum dan pengerjaan proyek dapat segera dimulai.`
                     : `Disetujui oleh ${clientApproval.signerName} (${clientApproval.signerEmail}) pada ${formatDateTimeID(clientApproval.approvedAt)}.`}
                 </p>
+                {isDocumentLocked && (
+                  <p className="text-xs text-emerald-700/90 pt-1">
+                    <em>Catatan Amandemen:</em> Jika di tengah proyek diperlukan penambahan deliverables atau perubahan ruang lingkup kerja di luar kesepakatan ini, diskusikan dengan {content.freelancer.name} agar dibuatkan amandemen versi baru yang disetujui bersama.
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-emerald-200">
                 <Link
@@ -546,7 +600,7 @@ export default function ClientReviewPage() {
                   className="btn btn-secondary btn-sm text-xs"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Cek Keaslian Kriptografis
+                  Cek Keaslian Dokumen
                 </Link>
               </div>
             </div>
@@ -716,33 +770,65 @@ export default function ClientReviewPage() {
             </div>
             <form onSubmit={handleRequestChangeSubmit} className="space-y-4">
               <div>
+                <label className="label">Bagian yang ingin disesuaikan (pilih yang sesuai):</label>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {["Lingkup & Deliverables", "Tenggat Waktu", "Harga & DP", "Jatah Revisi", "Lainnya"].map((cat) => {
+                    const isSelected = selectedCategories.includes(cat);
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedCategories(selectedCategories.filter((c) => c !== cat));
+                          } else {
+                            setSelectedCategories([...selectedCategories, cat]);
+                          }
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
+                          isSelected
+                            ? "bg-brand-600 text-white border-brand-600"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}{cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
                 <label className="label">Judul Permintaan *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Tenggat dimundurkan & tambah halaman Tentang Kami"
+                  placeholder="Contoh: Tenggat dimundurkan & tambah file Figma"
                   value={changeTitle}
                   onChange={(e) => setChangeTitle(e.target.value)}
                   className="input"
                 />
               </div>
               <div>
-                <label className="label">Penjelasan *</label>
+                <label className="label">Penjelasan Rinci *</label>
                 <textarea
                   rows={4}
                   required
-                  placeholder="Jelaskan bagian mana yang perlu diubah dan seperti apa..."
+                  placeholder="Jelaskan secara spesifik apa saja yang perlu disesuaikan agar freelancer dapat memperbarui kesepakatan..."
                   value={changeDescription}
                   onChange={(e) => setChangeDescription(e.target.value)}
                   className="input leading-relaxed"
                 />
               </div>
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setShowChangeModal(false)} className="btn btn-secondary">
+                <button
+                  type="button"
+                  onClick={() => setShowChangeModal(false)}
+                  className="btn btn-secondary"
+                >
                   Batal
                 </button>
                 <button type="submit" disabled={isSubmittingChange} className="btn btn-primary">
-                  Kirim Permintaan
+                  {isSubmittingChange ? "Mengirim..." : "Kirim Permintaan"}
                 </button>
               </div>
             </form>

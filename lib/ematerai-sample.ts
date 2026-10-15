@@ -1,6 +1,4 @@
-// ==============================================================================
 // Sepakatin — Generator Dokumen Contoh Resmi (PDF Vektor dengan e-Meterai & TTD)
-// ==============================================================================
 
 
 import { jsPDF } from "jspdf";

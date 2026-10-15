@@ -31,23 +31,23 @@ export default function HomePage() {
   const problems = [
     "Rincian pekerjaan tercecer di ratusan chat dan voice note.",
     "Revisi diminta terus-menerus dengan alasan “masih kurang”.",
-    "Pelunasan molor karena tidak pasti bayar yang disepakati.",
+    "Pelunasan molor karena tanggal dan termin pembayaran tidak pernah disepakati resmi.",
     "Saat ada selisih paham, tidak ada bukti tertulis yang kuat.",
   ];
 
   const solutions = [
-    { title: "Satu link, semua jelas", desc: "Tertulis rapi dalam satu dokumen." },
-    { title: "Disetujui kedua pihak", desc: "Tiap versi dokumen yang disetujui." },
-    { title: "Tanda tangan digital sah", desc: "Kekuatan hukum mengikat & profesional." },
-    { title: "Transparan", desc: "Memiliki riwayat perubahan yang jelas." },
+    { title: "Lingkup terkunci", desc: "Deliverables dan batas pekerjaan tertulis gamblang." },
+    { title: "Jatah revisi pasti", desc: "Batas revisi dan tarif tambahan disepakati di awal." },
+    { title: "Pembayaran jelas", desc: "Nominal DP, termin, dan tenggat pelunasan hitam di atas putih." },
+    { title: "Bukti sah", desc: "Tanda tangan digital, stempel SHA-256, dan riwayat revisi resmi." },
   ];
 
   const steps = [
-    { icon: PenLine, title: "Isi formulir", desc: "Tulis pekerjaan, harga, DP, jatah revisi, dan tenggat waktu." },
-    { icon: Send, title: "Kirim ke klien", desc: "Bagikan link lewat WhatsApp. Klien tidak perlu daftar akun." },
-    { icon: Handshake, title: "Tanda tangan & setuju", desc: "Kedua pihak tanda tangan online, lalu dokumen dikunci." },
-    { icon: Stamp, title: "Bubuhkan e-Meterai", desc: "Unduh 2 salinan, bubuhkan e-Meterai resmi di portal Peruri." },
-    { icon: Printer, title: "Unggah & simpan", desc: "Unggah balik 2 berkas final. Klien langsung bisa mengunduhnya." },
+    { icon: PenLine, title: "Isi kesepakatan", desc: "Tulis rincian tugas, nominal, DP, jatah revisi, dan tenggat waktu." },
+    { icon: Send, title: "Kirim ke klien", desc: "Bagikan link lewat WhatsApp. Klien review langsung tanpa perlu daftar akun." },
+    { icon: Handshake, title: "Tanda tangan digital", desc: "Kedua pihak tanda tangan online, lalu dokumen otomatis dikunci resmi." },
+    { icon: Stamp, title: "e-Meterai (opsional)", desc: "Untuk proyek di atas Rp5 juta, bubuhkan e-Meterai resmi dengan mudah." },
+    { icon: Printer, title: "Simpan & unduh PDF", desc: "Dokumen sah berstempel SHA-256 tersimpan aman dan siap diunduh kapan saja." },
   ];
 
   const teamMembers = [
@@ -85,8 +85,8 @@ export default function HomePage() {
             </h1>
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
-              Ubah obrolan WhatsApp menjadi surat kesepakatan kerja yang rapi: apa yang dikerjakan,
-              berapa kali revisi, kapan dibayar, lengkap dengan{" "}
+              Ubah obrolan kerja menjadi surat kesepakatan resmi. Kunci rincian deliverables,
+              kuota revisi, dan tanggal pembayaran lengkap dengan{" "}
               <strong className="text-slate-900">tanda tangan digital sah dan verifikasi resmi</strong>.
             </p>
 
@@ -147,7 +147,7 @@ export default function HomePage() {
                 Didukung oleh Ekosistem Inovasi Digital
               </h2>
               <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
-                Sepakatin dikembangkan dan didukung oleh program inkubasi talenta serta jejaring kolaborasi inovasi teknologi terkemuka di Indonesia.
+                Sepakatin lahir dari program inkubasi inovasi digital dan didukung oleh jejaring kolaborasi teknologi lokal.
               </p>
             </div>
 
@@ -278,7 +278,7 @@ export default function HomePage() {
             </div>
             <h2 className="section-title">Di Balik Layar Sepakatin</h2>
             <p className="text-slate-600 mt-3 text-base leading-relaxed">
-              Dikembangkan oleh talenta digital Indonesia yang berdedikasi membangun kepastian hukum dan perlindungan kerja bagi jutaan pekerja lepas digital.
+              Dibangun oleh praktisi digital untuk membantu freelancer dan klien bekerja sama dengan batasan yang transparan.
             </p>
           </div>
 
@@ -320,7 +320,7 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-14">
             <p className="kicker mb-2">Harga</p>
             <h2 className="section-title">Mulai gratis. Klien tidak pernah dikenai biaya.</h2>
-            <p className="text-slate-600 mt-3">Pilih paket, lalu hubungi kami lewat WhatsApp untuk aktivasi.</p>
+            <p className="text-slate-600 mt-3">Mulai gratis untuk proyek pertama. Upgrade kapan saja dengan pembayaran instan QRIS.</p>
           </div>
           <PricingCards />
         </div>

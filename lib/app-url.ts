@@ -1,6 +1,4 @@
-// ==============================================================================
 // Sepakatin — Alamat publik aplikasi (satu sumber kebenaran)
-// ==============================================================================
 //
 // Kenapa ini tidak boleh memakai `window.location.origin` begitu saja:
 //

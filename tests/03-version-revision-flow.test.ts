@@ -87,4 +87,40 @@ export async function runRevisionFlowTests() {
     "Paket Gratis harus menolak revisi melebihi batas 2 versi"
   );
   console.log("  ✓ 3.5 Berhasil menegakkan aturan bisnis: Paket Gratis dibatasi maksimal 2 versi kesepakatan.");
+
+  // Test 3.6: Amandemen Kontrak Pada Paket Pro Setelah Sepakat (AGREED -> newVersion -> PENDING_APPROVAL)
+  let proAgreement = await buildNewAgreement({
+    content: baseContent,
+    contractId: "SPK-2026-AMD01",
+    ownerId: "user_freelancer_pro",
+    plan: "pro",
+    sendDirectly: true,
+  });
+  // Keduanya setuju hingga status AGREED
+  proAgreement = await applyOwnerAction(proAgreement, { type: "approve" });
+  proAgreement = await applyClientAction(proAgreement, {
+    type: "approve",
+    name: "Owner Resto",
+    email: "owner@restoenak.com",
+  });
+  assert.equal(proAgreement.status, "AGREED");
+  assert.equal(proAgreement.currentVersionNumber, 1);
+
+  // Freelancer menerbitkan amandemen Versi 2
+  proAgreement = await applyOwnerAction(proAgreement, {
+    type: "newVersion",
+    content: {
+      ...baseContent,
+      scope: {
+        description: "Amandemen: Penambahan Modul Integrasi Katering",
+        deliverables: [...baseContent.scope.deliverables, "Modul Katering"],
+      },
+      payment: { totalValue: 15000000, dpPercent: 30 },
+    },
+  });
+  assert.equal(proAgreement.currentVersionNumber, 2);
+  assert.equal(proAgreement.versions.length, 2);
+  assert.equal(proAgreement.status, "PENDING_APPROVAL");
+  assert.equal(proAgreement.signatures?.length ?? 0, 0); // Tanda tangan di-reset untuk Versi 2
+  console.log("  ✓ 3.6 Berhasil menerbitkan amandemen (Versi 2) pada dokumen yang telah disepakati (AGREED -> PENDING_APPROVAL).");
 }

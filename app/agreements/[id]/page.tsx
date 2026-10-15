@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Clock,
   X,
+  FileText,
 } from "lucide-react";
 import {
   getAgreement,
@@ -82,8 +83,13 @@ function AgreementDetail() {
   const [isSavingVersion, setIsSavingVersion] = useState(false);
   const [newVersionError, setNewVersionError] = useState("");
   const [revisedScopeDesc, setRevisedScopeDesc] = useState("");
+  const [revisedDeliverables, setRevisedDeliverables] = useState<string[]>([]);
+  const [revisedExclusions, setRevisedExclusions] = useState<string[]>([]);
   const [revisedTotalValue, setRevisedTotalValue] = useState<number>(0);
+  const [revisedDpPercent, setRevisedDpPercent] = useState<number>(50);
   const [revisedDeadline, setRevisedDeadline] = useState("");
+  const [revisedRevisionCount, setRevisedRevisionCount] = useState<number>(2);
+  const [revisedExtraRevisionRate, setRevisedExtraRevisionRate] = useState<number>(300000);
 
   // Modal Dialog Validasi & Konfirmasi Profesional
   const [dialogState, setDialogState] = useState<{
@@ -155,9 +161,15 @@ function AgreementDetail() {
       if (data) {
         setAgreement(data);
         setSelectedVersionNum(data.currentVersionNumber);
-        setRevisedScopeDesc(data.currentVersion.contentJson.scope.description);
-        setRevisedTotalValue(data.currentVersion.contentJson.payment.totalValue);
-        setRevisedDeadline(data.currentVersion.contentJson.timeline.deadline);
+        const base = data.currentVersion.contentJson;
+        setRevisedScopeDesc(base.scope.description);
+        setRevisedDeliverables(base.scope.deliverables?.length ? [...base.scope.deliverables] : [""]);
+        setRevisedExclusions(base.scope.exclusions?.length ? [...base.scope.exclusions] : [""]);
+        setRevisedTotalValue(base.payment.totalValue);
+        setRevisedDpPercent(base.payment.dpPercent ?? 50);
+        setRevisedDeadline(base.timeline.deadline);
+        setRevisedRevisionCount(base.revision?.count ?? 2);
+        setRevisedExtraRevisionRate(base.revision?.extraRevisionRate ?? 300000);
       } else {
         setNotFound(true);
       }
@@ -189,6 +201,7 @@ function AgreementDetail() {
   const content = agreement.currentVersion.contentJson;
   const clientReviewUrl = reviewUrlFor(agreement.reviewToken);
   const displayVersion = agreement.versions.find((v) => v.versionNumber === selectedVersionNum) ?? agreement.currentVersion;
+  const displayContent = displayVersion.contentJson;
   const currentApprovals = agreement.approvals.filter(
     (ap) => ap.versionId === agreement.currentVersion.id && ap.status === "APPROVED"
   );
@@ -408,8 +421,13 @@ function AgreementDetail() {
   const openNewVersionModal = () => {
     const base = agreement.currentVersion.contentJson;
     setRevisedScopeDesc(base.scope.description);
+    setRevisedDeliverables(base.scope.deliverables?.length ? [...base.scope.deliverables] : [""]);
+    setRevisedExclusions(base.scope.exclusions?.length ? [...base.scope.exclusions] : [""]);
     setRevisedTotalValue(base.payment.totalValue);
+    setRevisedDpPercent(base.payment.dpPercent ?? 50);
     setRevisedDeadline(base.timeline.deadline);
+    setRevisedRevisionCount(base.revision?.count ?? 2);
+    setRevisedExtraRevisionRate(base.revision?.extraRevisionRate ?? 300000);
     setNewVersionError("");
     setShowNewVersionModal(true);
   };
@@ -419,23 +437,37 @@ function AgreementDetail() {
     const isDraft = agreement.status === "DRAFT";
     const base = agreement.currentVersion.contentJson;
     const newTotal = Number(revisedTotalValue) || base.payment.totalValue;
-    const dpPercent = base.payment.dpPercent ?? 50;
+    const dpPercent = Math.min(100, Math.max(0, Number(revisedDpPercent) || 0));
     const dpAmount = Math.round((newTotal * dpPercent) / 100);
-    const remainingAmount = newTotal - dpAmount;
+    const remainingAmount = Math.max(0, newTotal - dpAmount);
     const updatedMilestones = [
       ...(dpAmount > 0 ? [{ title: `Uang muka (DP) ${dpPercent}% sebelum pekerjaan dimulai`, amount: dpAmount }] : []),
       ...(remainingAmount > 0 ? [{ title: "Pelunasan saat hasil kerja diserahkan", amount: remainingAmount }] : []),
     ];
 
+    const cleanDeliverables = revisedDeliverables.map((s) => s.trim()).filter(Boolean);
+    const cleanExclusions = revisedExclusions.map((s) => s.trim()).filter(Boolean);
+
     const updatedContent: ContractContentJSON = {
       ...base,
-      scope: { ...base.scope, description: revisedScopeDesc },
+      scope: {
+        ...base.scope,
+        description: revisedScopeDesc.trim(),
+        deliverables: cleanDeliverables.length ? cleanDeliverables : base.scope.deliverables,
+        exclusions: cleanExclusions,
+      },
       payment: {
         ...base.payment,
         totalValue: newTotal,
+        dpPercent,
         milestones: updatedMilestones,
       },
       timeline: { ...base.timeline, deadline: revisedDeadline || base.timeline.deadline },
+      revision: {
+        ...base.revision,
+        count: Number(revisedRevisionCount) || base.revision.count,
+        extraRevisionRate: Number(revisedExtraRevisionRate) || base.revision.extraRevisionRate,
+      },
     };
 
     setNewVersionError("");
@@ -687,6 +719,16 @@ function AgreementDetail() {
                 Tandai Selesai
               </button>
             )}
+            {(agreement.status === "AGREED" || agreement.status === "ACTIVE") && (
+              <button
+                onClick={openNewVersionModal}
+                className="btn btn-secondary btn-sm text-brand-700 hover:bg-brand-50 border-brand-300"
+                title="Buat amandemen / versi baru untuk penambahan deliverables atau perubahan klausul pada kesepakatan ini"
+              >
+                <PlusCircle className="w-4 h-4 text-brand-600" />
+                Buat Amandemen (Versi {agreement.currentVersionNumber + 1})
+              </button>
+            )}
             {agreement.status === "DRAFT" ? (
               <button
                 onClick={handleDeleteDraft}
@@ -743,6 +785,30 @@ function AgreementDetail() {
             </div>
           </div>
         )}
+
+        {/* Banner Edukasi & Aksi Addendum jika sudah Deal */}
+        {(agreement.status === "AGREED" || agreement.status === "ACTIVE") && (
+          <div className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  Dokumen Sah &amp; Terkunci Permanen
+                </p>
+                <p className="text-xs text-slate-500 leading-relaxed mt-0.5">
+                  Isi kontrak tidak dapat diubah lagi demi keabsahan hukum tanda tangan. Jika klien meminta tambahan fitur atau pekerjaan di luar ruang lingkup ini, terbitkan <strong>Dokumen Addendum</strong> baru.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/agreements/new?addendum_to=${agreement.id}`}
+              className="btn btn-primary btn-sm whitespace-nowrap self-start md:self-auto flex-shrink-0"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Buat Addendum Proyek
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Ribbon Milestone Kemajuan Dokumen (Modul Komponen) */}
@@ -757,25 +823,43 @@ function AgreementDetail() {
         isSentToClient={isSentToClient}
       />
 
-      {/* TAB 1: ISI DOKUMEN */}
       {activeTab === "document" && (
         <div className="space-y-4">
           <div className="card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-slate-500 pl-1">Lihat versi:</span>
-              {agreement.versions.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => setSelectedVersionNum(v.versionNumber)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    selectedVersionNum === v.versionNumber
-                      ? "bg-brand-600 text-white"
-                      : "text-slate-600 bg-slate-100 hover:bg-slate-200"
-                  }`}
-                >
-                  {v.versionNumber}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="font-semibold text-slate-500 pr-1 flex items-center gap-1">
+                <FileText className="w-3.5 h-3.5 text-slate-400" />
+                Versi:
+              </span>
+              {agreement.versions.map((v) => {
+                const isCurrent = v.versionNumber === agreement.currentVersionNumber;
+                const isSelected = selectedVersionNum === v.versionNumber;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setSelectedVersionNum(v.versionNumber)}
+                    className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 ${
+                      isSelected
+                        ? "bg-brand-600 text-white shadow-sm ring-2 ring-brand-300"
+                        : "text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                    }`}
+                  >
+                    <span>v{v.versionNumber}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                        isSelected
+                          ? "bg-brand-700 text-white"
+                          : isCurrent
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {isCurrent ? "Aktif" : "Riwayat"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <div className="flex items-center gap-2">
               {agreement.status === "DRAFT" && (
@@ -784,10 +868,16 @@ function AgreementDetail() {
                   Kirim ke Klien
                 </button>
               )}
-              <button onClick={openNewVersionModal} className="btn btn-secondary btn-sm">
-                <PlusCircle className="w-4 h-4" />
-                {agreement.status === "DRAFT" ? "Edit Draf" : "Ubah Kesepakatan"}
-              </button>
+              {!["COMPLETED", "CANCELLED", "EXPIRED", "REJECTED"].includes(agreement.status) && (
+                <button onClick={openNewVersionModal} className="btn btn-secondary btn-sm">
+                  <PlusCircle className="w-4 h-4" />
+                  {agreement.status === "DRAFT"
+                    ? "Edit Draf"
+                    : agreement.status === "AGREED" || agreement.status === "ACTIVE"
+                    ? `Buat Amandemen (Versi ${agreement.currentVersionNumber + 1})`
+                    : `Ubah Kesepakatan (Versi ${agreement.currentVersionNumber + 1})`}
+                </button>
+              )}
             </div>
           </div>
 
@@ -796,15 +886,15 @@ function AgreementDetail() {
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-amber-950">Status Kesepakatan: Draf Baru</p>
+                  <p className="font-bold text-amber-950">Status: Draf Baru</p>
                   <p className="mt-0.5 text-amber-800">
-                    Periksa seluruh klausul di bawah ini. Setelah detail disetujui, klik <strong>Kirim ke Klien</strong> agar link peninjauan aktif dan kedua pihak dapat menandatangani dokumen.
+                    Periksa rincian di bawah. Jika sudah pas, klik <strong>Kirim ke Klien</strong> agar klien bisa membaca dan tanda tangan.
                   </p>
                 </div>
               </div>
               <button onClick={handleSendToClient} className="btn btn-primary btn-sm flex-shrink-0 self-start sm:self-center">
                 <Send className="w-3.5 h-3.5" />
-                Kirim ke Klien Sekarang
+                Kirim ke Klien
               </button>
             </div>
           )}
@@ -813,29 +903,45 @@ function AgreementDetail() {
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
               <span className="text-slate-500 font-medium">Proyek:</span>
-              <p className="font-bold text-slate-900 text-sm">{content.projectName}</p>
+              <p className="font-bold text-slate-900 text-sm">{displayContent.projectName}</p>
             </div>
             <div>
               <span className="text-slate-500 font-medium">Nilai Total:</span>
-              <p className="font-bold text-brand-700 text-sm">{formatCurrencyIDR(content.payment.totalValue)}</p>
+              <p className="font-bold text-brand-700 text-sm">{formatCurrencyIDR(displayContent.payment.totalValue)}</p>
             </div>
             <div>
               <span className="text-slate-500 font-medium">Tenggat Waktu:</span>
-              <p className="font-bold text-slate-900 text-sm">{formatDateID(content.timeline.deadline)}</p>
+              <p className="font-bold text-slate-900 text-sm">{formatDateID(displayContent.timeline.deadline)}</p>
             </div>
           </div>
 
-          <AgreementDocument content={content} versionNumber={displayVersion.versionNumber} status={agreement.status}>
-            {displayVersion.versionNumber !== agreement.currentVersionNumber && (
-              <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                Anda sedang melihat versi lama ({displayVersion.versionNumber}). Versi terbaru adalah versi {agreement.currentVersionNumber}.
-              </p>
-            )}
-          </AgreementDocument>
+          {displayVersion.versionNumber !== agreement.currentVersionNumber && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-amber-900">
+              <div className="flex items-start gap-2.5">
+                <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-950">
+                    Anda sedang melihat arsip Versi {displayVersion.versionNumber}
+                  </p>
+                  <p className="text-xs text-amber-800 mt-0.5">
+                    Dibuat pada {formatDateID(displayVersion.createdAt)}. Versi aktif saat ini adalah <strong>Versi {agreement.currentVersionNumber}</strong>.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedVersionNum(agreement.currentVersionNumber)}
+                className="btn btn-secondary btn-sm flex-shrink-0 self-start sm:self-center text-xs"
+              >
+                Lihat Versi {agreement.currentVersionNumber} (Aktif)
+              </button>
+            </div>
+          )}
+
+          <AgreementDocument content={displayContent} versionNumber={displayVersion.versionNumber} status={agreement.status} />
         </div>
       )}
 
-      {/* TAB 2: TANDA TANGAN & PERSETUJUAN (Modul Komponen) */}
       {activeTab === "signatures" && (
         <SignatureTab
           agreement={agreement}
@@ -865,7 +971,6 @@ function AgreementDetail() {
         />
       )}
 
-      {/* TAB 3: E-METERAI & SALINAN SAH (Modul Komponen) */}
       {activeTab === "meterai" && (
         <OfficialEmateraiGuideTab
           agreement={agreement}
@@ -890,7 +995,6 @@ function AgreementDetail() {
         />
       )}
 
-      {/* TAB 4: SAH & MENGIKAT PENUH (Modul Komponen) */}
       {activeTab === "final" && (
         <FinalConsensusTab
           agreement={agreement}
@@ -907,16 +1011,16 @@ function AgreementDetail() {
         />
       )}
 
-      {/* TAB 4: PERMINTAAN PERUBAHAN (Modul Komponen) */}
       {activeTab === "changes" && (
         <ChangeRequestsTab
           changeRequests={agreement.changeRequests}
           revisionContent={content.revision}
           onOpenNewVersionModal={openNewVersionModal}
+          agreementId={agreement.id}
+          isLocked={isLocked}
         />
       )}
 
-      {/* TAB 5: RIWAYAT & AUDIT (Modul Komponen) */}
       {activeTab === "audit" && (
         <ActivityTimelineTab
           versions={agreement.versions}
@@ -926,7 +1030,6 @@ function AgreementDetail() {
         />
       )}
 
-      {/* MODAL: UBAH KESEPAKATAN / EDIT DRAF (Modul Komponen) */}
       <VersionHistoryModal
         isOpen={showNewVersionModal}
         onClose={() => setShowNewVersionModal(false)}
@@ -937,16 +1040,25 @@ function AgreementDetail() {
         hasSignatures={Boolean(freelancerSig || clientSig)}
         revisedScopeDesc={revisedScopeDesc}
         setRevisedScopeDesc={setRevisedScopeDesc}
+        revisedDeliverables={revisedDeliverables}
+        setRevisedDeliverables={setRevisedDeliverables}
+        revisedExclusions={revisedExclusions}
+        setRevisedExclusions={setRevisedExclusions}
         revisedTotalValue={revisedTotalValue}
         setRevisedTotalValue={setRevisedTotalValue}
+        revisedDpPercent={revisedDpPercent}
+        setRevisedDpPercent={setRevisedDpPercent}
         revisedDeadline={revisedDeadline}
         setRevisedDeadline={setRevisedDeadline}
+        revisedRevisionCount={revisedRevisionCount}
+        setRevisedRevisionCount={setRevisedRevisionCount}
+        revisedExtraRevisionRate={revisedExtraRevisionRate}
+        setRevisedExtraRevisionRate={setRevisedExtraRevisionRate}
         isSavingVersion={isSavingVersion}
         newVersionError={newVersionError}
         onSubmit={handleCreateNewVersionSubmit}
       />
 
-      {/* MODAL DIALOG KONFIRMASI & VALIDASI */}
       <ModalDialog onClose={closeDialog} {...dialogState} />
     </div>
   );

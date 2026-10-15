@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -18,16 +18,24 @@ import {
   Coins,
   RotateCcw,
 } from "lucide-react";
-import { createAgreement, errorMessage, getAccountUsage } from "@/lib/store";
+import { createAgreement, errorMessage, getAccountUsage, getAgreement } from "@/lib/store";
 import { AccountUsage } from "@/lib/plans";
-import { ContractContentJSON, MilestoneItem } from "@/lib/types";
+import { AgreementRecord, ContractContentJSON, MilestoneItem } from "@/lib/types";
 import { formatCurrencyIDR, generateContractId } from "@/lib/crypto";
 import { RequireAuth } from "@/components/RequireAuth";
 import { SessionUser } from "@/lib/auth";
 import { ModalDialog, ModalType } from "@/components/ModalDialog";
 
 export default function NewAgreementPage() {
-  return <RequireAuth>{(user) => <NewAgreementForm user={user} />}</RequireAuth>;
+  return (
+    <RequireAuth>
+      {(user) => (
+        <Suspense fallback={<div className="container-page py-16 text-center text-sm text-slate-500">Memuat formulir kesepakatan...</div>}>
+          <NewAgreementForm user={user} />
+        </Suspense>
+      )}
+    </RequireAuth>
+  );
 }
 
 function formatEstimatedDueDate(dateStr: string, addDays: number): string {
@@ -75,6 +83,10 @@ function FormSection({
 
 function NewAgreementForm({ user }: { user: SessionUser }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const addendumToId = searchParams?.get("addendum_to");
+  const [parentAgreement, setParentAgreement] = useState<AgreementRecord | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [usage, setUsage] = useState<AccountUsage | null>(null);
   const [useCredit, setUseCredit] = useState(false);
@@ -118,6 +130,35 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
       })
       .catch(() => setUsage(null));
   }, []);
+
+  useEffect(() => {
+    if (!addendumToId) return;
+    getAgreement(addendumToId).then((agr) => {
+      if (!agr) return;
+      setParentAgreement(agr);
+      const parent = agr.currentVersion.contentJson;
+      setProjectName(`Addendum: ${parent.projectName}`);
+      setClientName(parent.client.name || "");
+      setClientEmail(parent.client.email || "");
+      setClientPhone(parent.client.phone || "");
+      setClientCompany(parent.client.company || "");
+      if (parent.freelancer.name) setFreelancerName(parent.freelancer.name);
+      if (parent.freelancer.email) setFreelancerEmail(parent.freelancer.email);
+      if (parent.freelancer.phone) setFreelancerPhone(parent.freelancer.phone);
+      if (parent.freelancer.role) setFreelancerRole(parent.freelancer.role);
+      setScopeDesc(
+        `Pekerjaan tambahan / penyesuaian ruang lingkup untuk melengkapi kesepakatan ${agr.contractId}.`
+      );
+      setDeliverables(["", ""]);
+      setExclusions(["Pekerjaan di luar lingkup addendum ini"]);
+      setTotalValue(1500000);
+      setDpSelection("50");
+      setCustomDpPercent(50);
+      setCustomDpAmount(750000);
+      setRevisionCount(2);
+      setExtraRevisionRate(300000);
+    });
+  }, [addendumToId]);
 
   const isPro = usage?.plan === "pro";
   const freeFull = !!usage && !isPro && usage.activeFreeAgreements >= usage.maxActiveFreeAgreements;
@@ -498,6 +539,22 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           </button>
         </div>
       </div>
+
+      {parentAgreement && (
+        <div className="mb-6 p-4 rounded-2xl bg-brand-50 border border-brand-200 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+            ADD
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-brand-950">
+              Dokumen Addendum untuk Kesepakatan {parentAgreement.contractId}
+            </h3>
+            <p className="text-xs text-brand-800 leading-relaxed">
+              Data klien dan freelancer otomatis terisi dari kontrak utama &ldquo;{parentAgreement.currentVersion.contentJson.projectName}&rdquo;. Rincikan pekerjaan tambahan, nilai biaya baru, dan tenggat waktu addendum di bawah.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <FormSection number={1} title="Proyek & para pihak" desc="Siapa yang bekerja sama dan untuk proyek apa.">

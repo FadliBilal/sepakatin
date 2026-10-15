@@ -81,9 +81,7 @@ export function newReviewToken(): string {
   return `rev_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
 }
 
-// ------------------------------------------------------------------------------
 // Validasi isi kesepakatan
-// ------------------------------------------------------------------------------
 
 function text(value: unknown, label: string, { required = false, max = 2000 } = {}): string {
   const v = typeof value === "string" ? value.trim() : "";
@@ -256,10 +254,7 @@ function documentDataUrl(value: unknown, label: string): string {
   throw new AgreementError(`${label} harus berupa berkas dokumen PDF yang valid.`);
 }
 
-// ------------------------------------------------------------------------------
 // Membuat kesepakatan baru
-// ------------------------------------------------------------------------------
-
 export async function buildNewAgreement(params: {
   content: ContractContentJSON;
   contractId: string;
@@ -330,9 +325,7 @@ export async function buildNewAgreement(params: {
   };
 }
 
-// ------------------------------------------------------------------------------
-// Aksi pada kesepakatan
-// ------------------------------------------------------------------------------
+// Aksi kesepakatan
 
 function log(agr: AgreementRecord, actorName: string, eventType: AgreementRecord["activityLogs"][number]["eventType"], description: string) {
   agr.activityLogs.push({ id: newId("log"), agreementId: agr.id, actorName, eventType, description, createdAt: new Date().toISOString() });
@@ -440,8 +433,8 @@ export async function applyOwnerAction(
       break;
     }
     case "newVersion": {
-      if (LOCKED_STATUSES.includes(agr.status)) {
-        throw new AgreementError("Kesepakatan yang sudah disepakati atau ditutup tidak bisa diubah lagi.", 409);
+      if (closed) {
+        throw new AgreementError("Kesepakatan yang sudah ditutup tidak bisa diubah lagi.", 409);
       }
       if (agr.status === "DRAFT") {
         // Draf yang belum dikirim ke klien diedit langsung in-place tanpa menaikkan versi
@@ -467,6 +460,7 @@ export async function applyOwnerAction(
           "VERSION_LIMIT"
         );
       }
+      const wasAgreed = agr.status === "AGREED" || agr.status === "ACTIVE";
       const updated = sanitizeContent(action.content, agr.contractId);
       const v: AgreementVersionRecord = {
         id: newId("ver"),
@@ -482,8 +476,11 @@ export async function applyOwnerAction(
       agr.currentVersionNumber = v.versionNumber;
       agr.validFrom = updated.validFrom;
       agr.validUntil = updated.validUntil;
-      // Tanda tangan lama milik isi versi sebelumnya — harus ditandatangani ulang
+      // Tanda tangan & meterai lama milik isi versi sebelumnya — harus ditandatangani ulang
       agr.signatures = [];
+      agr.stampedDocuments = [];
+      agr.ematerai = undefined;
+      agr.emateraiList = [];
       agr.status = "PENDING_APPROVAL";
       agr.changeRequests.forEach((cr) => {
         if (cr.status === "OPEN") {
@@ -491,7 +488,10 @@ export async function applyOwnerAction(
           cr.resolvedAt = new Date().toISOString();
         }
       });
-      log(agr, owner, "VERSION_BUMPED", `Kesepakatan diperbarui menjadi versi ${v.versionNumber}. Kedua pihak perlu menyetujui ulang.`);
+      const logMsg = wasAgreed
+        ? `Amandemen kesepakatan diterbitkan menjadi versi ${v.versionNumber}. Kedua pihak perlu menyetujui dan menandatangani ulang.`
+        : `Kesepakatan diperbarui menjadi versi ${v.versionNumber}. Kedua pihak perlu menyetujui ulang.`;
+      log(agr, owner, "VERSION_BUMPED", logMsg);
       break;
     }
     case "uploadStampedDocument": {
@@ -703,10 +703,7 @@ export async function applyClientAction(
   return agr;
 }
 
-// ------------------------------------------------------------------------------
-// Data publik untuk halaman cek keaslian (tanpa isi detail kontrak)
-// ------------------------------------------------------------------------------
-
+// Data publik untuk halaman cek keaslian (tanpa membocorkan detail kontrak)
 export async function toVerificationData(agr: AgreementRecord): Promise<PublicVerificationData> {
   const v = agr.currentVersion;
   const approvals = agr.approvals.filter((a) => a.versionId === v.id && a.status === "APPROVED");
