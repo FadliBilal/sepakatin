@@ -253,7 +253,7 @@ export function PrintableAgreement({
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 flex items-start sm:items-center gap-2.5 text-xs text-amber-950 shadow-sm">
             <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1 leading-relaxed">
-              <strong>Perhatian:</strong> Kesepakatan ini masih berstatus <strong>{agreement.status}</strong> dan belum sah mengikat secara hukum hingga kedua pihak memberikan persetujuan resmi.
+              <strong>Perhatian:</strong> Kesepakatan ini masih berstatus <strong>{agreement.status}</strong> dan belum sah mengikat secara hukum. Dokumen ditampilkan dengan tanda air resmi <em>&ldquo;DRAF KESEPAKATAN — BELUM SAH&rdquo;</em> hingga konsensus persetujuan kedua pihak tercapai.
             </div>
           </div>
         </div>
@@ -263,12 +263,34 @@ export function PrintableAgreement({
       <div className="w-full overflow-x-auto pb-12 flex flex-col items-center print:overflow-visible print:pb-0">
         <div id="printable-agreement-sheet" className="w-[794px] space-y-8 print:space-y-0 print:w-[210mm]">
           {/* HALAMAN 1: KOP, PASAL 1, PASAL 2, & PASAL 3 */}
-          <div className="bg-white shadow-xl border border-slate-300 rounded-2xl print:shadow-none print:border-0 print:rounded-none">
+          <div className="bg-white shadow-xl border border-slate-300 rounded-2xl overflow-hidden print:shadow-none print:border-0 print:rounded-none">
             <div
               id="printable-page-1"
               className="a4-page p-10 sm:p-12 text-xs leading-relaxed flex flex-col justify-between"
             >
             <div className="space-y-6 print:space-y-4">
+          {/* Watermark Dinamis Draf Belum Sah */}
+          {isNotAgreedYet && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center select-none overflow-hidden"
+            >
+              <div className="transform -rotate-45 border-4 border-dashed border-rose-500/20 px-8 sm:px-12 py-6 text-center rounded-3xl bg-white/30 backdrop-blur-[0.5px]">
+                <span className="text-3xl sm:text-5xl font-black tracking-widest text-rose-500/20 uppercase block whitespace-nowrap">
+                  {agreement.status === "CANCELLED" ? "KESEPAKATAN" : "DRAF KESEPAKATAN"}
+                </span>
+                <span className="text-xl sm:text-3xl font-bold tracking-wider text-rose-500/20 uppercase block mt-1 whitespace-nowrap">
+                  {agreement.status === "CANCELLED" ? "DIBATALKAN" : "BELUM SAH"}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold tracking-normal text-rose-500/30 block mt-1.5">
+                  {agreement.status === "CANCELLED"
+                    ? "Dibatalkan · Tidak Memiliki Kekuatan Hukum"
+                    : "Belum Disetujui Kedua Belah Pihak · Tidak Sah Tanpa Konsensus"}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* DOCUMENT HEADER (KOP KESEPAKATAN FORMAL) */}
           <div className="border-b-2 border-slate-950 pb-6 mb-7 print:pb-5 print:mb-5 print-keep">
             <div className="flex items-start justify-between gap-6 mb-4">
@@ -449,22 +471,44 @@ export function PrintableAgreement({
           </div>
           <div className="text-right">
             <span className="font-medium text-slate-700">Sepakatin · Surat Kesepakatan Kerja</span>
-            <p className="text-[9px] text-slate-400 mt-0.5">Nomor Dokumen: {content.contractId}</p>
+            <p className="text-[9px] text-slate-400 mt-0.5">Nomor: {content.contractId} · Halaman 1 dari 2</p>
           </div>
         </div>
       </div>
     </div>
 
     {/* HALAMAN 2: PASAL 5, PENGESAHAN & TANDA TANGAN */}
-    <div className="print-page-break bg-white shadow-xl border border-slate-300 rounded-2xl print:shadow-none print:border-0 print:rounded-none">
+    <div className="print-page-break bg-white shadow-xl border border-slate-300 rounded-2xl overflow-hidden print:shadow-none print:border-0 print:rounded-none">
       <div
         id="printable-page-2"
         className="a4-page p-10 sm:p-12 text-xs leading-relaxed flex flex-col justify-between"
       >
         <div className="space-y-6 print:space-y-4">
+          {/* Watermark Dinamis Draf Belum Sah */}
+          {isNotAgreedYet && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center select-none overflow-hidden"
+            >
+              <div className="transform -rotate-45 border-4 border-dashed border-rose-500/20 px-8 sm:px-12 py-6 text-center rounded-3xl bg-white/30 backdrop-blur-[0.5px]">
+                <span className="text-3xl sm:text-5xl font-black tracking-widest text-rose-500/20 uppercase block whitespace-nowrap">
+                  {agreement.status === "CANCELLED" ? "KESEPAKATAN" : "DRAF KESEPAKATAN"}
+                </span>
+                <span className="text-xl sm:text-3xl font-bold tracking-wider text-rose-500/20 uppercase block mt-1 whitespace-nowrap">
+                  {agreement.status === "CANCELLED" ? "DIBATALKAN" : "BELUM SAH"}
+                </span>
+                <span className="text-[10px] sm:text-xs font-semibold tracking-normal text-rose-500/30 block mt-1.5">
+                  {agreement.status === "CANCELLED"
+                    ? "Dibatalkan · Tidak Memiliki Kekuatan Hukum"
+                    : "Belum Disetujui Kedua Belah Pihak · Tidak Sah Tanpa Konsensus"}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="border-b border-slate-300 pb-2 mb-5 flex justify-between items-center text-[10px] text-slate-500 print-keep">
             <span>Surat Kesepakatan Kerja: <strong className="text-slate-800">{content.contractId}</strong> · Versi {currentVersion.versionNumber}</span>
-            <span>Salinan Dokumen Resmi</span>
+            <span>Halaman 2 dari 2</span>
           </div>
 
           {/* PASAL 5: HAK CIPTA & TERMINASI */}
@@ -732,7 +776,7 @@ export function PrintableAgreement({
           {/* PRINT FOOTER */}
           <div className="mt-6 pt-3 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between items-center print-keep">
             <span>Diterbitkan resmi oleh Sepakatin · Keabsahan digital dijamin sistem</span>
-            <span>Nomor dokumen: {content.contractId}</span>
+            <span>Nomor dokumen: {content.contractId} · Halaman 2 dari 2</span>
           </div>
           </div>
         </div>
