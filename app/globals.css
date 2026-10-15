@@ -134,11 +134,8 @@ body {
   width: 794px;
   min-width: 794px;
   max-width: 794px;
-  height: 1123px;
   min-height: 1123px;
-  max-height: 1123px;
   box-sizing: border-box;
-  overflow: hidden;
   position: relative;
   background-color: #ffffff;
 }
@@ -146,7 +143,7 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 12mm 15mm;
   }
 
   html,
@@ -157,7 +154,7 @@ body {
     padding: 0 !important;
     min-height: 0 !important;
     height: auto !important;
-    width: 210mm !important;
+    width: 100% !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -178,27 +175,25 @@ body {
   }
 
   .a4-page {
-    width: 210mm !important;
-    min-width: 210mm !important;
-    max-width: 210mm !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     box-sizing: border-box !important;
-    padding: 12mm 15mm !important;
+    padding: 0 !important;
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     background: #ffffff !important;
-    overflow: hidden !important;
-    page-break-after: always !important;
-    break-after: page !important;
+    overflow: visible !important;
   }
 
-  .a4-page:last-child {
-    page-break-after: auto !important;
-    break-after: auto !important;
+  .print-keep {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .print-page-break {
@@ -206,11 +201,6 @@ body {
     break-before: page !important;
     margin-top: 0 !important;
     padding-top: 0 !important;
-  }
-
-  .print-keep {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
   }
 }
 
