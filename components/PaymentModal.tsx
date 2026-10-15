@@ -46,6 +46,22 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
   const packagePrice = packageType === "credit_1" ? 19000 : 49000;
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && step !== "simulating") {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, step, onClose]);
+
+  useEffect(() => {
     if (!isOpen) {
       setStep("loading");
       setCheckoutData(null);
@@ -112,8 +128,8 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
       <div className="card p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 relative">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
-          aria-label="Tutup"
+          className="absolute right-3 top-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          aria-label="Tutup dialog pembayaran"
         >
           <X className="w-5 h-5" />
         </button>
@@ -122,7 +138,7 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
           <div className="py-12 text-center space-y-3">
             <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto" />
             <p className="text-sm font-semibold text-slate-700">Menyiapkan QRIS Mayar.id...</p>
-            <p className="text-xs text-slate-400">Menghubungkan gateway pembayaran resmi</p>
+            <p className="text-xs text-slate-500">Menghubungkan gateway pembayaran resmi</p>
           </div>
         )}
 

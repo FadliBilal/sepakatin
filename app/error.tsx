@@ -36,7 +36,7 @@ export default function ErrorPage({
         <div className="space-y-2">
           <h1 className="page-title">Terjadi kesalahan</h1>
           <p className="text-slate-600 leading-relaxed">
-            Halaman ini gagal dimuat. Kesepakatan dan dokumen Anda tetap tersimpan aman —
+            Halaman ini gagal dimuat. Kesepakatan dan dokumen Anda tetap tersimpan aman,
             tidak ada data yang hilang.
           </p>
         </div>

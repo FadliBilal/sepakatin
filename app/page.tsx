@@ -1,15 +1,9 @@
-"use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import React from "react";
+import Image from "next/image";
 import {
-  ArrowRight,
   ShieldCheck,
-  FileText,
   CheckCircle2,
   XCircle,
-  Search,
   PenLine,
   Send,
   Handshake,
@@ -17,18 +11,13 @@ import {
   Printer,
   Users,
 } from "lucide-react";
-import { useSession } from "@/lib/auth";
 import { PricingCards } from "@/components/PricingCards";
+import { HomeHeroCta } from "@/components/home/HomeHeroCta";
+import { QuickVerifyForm } from "@/components/home/QuickVerifyForm";
 
 const DEMO_CONTRACT_ID = "SPK-2026-00124";
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user } = useSession();
-  const [quickVerifyId, setQuickVerifyId] = useState("");
-
-  const startHref = user ? "/agreements/new" : "/auth/register";
-
   const targetRoles = [
     "Pembuat Website & Aplikasi",
     "Desainer Grafis",
@@ -53,8 +42,6 @@ export default function HomePage() {
     { title: "Transparan", desc: "Memiliki riwayat perubahan yang jelas." },
   ];
 
-  // Urutan ini mengikuti 5 langkah yang sama persis di halaman kesepakatan,
-  // supaya yang dijanjikan di beranda tidak berbeda dengan yang dijalani pengguna.
   const steps = [
     { icon: PenLine, title: "Isi formulir", desc: "Tulis pekerjaan, harga, DP, jatah revisi, dan tenggat waktu." },
     { icon: Send, title: "Kirim ke klien", desc: "Bagikan link lewat WhatsApp. Klien tidak perlu daftar akun." },
@@ -90,7 +77,6 @@ export default function HomePage() {
       <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-brand-50/60 to-white">
         <div className="container-page pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7">
-
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-[1.1] mb-6">
               Jangan cuma deal di chat.{" "}
               <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">
@@ -100,47 +86,37 @@ export default function HomePage() {
 
             <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
               Ubah obrolan WhatsApp menjadi surat kesepakatan kerja yang rapi: apa yang dikerjakan,
-              berapa kali revisi, kapan dibayar, lengkap dengan <strong className="text-slate-900">tanda tangan digital sah
-              dan verifikasi resmi</strong>.
+              berapa kali revisi, kapan dibayar, lengkap dengan{" "}
+              <strong className="text-slate-900">tanda tangan digital sah dan verifikasi resmi</strong>.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href={startHref} className="btn btn-primary btn-lg">
-                {user ? "Buat Kesepakatan" : "Coba Gratis Sekarang"}
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link href="/agreements/agr_default_001/print" className="btn btn-secondary btn-lg">
-                <FileText className="w-5 h-5" />
-                Lihat Contoh Dokumen
-              </Link>
-            </div>
+            <HomeHeroCta />
           </div>
 
-          {/* Animasi 3D SepakatIn dengan Pencahayaan Studio Hangat */}
+          {/* Animasi 3D SepakatIn */}
           <div className="lg:col-span-5 flex justify-center items-center relative py-4">
-            {/* Halo Sinar Cahaya Hangat Studio di Belakang (Halus, Alami & Tidak Berkedip) */}
             <div
               className="absolute inset-0 max-w-[500px] max-h-[500px] m-auto rounded-full pointer-events-none -z-0"
               style={{
-                background: "radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.24) 0%, rgba(245, 158, 11, 0.12) 38%, rgba(254, 215, 170, 0.04) 62%, transparent 75%)",
+                background:
+                  "radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.24) 0%, rgba(245, 158, 11, 0.12) 38%, rgba(254, 215, 170, 0.04) 62%, transparent 75%)",
               }}
               aria-hidden="true"
             />
 
-            {/* Pendaran Cahaya di Bawah Dokumen (Floating Ground Glow) */}
             <div
               className="absolute bottom-4 sm:bottom-6 w-56 sm:w-72 h-10 rounded-full bg-gradient-to-r from-amber-400/25 via-orange-400/35 to-amber-400/25 blur-xl pointer-events-none -z-0"
               aria-hidden="true"
             />
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/SepakatIn_3D.gif"
-              alt="Animasi 3D Sepakatin — Kesepakatan Kerja Aman & Jelas"
-              width={512}
-              height={512}
+              alt="Animasi 3D Sepakatin: Kesepakatan Kerja Aman dan Jelas"
+              width={440}
+              height={440}
+              priority
+              unoptimized
               className="w-full max-w-[440px] h-auto object-contain select-none relative z-10 transition-transform duration-300 hover:scale-[1.02]"
-              draggable={false}
             />
           </div>
         </div>
@@ -154,7 +130,7 @@ export default function HomePage() {
                   <span className="text-sm sm:text-base font-light text-slate-700 tracking-wide">
                     {role}
                   </span>
-                  <span className="text-slate-400 select-none text-xs">•</span>
+                  <span className="text-slate-500 select-none text-xs">•</span>
                 </div>
               ))}
             </div>
@@ -178,29 +154,29 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 w-full lg:w-auto">
               {/* Garuda Spark Innovation Hub by KOMDIGI */}
               <div className="flex items-center justify-center px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src="/garuda-spark.png"
                   alt="Garuda Spark Innovation Hub by KOMDIGI"
+                  width={180}
+                  height={50}
                   className="h-12 sm:h-14 w-auto object-contain max-w-[210px] select-none"
-                  draggable={false}
                 />
               </div>
 
               {/* Ngalup.co */}
               <div className="flex items-center gap-3.5 px-6 py-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src="/ngalup.png"
                   alt="Ngalup.co Collaborative Hub"
+                  width={56}
+                  height={56}
                   className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-full shadow-sm select-none"
-                  draggable={false}
                 />
                 <div className="text-left">
                   <span className="block text-sm sm:text-base font-bold text-slate-900 tracking-tight">
                     Ngalup.co
                   </span>
-                  <span className="block text-xs font-medium text-slate-500">
+                  <span className="block text-xs font-medium text-slate-600">
                     Collaborative Hub
                   </span>
                 </div>
@@ -219,31 +195,13 @@ export default function HomePage() {
             </div>
             <div>
               <h3 className="card-title">Cek keaslian dokumen</h3>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-slate-600 mt-0.5">
                 Masukkan nomor dokumen untuk memastikan isinya asli dan sudah disetujui.
               </p>
             </div>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (quickVerifyId.trim()) router.push(`/verify/${quickVerifyId.trim().toUpperCase()}`);
-            }}
-            className="flex gap-2 w-full md:w-auto"
-          >
-            <input
-              type="text"
-              placeholder={`Contoh: ${DEMO_CONTRACT_ID}`}
-              value={quickVerifyId}
-              onChange={(e) => setQuickVerifyId(e.target.value)}
-              className="input md:w-72 uppercase placeholder:normal-case"
-            />
-            <button type="submit" className="btn btn-primary">
-              <Search className="w-4 h-4" />
-              Cek
-            </button>
-          </form>
+          <QuickVerifyForm demoContractId={DEMO_CONTRACT_ID} />
         </div>
       </section>
 
@@ -261,7 +219,7 @@ export default function HomePage() {
               <ul className="space-y-4">
                 {problems.map((p) => (
                   <li key={p} className="flex items-start gap-3 text-sm text-slate-600">
-                    <XCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+                    <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
                     <span>{p}</span>
                   </li>
                 ))}
@@ -300,10 +258,10 @@ export default function HomePage() {
                   <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
                     <step.icon className="w-5 h-5" />
                   </div>
-                  <span className="text-sm font-bold text-slate-300">0{idx + 1}</span>
+                  <span className="text-sm font-bold text-slate-400">0{idx + 1}</span>
                 </div>
                 <h4 className="text-sm font-semibold text-slate-900 mb-1.5">{step.title}</h4>
-                <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                <p className="text-sm text-slate-600 leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -319,7 +277,7 @@ export default function HomePage() {
               Tim Inovator Sepakatin
             </div>
             <h2 className="section-title">Di Balik Layar Sepakatin</h2>
-            <p className="text-slate-500 mt-3 text-base leading-relaxed">
+            <p className="text-slate-600 mt-3 text-base leading-relaxed">
               Dikembangkan oleh talenta digital Indonesia yang berdedikasi membangun kepastian hukum dan perlindungan kerja bagi jutaan pekerja lepas digital.
             </p>
           </div>
@@ -332,12 +290,12 @@ export default function HomePage() {
               >
                 {/* Frame Foto Studio */}
                 <div className="relative aspect-[3/4] w-full max-w-[280px] rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200/90 border border-slate-200 shadow-inner mb-5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={member.image}
                     alt={member.name}
+                    width={280}
+                    height={373}
                     className="w-full h-full object-cover object-top select-none transition-transform duration-500 group-hover:scale-105"
-                    draggable={false}
                   />
                 </div>
 
@@ -347,7 +305,7 @@ export default function HomePage() {
                 <p className="text-sm font-semibold text-brand-600 mt-1">
                   {member.role}
                 </p>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                   {member.subrole}
                 </p>
               </div>
@@ -362,7 +320,7 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-14">
             <p className="kicker mb-2">Harga</p>
             <h2 className="section-title">Mulai gratis. Klien tidak pernah dikenai biaya.</h2>
-            <p className="text-slate-500 mt-3">Pilih paket, lalu hubungi kami lewat WhatsApp untuk aktivasi.</p>
+            <p className="text-slate-600 mt-3">Pilih paket, lalu hubungi kami lewat WhatsApp untuk aktivasi.</p>
           </div>
           <PricingCards />
         </div>

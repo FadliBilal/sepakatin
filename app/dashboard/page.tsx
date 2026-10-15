@@ -13,7 +13,7 @@ import {
   Wallet,
   CheckCircle2,
   Clock,
-  Sparkles,
+  Zap,
   RefreshCw,
 } from "lucide-react";
 import { errorMessage, getAccountUsage, getAgreements } from "@/lib/store";
@@ -97,7 +97,7 @@ function Dashboard({ user }: { user: SessionUser }) {
     { icon: Wallet, label: "Total nilai proyek", value: formatCurrencyIDR(totalValue), note: `${counted.length} proyek tercatat`, color: "text-brand-600 bg-brand-50" },
     { icon: CheckCircle2, label: "Sudah disepakati", value: String(agreedCount), note: "Disetujui kedua pihak", color: "text-emerald-600 bg-emerald-50" },
     { icon: Clock, label: "Menunggu tindakan", value: String(pendingCount), note: "Menunggu klien atau revisi", color: "text-amber-600 bg-amber-50" },
-    { icon: Sparkles, label: "Paket Anda", value: usage ? (isPro ? "Pro" : "Gratis") : "…", note: planNote, color: "text-indigo-600 bg-indigo-50" },
+    { icon: Zap, label: "Paket Anda", value: usage ? (isPro ? "Pro" : "Gratis") : "…", note: planNote, color: "text-indigo-600 bg-indigo-50" },
   ];
 
   return (
@@ -115,7 +115,7 @@ function Dashboard({ user }: { user: SessionUser }) {
                       : "bg-slate-100 text-slate-700 border border-slate-200"
                   }`}
                 >
-                  <Sparkles className="w-3 h-3 text-brand-600" />
+                  <Zap className="w-3 h-3 text-brand-600" />
                   {isPro ? "Paket Pro" : "Paket Gratis"}
                 </span>
                 <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">

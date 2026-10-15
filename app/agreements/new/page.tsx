@@ -9,7 +9,9 @@ import {
   Trash2,
   Save,
   Send,
-  Sparkles,
+  Wand2,
+  Crown,
+  FileCheck,
   ClipboardList,
   Calculator,
   Calendar,
@@ -482,7 +484,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
             className="btn btn-secondary btn-sm text-xs font-semibold"
             title="Isi formulir dengan contoh realistis"
           >
-            <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+            <Wand2 className="w-3.5 h-3.5 text-brand-600" />
             Contoh Cepat
           </button>
           <button
@@ -959,7 +961,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
         {isPro ? (
           <div className="card p-5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-200 flex items-center gap-3.5">
             <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Sparkles className="w-4 h-4" />
+              <Crown className="w-4 h-4" />
             </span>
             <div>
               <div className="flex items-center gap-2">
@@ -977,7 +979,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           <section className="card p-6 sm:p-7 space-y-4">
             <div className="flex items-start gap-3">
               <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4" />
+                <FileCheck className="w-4 h-4" />
               </span>
               <div>
                 <h2 className="card-title">Tipe Penerbitan Kesepakatan</h2>

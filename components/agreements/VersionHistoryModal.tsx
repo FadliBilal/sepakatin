@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { AgreementStatus } from "@/lib/types";
@@ -48,6 +48,22 @@ export function VersionHistoryModal({
   newVersionError,
   onSubmit,
 }: VersionHistoryModalProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !isSavingVersion) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, isSavingVersion, onClose]);
+
   if (!isOpen) return null;
 
   const isDraft = status === "DRAFT";
@@ -81,8 +97,8 @@ export function VersionHistoryModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
-            aria-label="Tutup"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 flex-shrink-0"
+            aria-label="Tutup dialog perubahan versi"
           >
             <X className="w-5 h-5" />
           </button>

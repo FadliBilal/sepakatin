@@ -68,7 +68,7 @@ export function Footer() {
             <strong className="text-slate-700">Catatan:</strong> Sepakatin adalah platform pencatatan kesepakatan kerja online, bukan kantor atau penasihat hukum. Dokumen yang disetujui terlindungi dari perubahan sepihak.
           </p>
           <div className="flex items-center gap-3 self-start md:self-auto bg-slate-50 border border-slate-100 px-3.5 py-2 rounded-xl">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supported by:</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Supported by:</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/garuda-spark.png" alt="Garuda Spark by KOMDIGI" className="h-6 w-auto object-contain" />
             <div className="w-px h-4 bg-slate-200" />
@@ -78,7 +78,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-400 border-t border-slate-200 pt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500 border-t border-slate-200 pt-6">
           <p>© {new Date().getFullYear()} Sepakatin. Kesepakatan kerja freelancer Indonesia.</p>
           <p className="inline-flex items-center gap-1">
             Dibuat dengan <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> di Indonesia

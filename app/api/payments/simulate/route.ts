@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
       await sendTransactionalEmail({
         to: profile.email || user.email || "",
-        subject: `[Sepakatin - Sandbox] Pembayaran Berhasil — ${packageName}`,
+        subject: `[Sepakatin - Sandbox] Pembayaran Berhasil: ${packageName}`,
         html: `
           <div style="font-family: sans-serif; color: #0f172a; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
             <h2 style="color: #0f766e; margin-bottom: 8px;">Pembayaran Sandbox Berhasil</h2>

@@ -39,3 +39,6 @@ next-env.d.ts
 .local-agreements.json
 *.pdf
 
+# scratch & local form notes
+jawaban_form_exploraition.txt
+*.local.json

@@ -16,17 +16,16 @@ function verifyWebhookSecret(req: Request): boolean {
     return true;
   }
 
-  const url = new URL(req.url);
   const authHeader = req.headers.get("authorization") || "";
   const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
+  // Keamanan: Tolak verifikasi melalui query params (?token= / ?secret=)
+  // karena URL query dicatat pada server access log dan proxy pihak ketiga.
   const candidateToken =
     req.headers.get("x-mayar-token") ||
     req.headers.get("x-webhook-secret") ||
     req.headers.get("x-callback-token") ||
-    bearerToken ||
-    url.searchParams.get("token") ||
-    url.searchParams.get("secret");
+    bearerToken;
 
   if (!candidateToken) return false;
 
@@ -70,7 +69,7 @@ export async function POST(req: Request) {
 
     void sendTransactionalEmail({
       to: settlement.userEmail,
-      subject: `[Sepakatin] Pembayaran Berhasil — ${packageName}`,
+      subject: `[Sepakatin] Pembayaran Berhasil: ${packageName}`,
       html: `
         <div style="font-family: sans-serif; color: #0f172a; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
           <h2 style="color: #0f766e; margin-bottom: 8px;">Pembayaran Diterima</h2>
