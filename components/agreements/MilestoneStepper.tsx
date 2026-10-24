@@ -103,9 +103,9 @@ export function MilestoneStepper({
   ];
 
   return (
-    <div className="card p-4 sm:p-5 mb-6 border border-slate-200/90 shadow-sm bg-gradient-to-r from-slate-50/60 via-white to-slate-50/60">
+    <div className="card p-4 sm:p-5 mb-6 border border-[#E8E8EC] bg-white">
       {/* Header Baris Status & Tombol Tab Pintasan */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-3 border-b border-[#E8E8EC]">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
             Status Alur Dokumen:
@@ -142,10 +142,10 @@ export function MilestoneStepper({
           <button
             type="button"
             onClick={() => setActiveTab("changes")}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-all inline-flex items-center gap-1.5 ${
+            className={`text-xs px-3 py-1.5 rounded-md border transition-all inline-flex items-center gap-1.5 ${
               activeTab === "changes"
-                ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-2 ring-brand-500/20 font-bold"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-400 font-semibold"
+                : "border-[#E8E8EC] bg-white text-[#6B6B6B] hover:bg-slate-50 hover:text-[#0A0A0A] font-medium"
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
@@ -159,10 +159,10 @@ export function MilestoneStepper({
           <button
             type="button"
             onClick={() => setActiveTab("audit")}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-all inline-flex items-center gap-1.5 ${
+            className={`text-xs px-3 py-1.5 rounded-md border transition-all inline-flex items-center gap-1.5 ${
               activeTab === "audit"
-                ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-2 ring-brand-500/20 font-bold"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-400 font-semibold"
+                : "border-[#E8E8EC] bg-white text-[#6B6B6B] hover:bg-slate-50 hover:text-[#0A0A0A] font-medium"
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -178,12 +178,12 @@ export function MilestoneStepper({
             key={item.title}
             type="button"
             onClick={() => setActiveTab(item.id)}
-            className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+            className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
               item.isActive
-                ? "border-brand-500 bg-brand-50/60 shadow-sm ring-2 ring-brand-500/20"
+                ? "border-brand-500 bg-brand-50/70 shadow-sm ring-1 ring-brand-400"
                 : item.isComplete
                 ? "border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/70"
-                : "border-slate-200 bg-white hover:bg-slate-50"
+                : "border-[#E8E8EC] bg-white hover:bg-slate-50"
             }`}
           >
             <div className="flex items-center justify-between mb-1.5">
@@ -204,15 +204,15 @@ export function MilestoneStepper({
                     ? "bg-emerald-100 text-emerald-800"
                     : item.isActive
                     ? "bg-brand-100 text-brand-800"
-                    : "bg-slate-100 text-slate-600"
+                    : "bg-slate-100 text-[#6B6B6B]"
                 }`}
               >
                 {item.statusText}
               </span>
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900 leading-tight">{item.title}</p>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5">{item.desc}</p>
+              <p className="font-display text-xs font-bold text-[#0A0A0A] leading-tight">{item.title}</p>
+              <p className="text-[11px] text-[#6B6B6B] truncate mt-0.5">{item.desc}</p>
             </div>
           </button>
         ))}

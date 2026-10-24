@@ -48,12 +48,15 @@ export type OwnerAction =
   | { type: "ematerai"; imageUrl: string; serialNumber?: string; targetCopy: CopyType }
   | { type: "removeEmaterai" }
   | { type: "signature"; dataUrl: string }
+  | { type: "startWork" }
+  | { type: "rejectChangeRequest"; requestId: string; reason?: string }
   | { type: "complete" }
   | { type: "cancel" };
 
 export type ClientAction =
   | { type: "approve"; name: string; email: string }
   | { type: "requestChange"; name: string; email?: string; title: string; description: string }
+  | { type: "reject"; name: string; reason?: string }
   | { type: "signature"; name: string; dataUrl: string };
 
 /** Kesepakatan yang sudah disetujui kedua pihak atau ditutup tidak bisa diubah isinya. */
@@ -155,6 +158,8 @@ export function sanitizeContent(raw: ContractContentJSON, contractId: string): C
 
   return {
     contractId,
+    parentAgreementId: raw.parentAgreementId ? text(raw.parentAgreementId, "ID Kesepakatan Induk", { max: 100 }) : undefined,
+    parentContractId: raw.parentContractId ? text(raw.parentContractId, "Nomor Kontrak Induk", { max: 80 }) : undefined,
     projectName: text(raw.projectName, "Nama proyek", { required: true, max: 200 }),
     freelancer: {
       name: text(f.name, "Nama freelancer", { required: true, max: 120 }),
@@ -261,30 +266,43 @@ export async function buildNewAgreement(params: {
   ownerId: string;
   plan: PlanId;
   sendDirectly: boolean;
+  parentAgreementId?: string;
+  parentContractId?: string;
 }): Promise<AgreementRecord> {
   const now = new Date().toISOString();
   const content = sanitizeContent(params.content, params.contractId);
+  const parentAgreementId = params.parentAgreementId || content.parentAgreementId;
+  const parentContractId = params.parentContractId || content.parentContractId;
   const agreementId = newId("agr");
   const versionId = newId("ver");
   const status: AgreementStatus = params.sendDirectly ? "PENDING_CLIENT" : "DRAFT";
+
+  const finalizedContent: ContractContentJSON = {
+    ...content,
+    parentAgreementId,
+    parentContractId,
+  };
 
   const version: AgreementVersionRecord = {
     id: versionId,
     agreementId,
     versionNumber: 1,
-    contentJson: content,
-    documentHash: await generateDocumentHash(content),
+    contentJson: finalizedContent,
+    documentHash: await generateDocumentHash(finalizedContent),
     createdBy: content.freelancer.name,
     createdAt: now,
   };
 
+  const isAddendum = Boolean(parentContractId);
   const logs: AgreementRecord["activityLogs"] = [
     {
       id: newId("log"),
       agreementId,
       actorName: content.freelancer.name,
       eventType: "CREATED",
-      description: `Kesepakatan ${params.contractId} dibuat oleh ${content.freelancer.name}`,
+      description: isAddendum
+        ? `Dokumen Addendum ${params.contractId} (terikat kontrak induk ${parentContractId}) dibuat oleh ${content.freelancer.name}`
+        : `Kesepakatan ${params.contractId} dibuat oleh ${content.freelancer.name}`,
       createdAt: now,
     },
   ];
@@ -303,6 +321,8 @@ export async function buildNewAgreement(params: {
     id: agreementId,
     projectId: newId("proj"),
     contractId: params.contractId,
+    parentAgreementId,
+    parentContractId,
     status,
     currentVersionNumber: 1,
     reviewToken: newReviewToken(),
@@ -600,6 +620,31 @@ export async function applyOwnerAction(
       upsertSignature(agr, "freelancer", owner, imageDataUrl(action.dataUrl, "Tanda tangan"), ctx);
       break;
     }
+    case "startWork": {
+      if (agr.status !== "AGREED") {
+        throw new AgreementError("Hanya kesepakatan yang sudah disetujui (AGREED) yang dapat dimulai pengerjaannya.");
+      }
+      agr.status = "ACTIVE";
+      log(agr, owner, "STARTED", `${owner} menandai pekerjaan proyek resmi dimulai (status: Pengerjaan Aktif)`);
+      break;
+    }
+    case "rejectChangeRequest": {
+      if (closed || LOCKED_STATUSES.includes(agr.status)) {
+        throw new AgreementError("Kesepakatan sudah dikunci atau ditutup.");
+      }
+      const cr = agr.changeRequests.find((c) => c.id === action.requestId);
+      if (!cr) throw new AgreementError("Permintaan perubahan tidak ditemukan.", 404);
+      if (cr.status !== "OPEN") throw new AgreementError("Permintaan perubahan ini sudah ditindaklanjuti.");
+      cr.status = "REJECTED";
+      cr.resolvedAt = new Date().toISOString();
+      const openCount = agr.changeRequests.filter((c) => c.status === "OPEN").length;
+      if (openCount === 0 && agr.status === "CHANGES_REQUESTED") {
+        agr.status = agr.currentVersionNumber > 1 ? "PENDING_APPROVAL" : "PENDING_CLIENT";
+      }
+      const reasonSuffix = action.reason ? `: "${action.reason}"` : "";
+      log(agr, owner, "CHANGE_REJECTED", `${owner} menolak permintaan perubahan "${cr.title}"${reasonSuffix}`);
+      break;
+    }
     case "complete": {
       if (agr.status !== "AGREED" && agr.status !== "ACTIVE") {
         throw new AgreementError("Hanya kesepakatan yang sudah disepakati yang bisa ditandai selesai.");
@@ -688,6 +733,16 @@ export async function applyClientAction(
       log(agr, name, "CHANGE_REQUESTED", `Klien meminta perubahan: "${title}"`);
       break;
     }
+    case "reject": {
+      if (LOCKED_STATUSES.includes(agr.status)) {
+        throw new AgreementError("Kesepakatan sudah disetujui atau ditutup, tidak dapat ditolak.", 409);
+      }
+      const name = text(action.name, "Nama", { required: true, max: 120 });
+      const reason = text(action.reason, "Alasan penolakan", { required: false, max: 1000 }) || "Ditolak tanpa catatan";
+      agr.status = "REJECTED";
+      log(agr, name, "REJECTED", `${name} (klien) menolak kesepakatan: "${reason}"`);
+      break;
+    }
     case "signature": {
       if (LOCKED_STATUSES.includes(agr.status)) {
         throw new AgreementError("Kesepakatan sudah disetujui dan dikunci. Tanda tangan tidak dapat diubah lagi.", 409);
@@ -710,6 +765,7 @@ export async function toVerificationData(agr: AgreementRecord): Promise<PublicVe
   const computedHash = await generateDocumentHash(v.contentJson);
   return {
     contractId: agr.contractId,
+    parentContractId: agr.parentContractId,
     status: agr.status,
     projectName: v.contentJson.projectName,
     versionNumber: v.versionNumber,

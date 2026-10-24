@@ -136,22 +136,22 @@ export function VersionHistoryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="card max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-150 my-auto">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="card-flat max-w-2xl w-full max-h-[92vh] flex flex-col shadow-xl animate-in fade-in zoom-in-95 duration-150 my-auto">
         {/* Header Modal */}
-        <div className="p-5 sm:p-6 border-b border-slate-100 flex items-start justify-between gap-4 flex-shrink-0">
+        <div className="p-5 sm:p-6 border-b border-[#E8E8EC] flex items-start justify-between gap-4 flex-shrink-0">
           <div>
             <p className="kicker">
               {isDraft ? "Edit draf kesepakatan" : isAmendment ? "Amandemen kesepakatan" : "Pembaruan kesepakatan"}
             </p>
-            <h3 className="text-xl font-bold text-slate-900">
+            <h3 className="font-display text-xl font-bold text-[#0A0A0A]">
               {isDraft
                 ? "Edit Isi Draf Kesepakatan"
                 : isAmendment
                 ? `Formulir Amandemen (Versi ${currentVersionNumber + 1})`
                 : `Formulir Versi ${currentVersionNumber + 1}`}
             </h3>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-xs text-[#6B6B6B] mt-1 leading-relaxed">
               {isDraft
                 ? "Draf belum dikirim ke klien. Perubahan disimpan langsung tanpa menaikkan nomor versi."
                 : isAmendment
@@ -161,7 +161,7 @@ export function VersionHistoryModal({
           </div>
           <button
             onClick={onClose}
-            className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-[#6B6B6B] hover:text-[#0A0A0A] hover:bg-slate-100 transition-colors"
             aria-label="Tutup dialog"
           >
             <X className="w-5 h-5" />
@@ -172,7 +172,7 @@ export function VersionHistoryModal({
         {!isDraft && (
           <div className="px-6 pt-4 flex-shrink-0">
             {hasSignatures && !freeVersionLimitReached && (
-              <div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl p-3 leading-relaxed flex items-start gap-2.5">
+              <div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md p-3 leading-relaxed flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <strong>Penting:</strong> Tanda tangan sebelumnya akan diatur ulang karena ada perubahan isi kesepakatan. Kedua pihak perlu menandatangani ulang Versi {currentVersionNumber + 1}.
@@ -180,7 +180,7 @@ export function VersionHistoryModal({
               </div>
             )}
             {isLastFreeVersion && (
-              <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl p-3 mt-2 leading-relaxed">
+              <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md p-3 mt-2 leading-relaxed">
                 Ini <strong>kesempatan perubahan terakhir</strong> untuk kesepakatan pada paket Gratis.
               </p>
             )}
@@ -190,14 +190,14 @@ export function VersionHistoryModal({
         {/* Tab Navigasi Bagian */}
         {!freeVersionLimitReached && (
           <div className="px-6 pt-3 flex-shrink-0">
-            <div className="flex border-b border-slate-200 gap-2">
+            <div className="flex border-b border-[#E8E8EC] gap-2">
               <button
                 type="button"
                 onClick={() => setActiveSection("scope")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeSection === "scope"
-                    ? "border-brand-600 text-brand-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-brand-500 text-brand-600"
+                    : "border-transparent text-[#6B6B6B] hover:text-[#0A0A0A]"
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -208,8 +208,8 @@ export function VersionHistoryModal({
                 onClick={() => setActiveSection("payment")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeSection === "payment"
-                    ? "border-brand-600 text-brand-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-brand-500 text-brand-600"
+                    : "border-transparent text-[#6B6B6B] hover:text-[#0A0A0A]"
                 }`}
               >
                 <DollarSign className="w-4 h-4" />
@@ -220,8 +220,8 @@ export function VersionHistoryModal({
                 onClick={() => setActiveSection("revision")}
                 className={`pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 flex items-center gap-1.5 transition-colors ${
                   activeSection === "revision"
-                    ? "border-brand-600 text-brand-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-brand-500 text-brand-600"
+                    : "border-transparent text-[#6B6B6B] hover:text-[#0A0A0A]"
                 }`}
               >
                 <RefreshCw className="w-4 h-4" />
@@ -465,7 +465,7 @@ export function VersionHistoryModal({
 
         {/* Footer Actions */}
         {!freeVersionLimitReached && (
-          <div className="p-5 sm:p-6 border-t border-slate-100 flex items-center justify-between gap-3 flex-shrink-0 bg-slate-50/50 rounded-b-2xl">
+          <div className="p-5 sm:p-6 border-t border-[#E8E8EC] flex items-center justify-between gap-3 flex-shrink-0 bg-white rounded-b-xl">
             <div className="flex items-center gap-2">
               {activeSection !== "scope" && (
                 <button

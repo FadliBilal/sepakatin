@@ -17,12 +17,15 @@ const EVENT_LABELS: Record<ActivityLogItem["eventType"], string> = {
   SENT_TO_CLIENT: "Dikirim ke klien",
   VIEWED_BY_CLIENT: "Dibuka klien",
   CHANGE_REQUESTED: "Minta perubahan",
+  CHANGE_REJECTED: "Perubahan ditolak",
   VERSION_BUMPED: "Pembaruan",
   FREELANCER_APPROVED: "Freelancer",
   CLIENT_APPROVED: "Klien",
   AGREED_LOCKED: "Disepakati",
+  STARTED: "Mulai dikerjakan",
   COMPLETED: "Selesai",
   CANCELLED: "Dibatalkan",
+  REJECTED: "Ditolak",
 };
 
 /**
@@ -48,15 +51,15 @@ export function ActivityTimelineTab({
               <div
                 key={v.id}
                 onClick={() => onSelectVersion?.(v.versionNumber)}
-                className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
+                className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                   isSelected
-                    ? "bg-brand-50/70 border-brand-300 ring-1 ring-brand-400"
-                    : "bg-slate-50 border-slate-200 hover:bg-slate-100/70 cursor-pointer"
+                    ? "bg-brand-50 border-brand-300 ring-1 ring-brand-400"
+                    : "bg-white border-[#E8E8EC] hover:bg-slate-50 cursor-pointer"
                 }`}
               >
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold text-slate-900">Versi {v.versionNumber}</p>
+                    <p className="text-sm font-semibold text-[#0A0A0A]">Versi {v.versionNumber}</p>
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                         isLatest

@@ -162,6 +162,7 @@ export function PrintableAgreement({
 
   // Status draf atau belum berkonsensus sah kedua belah pihak
   const isNotAgreedYet = !["AGREED", "ACTIVE", "COMPLETED"].includes(agreement.status);
+  const isPremiumPlan = agreement.plan === "pro" || agreement.plan === "per-proyek";
 
   /**
    * Mengunduh berkas bermeterai resmi bila sudah ada. Isi berkasnya tidak ikut
@@ -294,7 +295,19 @@ export function PrintableAgreement({
           {/* DOCUMENT HEADER (KOP KESEPAKATAN FORMAL) */}
           <div className="border-b-2 border-slate-950 pb-6 mb-7 print:pb-5 print:mb-5 print-keep">
             <div className="flex items-start justify-between gap-6 mb-4">
-              <Logo size="lg" />
+              {isPremiumPlan ? (
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                    SPK
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 tracking-wider text-xs uppercase block">DOKUMEN KESEPAKATAN KERJA</span>
+                    <span className="text-[10px] text-slate-500 font-sans">Standar Hukum Perdata Pasal 1320 &amp; 1338 KUHPer</span>
+                  </div>
+                </div>
+              ) : (
+                <Logo size="lg" />
+              )}
               <div className="text-right space-y-1.5 flex-shrink-0">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-[11px] font-bold tracking-wide uppercase shadow-sm">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -308,8 +321,15 @@ export function PrintableAgreement({
 
             <div className="pt-1">
               <h1 className="text-2xl font-black tracking-wide text-slate-950 uppercase font-sans">
-                Surat Kesepakatan Kerja
+                {content.parentContractId ? "Addendum Surat Kesepakatan Kerja" : "Surat Kesepakatan Kerja"}
               </h1>
+              {content.parentContractId && (
+                <div className="mt-1.5 inline-flex items-center gap-2 px-2.5 py-1 rounded bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-medium">
+                  <span className="font-bold uppercase tracking-wider text-[9px] bg-amber-200/80 px-1 py-0.5 rounded">Addendum</span>
+                  <span>Terikat pada Kontrak Induk:</span>
+                  <strong className="font-mono">{content.parentContractId}</strong>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 mt-2">
                 <span>
                   Nomor Dokumen: <strong className="font-mono text-slate-950 font-semibold">{content.contractId}</strong>
@@ -466,12 +486,17 @@ export function PrintableAgreement({
             <QRCodeViewer value={verifyUrl} size={44} />
             <div className="leading-tight">
               <span className="font-bold text-slate-900 block">Segel Verifikasi Digital</span>
-              <span className="text-[9px] text-slate-500">Pindai QR untuk verifikasi keaslian & status konsensus</span>
+              <span className="text-[9px] text-slate-500">Pindai QR untuk verifikasi keaslian &amp; status konsensus</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="font-medium text-slate-700">Sepakatin · Surat Kesepakatan Kerja</span>
-            <p className="text-[9px] text-slate-400 mt-0.5">Nomor: {content.contractId} · Halaman 1 dari 2</p>
+            <span className="font-medium text-slate-700">
+              {isPremiumPlan ? "Dokumen Perjanjian Mandiri" : "Sepakatin · Surat Kesepakatan Kerja"}
+            </span>
+            <p className="text-[9px] text-slate-400 mt-0.5">
+              {!isPremiumPlan && <span className="font-semibold text-slate-500">Paket Gratis Sepakatin · </span>}
+              Nomor: {content.contractId} · Halaman 1 dari 2
+            </p>
           </div>
         </div>
       </div>
@@ -756,11 +781,13 @@ export function PrintableAgreement({
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />
                 <p className="font-bold text-slate-950">
-                  Jaminan Keabsahan &amp; Integritas Sepakatin
+                  {isPremiumPlan ? "Jaminan Keabsahan & Integritas Dokumen" : "Jaminan Keabsahan & Integritas Sepakatin"}
                 </p>
               </div>
               <p className="text-slate-700 text-xs font-sans leading-relaxed">
-                Naskah perjanjian ini tersimpan secara permanen dalam sistem Sepakatin dan dilindungi dari perubahan sepihak. Keabsahan konsensus dan integritas naskah dapat diverifikasi sewaktu-waktu dengan memindai kode QR di samping.
+                {isPremiumPlan
+                  ? "Naskah perjanjian ini dilindungi dari perubahan sepihak dengan pengesahan digital dan integritas kriptografis. Keabsahan konsensus dan integritas naskah dapat diverifikasi sewaktu-waktu dengan memindai kode QR di samping."
+                  : "Naskah perjanjian ini tersimpan secara permanen dalam sistem Sepakatin dan dilindungi dari perubahan sepihak. Keabsahan konsensus dan integritas naskah dapat diverifikasi sewaktu-waktu dengan memindai kode QR di samping."}
               </p>
               <p className="text-[10px] text-slate-500">
                 Kode Dokumen: <strong className="text-slate-900 font-mono">{content.contractId}</strong> · Versi {currentVersion.versionNumber}
@@ -775,7 +802,11 @@ export function PrintableAgreement({
 
           {/* PRINT FOOTER */}
           <div className="mt-6 pt-3 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between items-center print-keep">
-            <span>Diterbitkan resmi oleh Sepakatin · Keabsahan digital dijamin sistem</span>
+            <span>
+              {isPremiumPlan
+                ? "Diterbitkan secara digital · Keabsahan naskah dilindungi integritas kriptografis"
+                : "Diterbitkan resmi oleh Sepakatin (Paket Gratis) · sepakatin.com"}
+            </span>
             <span>Nomor dokumen: {content.contractId} · Halaman 2 dari 2</span>
           </div>
           </div>

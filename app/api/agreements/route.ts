@@ -15,7 +15,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser(req);
-    const body = await readJson<{ content: ContractContentJSON; sendDirectly?: boolean; useCredit?: boolean }>(req);
+    const body = await readJson<{
+      content: ContractContentJSON;
+      sendDirectly?: boolean;
+      useCredit?: boolean;
+      parentAgreementId?: string;
+      parentContractId?: string;
+    }>(req);
     const idempotencyKey = extractIdempotencyKey(req);
 
     const result = await runWithIdempotency({

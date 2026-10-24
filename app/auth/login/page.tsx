@@ -52,22 +52,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-10 px-4 sm:px-6 bg-slate-50/60">
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-10 px-4 sm:px-6 bg-[#FAFAFA]">
       <div className="w-full max-w-md">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-brand-600 transition mb-4"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#6366F1] transition mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Kembali ke Beranda
         </Link>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-7 sm:p-8 space-y-6">
+        <div className="bg-white rounded-xl border border-[#E8E8EC] p-7 sm:p-8 space-y-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold font-display tracking-tight text-[#0A0A0A]">
               Masuk ke Akun Anda
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#6B6B6B] mt-1.5 leading-relaxed">
               Kelola kesepakatan kerja dan amankan hak proyek Anda di satu tempat.
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="input pl-10"
                 />
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
@@ -107,11 +107,11 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="input pl-10 pr-10"
                 />
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E8E93] hover:text-[#0A0A0A] transition p-1"
                   aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -120,19 +120,19 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-[#4B4B4B]">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 w-3.5 h-3.5"
+                  className="rounded border-[#E8E8EC] text-[#6366F1] focus:ring-[#6366F1] w-3.5 h-3.5"
                 />
                 <span>Ingat saya di perangkat ini</span>
               </label>
             </div>
 
             {error && (
-              <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-2.5 leading-relaxed">
+              <div className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-3.5 py-2.5 leading-relaxed">
                 {error}
               </div>
             )}
@@ -140,24 +140,24 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn-primary w-full py-2.5 text-sm font-semibold shadow-sm"
+              className="btn btn-primary w-full py-2.5 text-sm font-semibold"
             >
               <LogIn className="w-4 h-4" />
               {isSubmitting ? "Memverifikasi..." : "Masuk ke Akun"}
             </button>
           </form>
 
-          <div className="pt-4 border-t border-slate-100 text-center">
-            <p className="text-xs sm:text-sm text-slate-600">
+          <div className="pt-4 border-t border-[#E8E8EC] text-center">
+            <p className="text-xs sm:text-sm text-[#6B6B6B]">
               Belum memiliki akun?{" "}
-              <Link href="/auth/register" className="font-semibold text-brand-600 hover:underline">
+              <Link href="/auth/register" className="font-semibold text-[#6366F1] hover:underline">
                 Daftar gratis sekarang
               </Link>
             </p>
           </div>
         </div>
 
-        <div className="mt-6 text-center text-[11px] text-slate-400">
+        <div className="mt-6 text-center text-[11px] text-[#8E8E93]">
           Perlindungan hukum sah KUHPerdata 1320 &middot; Tanda tangan digital UU ITE
         </div>
       </div>

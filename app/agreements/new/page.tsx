@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
+  ArrowRight,
   Plus,
   Trash2,
   Save,
@@ -17,6 +18,13 @@ import {
   Calendar,
   Coins,
   RotateCcw,
+  CheckCircle2,
+  ShieldCheck,
+  Check,
+  Layers,
+  DollarSign,
+  Clock,
+  UserCheck,
 } from "lucide-react";
 import { createAgreement, errorMessage, getAccountUsage, getAgreement } from "@/lib/store";
 import { AccountUsage } from "@/lib/plans";
@@ -54,38 +62,22 @@ function formatEstimatedDueDate(dateStr: string, addDays: number): string {
   }
 }
 
-function FormSection({
-  number,
-  title,
-  desc,
-  children,
-}: {
-  number: number;
-  title: string;
-  desc: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="card p-6 sm:p-7 space-y-5">
-      <div className="flex items-start gap-3 pb-4 border-b border-slate-100">
-        <span className="w-8 h-8 rounded-lg bg-brand-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
-          {number}
-        </span>
-        <div>
-          <h2 className="card-title">{title}</h2>
-          <p className="text-sm text-slate-500 mt-0.5">{desc}</p>
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
+const WIZARD_STEPS = [
+  { id: 1, title: "Pihak", subtitle: "Identitas Proyek & Kontak", icon: UserCheck },
+  { id: 2, title: "Lingkup", subtitle: "Pekerjaan & Luaran", icon: Layers },
+  { id: 3, title: "Biaya", subtitle: "Total Nilai & Termin", icon: DollarSign },
+  { id: 4, title: "Ketentuan", subtitle: "Jadwal & Hak Cipta", icon: Clock },
+  { id: 5, title: "Tinjau", subtitle: "Ringkasan & Terbitkan", icon: ShieldCheck },
+];
 
 function NewAgreementForm({ user }: { user: SessionUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const addendumToId = searchParams?.get("addendum_to");
   const [parentAgreement, setParentAgreement] = useState<AgreementRecord | null>(null);
+
+  // Navigasi Tahap Form (1 s.d. 5)
+  const [currentStep, setCurrentStep] = useState<number>(1);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [usage, setUsage] = useState<AccountUsage | null>(null);
@@ -125,8 +117,10 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
     getAccountUsage()
       .then((u) => {
         setUsage(u);
-        // Kuota Gratis penuh tapi masih punya kredit → otomatis pakai kredit
-        if (u.plan !== "pro" && u.activeFreeAgreements >= u.maxActiveFreeAgreements && u.credits > 0) setUseCredit(true);
+        // Kuota Gratis penuh tapi masih punya kredit: otomatis pilih gunakan kredit
+        if (u.plan !== "pro" && u.activeFreeAgreements >= u.maxActiveFreeAgreements && u.credits > 0) {
+          setUseCredit(true);
+        }
       })
       .catch(() => setUsage(null));
   }, []);
@@ -137,7 +131,8 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
       if (!agr) return;
       setParentAgreement(agr);
       const parent = agr.currentVersion.contentJson;
-      setProjectName(`Addendum: ${parent.projectName}`);
+      const cleanParentName = parent.projectName.replace(/^(Addendum:\s*)+/i, "");
+      setProjectName(`Addendum: ${cleanParentName}`);
       setClientName(parent.client.name || "");
       setClientEmail(parent.client.email || "");
       setClientPhone(parent.client.phone || "");
@@ -147,7 +142,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
       if (parent.freelancer.phone) setFreelancerPhone(parent.freelancer.phone);
       if (parent.freelancer.role) setFreelancerRole(parent.freelancer.role);
       setScopeDesc(
-        `Pekerjaan tambahan / penyesuaian ruang lingkup untuk melengkapi kesepakatan ${agr.contractId}.`
+        `Pekerjaan tambahan atau penyesuaian ruang lingkup untuk melengkapi kesepakatan induk ${agr.contractId}.`
       );
       setDeliverables(["", ""]);
       setExclusions(["Pekerjaan di luar lingkup addendum ini"]);
@@ -164,7 +159,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const freeFull = !!usage && !isPro && usage.activeFreeAgreements >= usage.maxActiveFreeAgreements;
   const blocked = !!usage && !isPro && (useCredit ? usage.credits < 1 : freeFull);
 
-  // Bagian 1: Proyek & Para Pihak (Nilai awal kosong agar contoh placeholder tampil)
+  // Tahap 1: Proyek & Para Pihak
   const [projectName, setProjectName] = useState("");
 
   const [freelancerName, setFreelancerName] = useState(user.fullName || "");
@@ -177,27 +172,27 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const [clientPhone, setClientPhone] = useState("");
   const [clientCompany, setClientCompany] = useState("");
 
-  // Bagian 2: Pekerjaan
+  // Tahap 2: Pekerjaan & Luaran (Deliverables)
   const [scopeDesc, setScopeDesc] = useState("");
   const [deliverables, setDeliverables] = useState<string[]>(["", "", ""]);
   const [exclusions, setExclusions] = useState<string[]>(["", ""]);
   const acceptanceCriteria = [
     "Semua fitur utama berjalan sesuai kesepakatan",
-    "Sudah dicoba tanpa kendala di komputer dan HP",
+    "Sudah dicoba tanpa kendala di komputer dan ponsel",
   ];
 
-  // Bagian 3: Pembayaran & DP
+  // Tahap 3: Pembayaran & DP
   const [totalValue, setTotalValue] = useState<number>(5000000);
-  const [dpSelection, setDpSelection] = useState<string>("50"); // "0" | "20" | "30" | "50" | "70" | "100" | "custom"
+  const [dpSelection, setDpSelection] = useState<string>("50");
   const [customDpMode, setCustomDpMode] = useState<"percent" | "amount">("percent");
   const [customDpPercent, setCustomDpPercent] = useState<number>(50);
   const [customDpAmount, setCustomDpAmount] = useState<number>(2500000);
 
-  const [dueDaysSelection, setDueDaysSelection] = useState<string>("7"); // "1" | "3" | "7" | "14" | "30" | "custom"
+  const [dueDaysSelection, setDueDaysSelection] = useState<string>("7");
   const [customDueDays, setCustomDueDays] = useState<number>(7);
   const [paymentMethod, setPaymentMethod] = useState("");
 
-  // Bagian 4: Revisi & Jadwal
+  // Tahap 4: Revisi, Jadwal, Hak Cipta & Pembatalan
   const [revisionCount, setRevisionCount] = useState<number>(3);
   const [revisionTerms, setRevisionTerms] = useState("");
   const [extraRevisionRate, setExtraRevisionRate] = useState<number>(300000);
@@ -207,7 +202,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
 
-  // Bagian 5: Hak Cipta & Pembatalan
   const [ipTerms, setIpTerms] = useState("");
   const [terminationTerms, setTerminationTerms] = useState("");
 
@@ -234,7 +228,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const effectiveRemainingAmount = Math.max(0, safeTotalValue - effectiveDpAmount);
   const remainingPercent = 100 - effectiveDpPercent;
 
-  // Perhitungan otomatis batas pelunasan
+  // Perhitungan batas hari pelunasan
   let effectiveDueDays = 7;
   if (dueDaysSelection !== "custom") {
     effectiveDueDays = Math.max(1, Number(dueDaysSelection) || 7);
@@ -327,37 +321,136 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
     setRevisionTerms("");
     setIpTerms("");
     setTerminationTerms("");
+    setCurrentStep(1);
+  };
+
+  // Validasi per tahap sebelum melangkah ke tahap selanjutnya
+  const validateStep = (stepNumber: number): boolean => {
+    if (stepNumber === 1) {
+      const trimmedProjectName = projectName.trim();
+      const trimmedClientName = clientName.trim();
+      const trimmedClientEmail = clientEmail.trim();
+
+      if (!trimmedProjectName) {
+        showAlert({
+          title: "Nama Proyek Wajib Diisi",
+          description: "Mohon tuliskan nama proyek agar kedua pihak memiliki acuan kerja sama yang jelas.",
+          type: "warning",
+        });
+        return false;
+      }
+      if (!trimmedClientName) {
+        showAlert({
+          title: "Nama Klien Wajib Diisi",
+          description: "Mohon tuliskan nama klien atau penanggung jawab dari pihak pemberi kerja.",
+          type: "warning",
+        });
+        return false;
+      }
+      if (!trimmedClientEmail) {
+        showAlert({
+          title: "Email Klien Wajib Diisi",
+          description: "Mohon tuliskan email klien untuk pengiriman tautan peninjauan dan persetujuan resmi.",
+          type: "warning",
+        });
+        return false;
+      }
+      return true;
+    }
+
+    if (stepNumber === 2) {
+      const cleanDeliverables = deliverables.map((d) => d.trim()).filter((d) => d.length > 0);
+      if (cleanDeliverables.length === 0) {
+        showAlert({
+          title: "Hasil Kerja Wajib Diisi",
+          description: "Mohon isi minimal satu butir hasil kerja (deliverable) yang akan diserahkan kepada klien.",
+          type: "warning",
+        });
+        return false;
+      }
+      return true;
+    }
+
+    if (stepNumber === 3) {
+      if (safeTotalValue <= 0) {
+        showAlert({
+          title: "Total Biaya Belum Diisi",
+          description: "Mohon masukkan total nilai proyek yang disepakati (minimal Rp1 atau sesuai tarif Anda).",
+          type: "warning",
+        });
+        return false;
+      }
+      return true;
+    }
+
+    if (stepNumber === 4) {
+      if (!startDate || !deadline) {
+        showAlert({
+          title: "Jadwal Belum Lengkap",
+          description: "Mohon tentukan tanggal mulai pekerjaan dan tenggat waktu penyelesaian proyek.",
+          type: "warning",
+        });
+        return false;
+      }
+      if (new Date(deadline) < new Date(startDate)) {
+        showAlert({
+          title: "Tenggat Waktu Tidak Valid",
+          description: "Tenggat selesai tidak boleh lebih awal dari tanggal mulai pekerjaan.",
+          type: "warning",
+        });
+        return false;
+      }
+      return true;
+    }
+
+    return true;
+  };
+
+  const handleNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(5, prev + 1));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep((prev) => Math.max(1, prev - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleJumpToStep = (targetStep: number) => {
+    if (targetStep < currentStep) {
+      setCurrentStep(targetStep);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // Validasi bertahap jika ingin melompat maju
+    for (let s = currentStep; s < targetStep; s++) {
+      if (!validateStep(s)) return;
+    }
+    setCurrentStep(targetStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async (e: React.FormEvent, sendDirectly: boolean) => {
     e.preventDefault();
 
+    // Validasi seluruh bagian
+    for (let s = 1; s <= 4; s++) {
+      if (!validateStep(s)) {
+        setCurrentStep(s);
+        return;
+      }
+    }
+
     const trimmedProjectName = projectName.trim();
     const trimmedClientName = clientName.trim();
     const trimmedClientEmail = clientEmail.trim();
 
-    if (!trimmedProjectName || !trimmedClientName || !trimmedClientEmail) {
-      showAlert({
-        title: "Lengkapi Data Wajib",
-        description: "Mohon isi Nama Proyek, Nama Klien, dan Email Klien terlebih dahulu sebelum menyimpan.",
-        type: "warning",
-      });
-      return;
-    }
-
     const cleanDeliverables = deliverables.map((d) => d.trim()).filter((d) => d.length > 0);
-    if (cleanDeliverables.length === 0) {
-      showAlert({
-        title: "Lengkapi Hasil Kerja",
-        description: "Mohon isi minimal satu hasil kerja (deliverable) yang akan diserahkan kepada klien.",
-        type: "warning",
-      });
-      return;
-    }
-
     const cleanExclusions = exclusions.map((x) => x.trim()).filter((x) => x.length > 0);
 
-    // Fallback teks sah secara hukum jika opsional dibiarkan kosong
+    // Fallback klausul standar jika dibiarkan kosong
     const finalScopeDesc =
       scopeDesc.trim() ||
       "Pekerjaan dilaksanakan sesuai dengan rincian hasil kerja yang disepakati oleh kedua belah pihak.";
@@ -422,9 +515,16 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
         },
         validFrom: startDate,
         validUntil: deadline,
+        parentAgreementId: parentAgreement?.id,
+        parentContractId: parentAgreement?.contractId,
       };
 
-      const created = await createAgreement(content, { sendDirectly, useCredit: !isPro && useCredit });
+      const created = await createAgreement(content, {
+        sendDirectly,
+        useCredit: !isPro && useCredit,
+        parentAgreementId: parentAgreement?.id,
+        parentContractId: parentAgreement?.contractId,
+      });
       router.push(`/agreements/${created.id}`);
     } catch (err) {
       setSubmitError(errorMessage(err));
@@ -491,7 +591,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
               <button
                 type="button"
                 onClick={() => setList(list.filter((_, i) => i !== idx))}
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                 aria-label="Hapus baris"
               >
                 <Trash2 className="w-4 h-4" />
@@ -510,28 +610,29 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
         Kembali ke Dashboard
       </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 mb-8 border-b border-slate-200">
+      {/* Header Utama Halaman */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 mb-8 border-b border-[#E8E8EC]">
         <div>
-          <p className="kicker">Kesepakatan baru</p>
-          <h1 className="page-title mt-1">Buat Kesepakatan Kerja</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Tuliskan apa yang dikerjakan, berapa bayarannya, dan kapan selesai. Klien akan membaca dan menyetujuinya lewat link.
+          <p className="kicker">Penyusunan Kesepakatan Kerja</p>
+          <h1 className="page-title mt-1 font-display">Buat Kesepakatan Kerja</h1>
+          <p className="text-sm text-[#6B6B6B] mt-1 leading-relaxed">
+            Susun hak, kewajiban, rincian biaya, dan jadwal dalam 5 tahap terstruktur. Dokumen mengikat secara sah dan dapat ditandatangani online.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
             onClick={fillExampleTemplate}
             className="btn btn-secondary btn-sm text-xs font-semibold"
             title="Isi formulir dengan contoh realistis"
           >
-            <Wand2 className="w-3.5 h-3.5 text-brand-600" />
+            <Wand2 className="w-3.5 h-3.5 text-[#6366F1]" />
             Contoh Cepat
           </button>
           <button
             type="button"
             onClick={resetForm}
-            className="btn btn-ghost btn-sm text-xs text-slate-500 hover:text-slate-800"
+            className="btn btn-ghost btn-sm text-xs text-[#6B6B6B] hover:text-[#0A0A0A]"
             title="Kosongkan formulir"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -540,580 +641,888 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
         </div>
       </div>
 
+      {/* Banner Khusus Dokumen Addendum */}
       {parentAgreement && (
-        <div className="mb-6 p-4 rounded-2xl bg-brand-50 border border-brand-200 flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+        <div className="mb-6 p-4 rounded-xl bg-indigo-50/70 border border-indigo-200 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-lg bg-indigo-100 text-[#6366F1] flex items-center justify-center flex-shrink-0 font-bold font-mono text-xs">
             ADD
           </div>
           <div className="space-y-0.5">
-            <h3 className="text-sm font-bold text-brand-950">
+            <h3 className="text-sm font-bold font-display text-indigo-950">
               Dokumen Addendum untuk Kesepakatan {parentAgreement.contractId}
             </h3>
-            <p className="text-xs text-brand-800 leading-relaxed">
-              Data klien dan freelancer otomatis terisi dari kontrak utama &ldquo;{parentAgreement.currentVersion.contentJson.projectName}&rdquo;. Rincikan pekerjaan tambahan, nilai biaya baru, dan tenggat waktu addendum di bawah.
+            <p className="text-xs text-indigo-800 leading-relaxed">
+              Data klien dan freelancer terhubung langsung dengan kontrak induk &ldquo;{parentAgreement.currentVersion.contentJson.projectName}&rdquo;. Tuliskan luaran tambahan dan nilai addendum di bawah ini.
             </p>
           </div>
         </div>
       )}
 
+      {/* Stepper Progress Bar */}
+      <nav aria-label="Tahapan formulir" className="mb-8">
+        <div className="grid grid-cols-5 gap-2 sm:gap-3">
+          {WIZARD_STEPS.map((step) => {
+            const isCompleted = step.id < currentStep;
+            const isCurrent = step.id === currentStep;
+            const Icon = step.icon;
+
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => handleJumpToStep(step.id)}
+                aria-current={isCurrent ? "step" : undefined}
+                className={`relative flex flex-col items-center sm:items-start p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
+                  isCurrent
+                    ? "border-[#6366F1] bg-indigo-50/40 ring-2 ring-[#6366F1]/20 shadow-xs"
+                    : isCompleted
+                    ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
+                    : "border-[#E8E8EC] bg-white hover:border-slate-300 opacity-75"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${
+                      isCurrent
+                        ? "bg-[#6366F1] text-white"
+                        : isCompleted
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {isCompleted ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
+                  </span>
+                  <span
+                    className={`hidden sm:inline text-xs font-bold ${
+                      isCurrent ? "text-[#6366F1]" : isCompleted ? "text-emerald-900" : "text-slate-600"
+                    }`}
+                  >
+                    {step.title}
+                  </span>
+                </div>
+                <p className="hidden md:block text-[11px] text-slate-500 truncate w-full">
+                  {step.subtitle}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Form Body - Terbagi ke dalam 5 Tahap */}
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
-        <FormSection number={1} title="Proyek & para pihak" desc="Siapa yang bekerja sama dan untuk proyek apa.">
-          <div>
-            <label className="label">Nama proyek *</label>
-            <input
-              type="text"
-              required
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Contoh: Pembuatan Website E-Commerce & Desain Identitas Brand"
-              className="input"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="doc-box space-y-3">
-              <p className="text-sm font-semibold text-slate-900">Anda (Freelancer)</p>
+        {/* TAHAP 1: PROYEK & PARA PIHAK */}
+        {currentStep === 1 && (
+          <section className="card p-6 sm:p-7 space-y-6 animate-in fade-in duration-150">
+            <div className="flex items-start gap-3 pb-4 border-b border-[#E8E8EC]">
+              <span className="w-8 h-8 rounded-lg bg-[#6366F1] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                1
+              </span>
               <div>
-                <label className="label">Nama lengkap</label>
-                <input
-                  type="text"
-                  required
-                  value={freelancerName}
-                  onChange={(e) => setFreelancerName(e.target.value)}
-                  placeholder="Contoh: Fadli Bilal"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={freelancerEmail}
-                  onChange={(e) => setFreelancerEmail(e.target.value)}
-                  placeholder="Contoh: fadli@example.com"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">No. WhatsApp</label>
-                <input
-                  type="text"
-                  value={freelancerPhone}
-                  onChange={(e) => setFreelancerPhone(e.target.value)}
-                  placeholder="Contoh: 081234567890"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">Keahlian</label>
-                <input
-                  type="text"
-                  value={freelancerRole}
-                  onChange={(e) => setFreelancerRole(e.target.value)}
-                  placeholder="Contoh: UI/UX Designer & Web Developer"
-                  className="input"
-                />
+                <p className="kicker">Tahap 1 dari 5</p>
+                <h2 className="card-title font-display text-lg text-[#0A0A0A]">Proyek & Para Pihak</h2>
+                <p className="text-xs sm:text-sm text-[#6B6B6B] mt-0.5">
+                  Tentukan judul proyek dan identitas pihak yang mengadakan kesepakatan kerja.
+                </p>
               </div>
             </div>
 
-            <div className="doc-box space-y-3">
-              <p className="text-sm font-semibold text-slate-900">Klien (Pemberi kerja)</p>
-              <div>
-                <label className="label">Nama klien *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Ibu Rina Hartono"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">Email klien *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="Contoh: rina.hartono@perusahaan.com"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">No. WhatsApp klien</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: 081298765432"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="label">Nama perusahaan / usaha (opsional)</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: PT Maju Karya Sejahtera"
-                  value={clientCompany}
-                  onChange={(e) => setClientCompany(e.target.value)}
-                  className="input"
-                />
-              </div>
-            </div>
-          </div>
-        </FormSection>
-
-        <FormSection number={2} title="Pekerjaan yang disepakati" desc="Semakin jelas, semakin kecil kemungkinan salah paham.">
-          <div>
-            <label className="label">Gambaran umum proyek</label>
-            <textarea
-              rows={3}
-              value={scopeDesc}
-              onChange={(e) => setScopeDesc(e.target.value)}
-              placeholder="Contoh: Pembuatan desain antarmuka dan pengembangan sistem website responsif sesuai spesifikasi fitur yang disepakati bersama."
-              className="input leading-relaxed"
-            />
-          </div>
-          {listEditor(
-            "Hasil kerja yang diserahkan",
-            "Apa saja yang akan klien terima di akhir proyek (minimal 1 baris).",
-            deliverables,
-            setDeliverables,
-            getDeliverablePlaceholder,
-            (i) => `${i + 1}.`
-          )}
-          {listEditor(
-            "Yang tidak termasuk",
-            "Pekerjaan di luar kesepakatan ini (bisa dikenai biaya tambahan).",
-            exclusions,
-            setExclusions,
-            getExclusionPlaceholder,
-            () => "•"
-          )}
-        </FormSection>
-
-        <FormSection number={3} title="Harga & pembayaran" desc="Berapa nilai proyeknya dan bagaimana cara bayarnya.">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-              <label className="label">Total harga (Rp) *</label>
+              <label className="label">Nama Proyek *</label>
               <input
-                type="number"
+                type="text"
                 required
-                min={0}
-                step={50000}
-                value={totalValue}
-                onChange={(e) => setTotalValue(Number(e.target.value))}
-                placeholder="Contoh: 5000000"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Contoh: Pembuatan Website E-Commerce & Desain Identitas Brand"
                 className="input"
               />
-              <p className="hint">{formatCurrencyIDR(safeTotalValue)}</p>
+              <p className="hint">Gunakan nama yang mudah dikenali oleh Anda dan klien saat meninjau dokumen.</p>
             </div>
-            <div>
-              <label className="label">Uang muka (DP)</label>
-              <select
-                value={dpSelection}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDpSelection(val);
-                  if (val !== "custom") {
-                    const pct = Number(val) || 0;
-                    setCustomDpPercent(pct);
-                    setCustomDpAmount(Math.round((safeTotalValue * pct) / 100));
-                  }
-                }}
-                className="input"
-              >
-                <option value="50">50% di awal (Standar)</option>
-                <option value="30">30% di awal</option>
-                <option value="20">20% di awal</option>
-                <option value="70">70% di awal</option>
-                <option value="100">Bayar penuh 100% di awal</option>
-                <option value="0">Tanpa DP (0% di awal)</option>
-                <option value="custom">Kustom (% atau Rp sendiri)</option>
-              </select>
-              <p className="hint">
-                {dpSelection !== "custom"
-                  ? `DP: ${formatCurrencyIDR(effectiveDpAmount)} (${effectiveDpPercent}%)`
-                  : "Tentukan persentase atau nominal sendiri"}
-              </p>
-            </div>
-            <div>
-              <label className="label">Batas pelunasan</label>
-              <select
-                value={dueDaysSelection}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDueDaysSelection(val);
-                  if (val !== "custom") {
-                    setCustomDueDays(Number(val) || 7);
-                  }
-                }}
-                className="input"
-              >
-                <option value="7">7 hari kerja setelah serah terima (Standar)</option>
-                <option value="3">3 hari kerja setelah serah terima</option>
-                <option value="1">1 hari kerja setelah serah terima (H+1)</option>
-                <option value="14">14 hari kerja setelah serah terima (2 minggu)</option>
-                <option value="30">30 hari kerja setelah serah terima (1 bulan)</option>
-                <option value="custom">Kustom (Tentukan jumlah hari)</option>
-              </select>
-              <p className="hint">
-                {dueDaysSelection !== "custom"
-                  ? `Maksimal ${effectiveDueDays} hari kerja setelah serah terima`
-                  : "Tentukan tenggat hari pelunasan sendiri"}
-              </p>
-            </div>
-          </div>
 
-          {(dpSelection === "custom" || dueDaysSelection === "custom") && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
-              {dpSelection === "custom" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+              <div className="doc-box space-y-3.5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <p className="text-sm font-bold text-slate-900">Pihak Pertama (Penyedia Jasa)</p>
+                  <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
+                    Anda
+                  </span>
+                </div>
+                <div>
+                  <label className="label">Nama Lengkap</label>
+                  <input
+                    type="text"
+                    required
+                    value={freelancerName}
+                    onChange={(e) => setFreelancerName(e.target.value)}
+                    placeholder="Contoh: Fadli Bilal"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">Email Resmi</label>
+                  <input
+                    type="email"
+                    required
+                    value={freelancerEmail}
+                    onChange={(e) => setFreelancerEmail(e.target.value)}
+                    placeholder="Contoh: fadli@example.com"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">No. WhatsApp</label>
+                  <input
+                    type="text"
+                    value={freelancerPhone}
+                    onChange={(e) => setFreelancerPhone(e.target.value)}
+                    placeholder="Contoh: 081234567890"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">Peran / Keahlian</label>
+                  <input
+                    type="text"
+                    value={freelancerRole}
+                    onChange={(e) => setFreelancerRole(e.target.value)}
+                    placeholder="Contoh: UI/UX Designer & Web Developer"
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div className="doc-box space-y-3.5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <p className="text-sm font-bold text-slate-900">Pihak Kedua (Klien / Pemberi Kerja)</p>
+                  <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                    Pemberi Kerja
+                  </span>
+                </div>
+                <div>
+                  <label className="label">Nama Klien / Penanggung Jawab *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Ibu Rina Hartono"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">Email Klien *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Contoh: rina.hartono@perusahaan.com"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    className="input"
+                  />
+                  <p className="hint">Tautan tinjauan kesepakatan akan ditujukan ke alamat email ini.</p>
+                </div>
+                <div>
+                  <label className="label">No. WhatsApp Klien</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 081298765432"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">Nama Perusahaan / Bisnis (Opsional)</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: PT Maju Karya Sejahtera"
+                    value={clientCompany}
+                    onChange={(e) => setClientCompany(e.target.value)}
+                    className="input"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* TAHAP 2: RUANG LINGKUP PEKERJAAN */}
+        {currentStep === 2 && (
+          <section className="card p-6 sm:p-7 space-y-6 animate-in fade-in duration-150">
+            <div className="flex items-start gap-3 pb-4 border-b border-[#E8E8EC]">
+              <span className="w-8 h-8 rounded-lg bg-[#6366F1] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                2
+              </span>
+              <div>
+                <p className="kicker">Tahap 2 dari 5</p>
+                <h2 className="card-title font-display text-lg text-[#0A0A0A]">Ruang Lingkup & Hasil Kerja</h2>
+                <p className="text-xs sm:text-sm text-[#6B6B6B] mt-0.5">
+                  Rincikan secara transparan apa saja yang akan diserahkan dan apa yang di luar cakupan pekerjaan.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Gambaran Umum Proyek</label>
+              <textarea
+                rows={3}
+                value={scopeDesc}
+                onChange={(e) => setScopeDesc(e.target.value)}
+                placeholder="Contoh: Pembuatan desain antarmuka dan pengembangan sistem website responsif sesuai spesifikasi fitur yang disepakati bersama."
+                className="input leading-relaxed"
+              />
+              <p className="hint">Ringkasan singkat tentang tujuan dan latar belakang pekerjaan.</p>
+            </div>
+
+            {listEditor(
+              "Hasil Kerja yang Diserahkan (Deliverables) *",
+              "Daftar konkret apa yang akan diterima klien saat serah terima proyek (minimal 1 butir).",
+              deliverables,
+              setDeliverables,
+              getDeliverablePlaceholder,
+              (i) => `${i + 1}.`
+            )}
+
+            {listEditor(
+              "Batasan & Hal yang Tidak Termasuk (Exclusions)",
+              "Tuliskan pekerjaan yang berada di luar kesepakatan ini untuk mencegah permintaan tugas tambahan tanpa biaya.",
+              exclusions,
+              setExclusions,
+              getExclusionPlaceholder,
+              () => "•"
+            )}
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5 leading-relaxed">
+              <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Kriteria Penerimaan Standar Sepakatin:
+              </p>
+              <p>
+                Hasil kerja dianggap selesai dan dapat diserahterimakan bila seluruh luaran deliverable telah diserahkan dan berjalan normal sesuai deskripsi kesepakatan.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* TAHAP 3: BIAYA & SKEMA PEMBAYARAN */}
+        {currentStep === 3 && (
+          <section className="card p-6 sm:p-7 space-y-6 animate-in fade-in duration-150">
+            <div className="flex items-start gap-3 pb-4 border-b border-[#E8E8EC]">
+              <span className="w-8 h-8 rounded-lg bg-[#6366F1] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                3
+              </span>
+              <div>
+                <p className="kicker">Tahap 3 dari 5</p>
+                <h2 className="card-title font-display text-lg text-[#0A0A0A]">Biaya & Tahapan Pembayaran</h2>
+                <p className="text-xs sm:text-sm text-[#6B6B6B] mt-0.5">
+                  Tentukan nilai total proyek, skema uang muka (DP), dan batas waktu pelunasan setelah serah terima.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label className="label">Total Biaya Proyek (Rp) *</label>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  step={50000}
+                  value={totalValue}
+                  onChange={(e) => setTotalValue(Number(e.target.value))}
+                  placeholder="Contoh: 5000000"
+                  className="input font-semibold"
+                />
+                <p className="hint font-semibold text-[#6366F1]">{formatCurrencyIDR(safeTotalValue)}</p>
+              </div>
+
+              <div>
+                <label className="label">Uang Muka (DP)</label>
+                <select
+                  value={dpSelection}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDpSelection(val);
+                    if (val !== "custom") {
+                      const pct = Number(val) || 0;
+                      setCustomDpPercent(pct);
+                      setCustomDpAmount(Math.round((safeTotalValue * pct) / 100));
+                    }
+                  }}
+                  className="input"
+                >
+                  <option value="50">50% di awal (Standar Industri)</option>
+                  <option value="30">30% di awal</option>
+                  <option value="20">20% di awal</option>
+                  <option value="70">70% di awal</option>
+                  <option value="100">100% lunas di awal</option>
+                  <option value="0">Tanpa DP (0% di awal)</option>
+                  <option value="custom">Kustom (% atau nominal sendiri)</option>
+                </select>
+                <p className="hint">
+                  {dpSelection !== "custom"
+                    ? `DP: ${formatCurrencyIDR(effectiveDpAmount)} (${effectiveDpPercent}%)`
+                    : "Atur persentase atau nominal kustom"}
+                </p>
+              </div>
+
+              <div>
+                <label className="label">Batas Waktu Pelunasan</label>
+                <select
+                  value={dueDaysSelection}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDueDaysSelection(val);
+                    if (val !== "custom") {
+                      setCustomDueDays(Number(val) || 7);
+                    }
+                  }}
+                  className="input"
+                >
+                  <option value="7">7 hari kerja setelah serah terima (Standar)</option>
+                  <option value="3">3 hari kerja setelah serah terima</option>
+                  <option value="1">1 hari kerja setelah serah terima (H+1)</option>
+                  <option value="14">14 hari kerja setelah serah terima (2 minggu)</option>
+                  <option value="30">30 hari kerja setelah serah terima (1 bulan)</option>
+                  <option value="custom">Kustom (Tentukan jumlah hari)</option>
+                </select>
+                <p className="hint">Maksimal {effectiveDueDays} hari kerja setelah deliverables diterima</p>
+              </div>
+            </div>
+
+            {/* Panel Pengaturan Kustom DP & Batas Pelunasan */}
+            {(dpSelection === "custom" || dueDaysSelection === "custom") && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-[#FAFAFA] border border-[#E8E8EC]">
+                {dpSelection === "custom" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[#4B4B4B] flex items-center gap-1.5">
+                        <Coins className="w-3.5 h-3.5 text-[#6366F1]" /> Pengaturan DP Kustom
+                      </label>
+                      <div className="inline-flex rounded-md border border-[#E8E8EC] bg-white p-0.5 text-xs font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomDpMode("percent");
+                            setCustomDpPercent(effectiveDpPercent);
+                          }}
+                          className={`px-2.5 py-1 rounded transition-colors ${
+                            customDpMode === "percent"
+                              ? "bg-[#6366F1] text-white shadow-xs"
+                              : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                          }`}
+                        >
+                          Persen (%)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomDpMode("amount");
+                            setCustomDpAmount(effectiveDpAmount);
+                          }}
+                          className={`px-2.5 py-1 rounded transition-colors ${
+                            customDpMode === "amount"
+                              ? "bg-[#6366F1] text-white shadow-xs"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          Rupiah (Rp)
+                        </button>
+                      </div>
+                    </div>
+
+                    {customDpMode === "percent" ? (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={customDpPercent}
+                            onChange={(e) => {
+                              const val = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                              setCustomDpPercent(val);
+                              setCustomDpAmount(Math.round((safeTotalValue * val) / 100));
+                            }}
+                            placeholder="Contoh: 35"
+                            className="input w-28 font-semibold"
+                          />
+                          <span className="text-sm font-semibold text-slate-700">% dari total harga</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1.5">
+                          Hasil hitung: DP <strong>{formatCurrencyIDR(effectiveDpAmount)}</strong> dan sisa pelunasan{" "}
+                          <strong>{formatCurrencyIDR(effectiveRemainingAmount)}</strong>
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-slate-500">Rp</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={safeTotalValue}
+                            step={50000}
+                            value={customDpAmount}
+                            onChange={(e) => {
+                              const val = Math.max(0, Number(e.target.value) || 0);
+                              setCustomDpAmount(val);
+                              if (safeTotalValue > 0) {
+                                setCustomDpPercent(Math.min(100, Math.round((val / safeTotalValue) * 100)));
+                              }
+                            }}
+                            placeholder="Contoh: 1500000"
+                            className="input font-semibold"
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1.5">
+                          Hasil hitung: DP <strong>{effectiveDpPercent}%</strong> ({formatCurrencyIDR(effectiveDpAmount)}) dan sisa{" "}
+                          <strong>{formatCurrencyIDR(effectiveRemainingAmount)}</strong>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {dueDaysSelection === "custom" && (
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#6366F1]" /> Batas Pelunasan Kustom
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        max={365}
+                        step={1}
+                        value={customDueDays}
+                        onChange={(e) => setCustomDueDays(Math.max(1, Number(e.target.value) || 1))}
+                        placeholder="Contoh: 10"
+                        className="input w-28 font-semibold"
+                      />
+                      <span className="text-sm font-semibold text-[#4B4B4B]">hari kerja setelah serah terima</span>
+                    </div>
+                    {estimatedDueDateStr && (
+                      <p className="text-xs text-[#6B6B6B] bg-white border border-[#E8E8EC] rounded-md p-2 mt-1.5">
+                        Estimasi jatuh tempo: <strong className="text-[#6366F1]">{estimatedDueDateStr}</strong> (dihitung dari tanggal tenggat proyek).
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label className="label">Cara Pembayaran & Nomor Rekening</label>
+              <input
+                type="text"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                placeholder="Contoh: Transfer Bank BCA 123-456-7890 a.n. Fadli Bilal / QRIS"
+                className="input"
+              />
+              <p className="hint">Klien akan mentransfer pembayaran uang muka dan pelunasan ke rekening ini.</p>
+            </div>
+
+            {/* Rincian Tahap Pembayaran (Milestones) */}
+            {milestones.length > 0 && (
+              <div className="rounded-xl border border-[#E8E8EC] divide-y divide-[#E8E8EC] text-sm bg-white overflow-hidden shadow-xs">
+                <div className="px-4 py-2.5 bg-[#FAFAFA] flex items-center justify-between">
+                  <p className="text-xs font-semibold text-[#4B4B4B] flex items-center gap-1.5">
+                    <Calculator className="w-3.5 h-3.5 text-[#6366F1]" />
+                    Tahapan Pembayaran Otomatis (Termin)
+                  </p>
+                  <span className="text-xs font-bold font-display text-[#0A0A0A]">Total: {formatCurrencyIDR(safeTotalValue)}</span>
+                </div>
+                {milestones.map((m, idx) => (
+                  <div key={idx} className="px-4 py-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#F4F4F6] text-[#4B4B4B] font-mono font-bold text-xs flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="text-[#4B4B4B]">{m.title}</span>
+                    </div>
+                    <span className="font-bold font-display text-[#0A0A0A]">{formatCurrencyIDR(m.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* TAHAP 4: KETENTUAN, REVISI, JADWAL & HAK CIPTA */}
+        {currentStep === 4 && (
+          <section className="card p-6 sm:p-7 space-y-6 animate-in fade-in duration-150">
+            <div className="flex items-start gap-3 pb-4 border-b border-[#E8E8EC]">
+              <span className="w-8 h-8 rounded-lg bg-[#6366F1] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                4
+              </span>
+              <div>
+                <p className="kicker">Tahap 4 dari 5</p>
+                <h2 className="card-title font-display text-lg text-[#0A0A0A]">Ketentuan Revisi, Jadwal & Legalitas</h2>
+                <p className="text-xs sm:text-sm text-[#6B6B6B] mt-0.5">
+                  Batasi jatah revisi, tentukan tenggat waktu penyelesaian, dan tetapkan kepemilikan hak cipta.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="label">Jatah Revisi Gratis</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={revisionCount}
+                    onChange={(e) => setRevisionCount(Number(e.target.value))}
+                    placeholder="Contoh: 3"
+                    className="input w-24 font-semibold"
+                  />
+                  <span className="text-sm text-slate-600">kali putaran revisi</span>
+                </div>
+                <p className="hint">Standar umum: 2 atau 3 kali putaran revisi minor.</p>
+              </div>
+
+              <div>
+                <label className="label">Tarif Revisi Tambahan (Rp/Revisi)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={50000}
+                  value={extraRevisionRate}
+                  onChange={(e) => setExtraRevisionRate(Number(e.target.value))}
+                  placeholder="Contoh: 300000"
+                  className="input font-semibold"
+                />
+                <p className="hint">Biaya per revisi jika jatah gratis di atas telah habis.</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Ketentuan Ruang Lingkup Revisi</label>
+              <textarea
+                rows={2}
+                value={revisionTerms}
+                onChange={(e) => setRevisionTerms(e.target.value)}
+                placeholder="Contoh: Revisi mencakup perbaikan tata letak, teks, dan penyesuaian visual tanpa mengubah konsep dasar yang disepakati."
+                className="input leading-relaxed"
+              />
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 leading-relaxed space-y-1">
+              <p className="font-semibold text-blue-950 flex items-center gap-1.5">
+                <ClipboardList className="w-4 h-4 text-blue-700" /> Prinsip Hukum Batas Revisi Sepakatin
+              </p>
+              <p>
+                Revisi selama masih dalam jatah (<strong>{revisionCount}x</strong>) dicatat langsung tanpa biaya tambahan.
+              </p>
+              <p className="text-blue-800">
+                Jika terjadi permintaan di luar jatah atau ada penambahan deliverables, Anda dapat menerbitkan <strong>Dokumen Addendum</strong> dengan tarif tambahan Rp{(extraRevisionRate || 0).toLocaleString("id-ID")}/revisi.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="label">Tanggal Mulai Proyek *</label>
+                <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input" />
+              </div>
+              <div>
+                <label className="label">Tenggat Selesai Proyek *</label>
+                <input type="date" required value={deadline} onChange={(e) => setDeadline(e.target.value)} className="input" />
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="label">Kepemilikan Hak Cipta (Hak Kekayaan Intelektual)</label>
+                <textarea
+                  rows={2}
+                  value={ipTerms}
+                  onChange={(e) => setIpTerms(e.target.value)}
+                  placeholder="Contoh: Hak cipta dan seluruh file master hasil kerja diserahkan penuh kepada Klien setelah pembayaran dilunasi 100%."
+                  className="input leading-relaxed"
+                />
+                <p className="hint">Melindungi Anda dari klaim kepemilikan sebelum pembayaran selesai dilunasi.</p>
+              </div>
+
+              <div>
+                <label className="label">Ketentuan Pembatalan Sepihak</label>
+                <textarea
+                  rows={2}
+                  value={terminationTerms}
+                  onChange={(e) => setTerminationTerms(e.target.value)}
+                  placeholder="Contoh: Apabila proyek dibatalkan sepihak oleh Klien, Klien wajib membayar kompensasi atas tahapan pekerjaan yang sudah selesai dikerjakan."
+                  className="input leading-relaxed"
+                />
+                <p className="hint">Menjamin kompensasi atas waktu dan hasil kerja yang telah diselesaikan.</p>
+              </div>
+            </div>
+
+            {/* Opsi Penerbitan Dokumen (Gratis vs Kredit Per Proyek / Pro) */}
+            <div className="pt-2">
+              {isPro ? (
+                <div className="card p-5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-200 flex items-center gap-3.5">
+                  <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                    <Crown className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-emerald-950">Status: Langganan Pro Aktif</h3>
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        Fitur Resmi Penuh
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed">
+                      Dokumen ini otomatis berfitur resmi lengkap: Tanda Tangan Digital Resmi (gores layar), bersih tanpa watermark, pengunci batas revisi, dan riwayat addendum tanpa batas.
+                    </p>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                      <Coins className="w-3.5 h-3.5 text-brand-600" /> Pengaturan DP Kustom
-                    </label>
-                    <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomDpMode("percent");
-                          setCustomDpPercent(effectiveDpPercent);
-                        }}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
-                          customDpMode === "percent"
-                            ? "bg-brand-600 text-white shadow-xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        Persen (%)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomDpMode("amount");
-                          setCustomDpAmount(effectiveDpAmount);
-                        }}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
-                          customDpMode === "amount"
-                            ? "bg-brand-600 text-white shadow-xs"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        Rupiah (Rp)
-                      </button>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">Format Penerbitan Dokumen</h3>
+                      <p className="text-xs text-slate-500">Pilih tipe dokumen untuk kesepakatan ini:</p>
                     </div>
                   </div>
 
-                  {customDpMode === "percent" ? (
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={customDpPercent}
-                          onChange={(e) => {
-                            const val = Math.min(100, Math.max(0, Number(e.target.value) || 0));
-                            setCustomDpPercent(val);
-                            setCustomDpAmount(Math.round((safeTotalValue * val) / 100));
-                          }}
-                          placeholder="Contoh: 35"
-                          className="input w-28 font-semibold"
-                        />
-                        <span className="text-sm font-semibold text-slate-700">% dari total harga</span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1.5">
-                        Otomatis dihitung: DP <strong>{formatCurrencyIDR(effectiveDpAmount)}</strong> • Sisa pelunasan{" "}
-                        <strong>{formatCurrencyIDR(effectiveRemainingAmount)}</strong>
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-500">Rp</span>
-                        <input
-                          type="number"
-                          min={0}
-                          max={safeTotalValue}
-                          step={50000}
-                          value={customDpAmount}
-                          onChange={(e) => {
-                            const val = Math.max(0, Number(e.target.value) || 0);
-                            setCustomDpAmount(val);
-                            if (safeTotalValue > 0) {
-                              setCustomDpPercent(Math.min(100, Math.round((val / safeTotalValue) * 100)));
-                            }
-                          }}
-                          placeholder="Contoh: 1500000"
-                          className="input font-semibold"
-                        />
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1.5">
-                        Otomatis dihitung: DP <strong>{effectiveDpPercent}%</strong> ({formatCurrencyIDR(effectiveDpAmount)}) • Sisa{" "}
-                        <strong>{formatCurrencyIDR(effectiveRemainingAmount)}</strong>
-                      </p>
+                  {usage && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {[
+                        {
+                          credit: false,
+                          title: "Paket Gratis (Rp0)",
+                          badge: null,
+                          note: `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif`,
+                          features: [
+                            "Draf standar & konfirmasi centang online",
+                            "Maksimal 1 kali revisi draf",
+                            "PDF memuat watermark Sepakatin",
+                          ],
+                          disabled: freeFull,
+                        },
+                        {
+                          credit: true,
+                          title: "Per Proyek (Pakai 1 Kredit)",
+                          badge: "Fitur Resmi Penuh",
+                          note: `Sisa saldo: ${usage.credits} kredit proyek`,
+                          features: [
+                            "Tanda Tangan Digital Resmi (gores layar)",
+                            "Dokumen bersih 100% tanpa watermark",
+                            "Pengunci batas revisi & anti-revisi liar",
+                            "Format 2 salinan resmi & verifikasi SHA-256",
+                          ],
+                          disabled: usage.credits < 1,
+                        },
+                      ].map((opt) => (
+                        <button
+                          type="button"
+                          key={opt.title}
+                          disabled={opt.disabled}
+                          onClick={() => setUseCredit(opt.credit)}
+                          className={`text-left p-4 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            useCredit === opt.credit
+                              ? "border-[#6366F1] bg-indigo-50/50 ring-2 ring-[#6366F1]/20 shadow-xs"
+                              : "border-[#E8E8EC] hover:border-[#6366F1]/40 bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-bold font-display text-[#0A0A0A]">{opt.title}</p>
+                            {opt.badge && (
+                              <span className="text-[10px] font-semibold text-[#6366F1] bg-indigo-100 px-2 py-0.5 rounded">
+                                {opt.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs font-semibold text-[#6366F1] mt-1">{opt.note}</p>
+                          <ul className="mt-2.5 space-y-1 text-xs text-[#6B6B6B]">
+                            {opt.features.map((f, i) => (
+                              <li key={i} className="flex items-center gap-1.5">
+                                <span className="text-[#6366F1] font-bold">•</span>
+                                <span>{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </button>
+                      ))}
                     </div>
                   )}
-                </div>
-              )}
 
-              {dueDaysSelection === "custom" && (
-                <div className="space-y-3">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-brand-600" /> Pengaturan Batas Pelunasan Kustom
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={365}
-                      step={1}
-                      value={customDueDays}
-                      onChange={(e) => setCustomDueDays(Math.max(1, Number(e.target.value) || 1))}
-                      placeholder="Contoh: 10"
-                      className="input w-28 font-semibold"
-                    />
-                    <span className="text-sm font-semibold text-slate-700">hari kerja setelah serah terima</span>
-                  </div>
-                  {estimatedDueDateStr && (
-                    <p className="text-xs text-slate-600 bg-white border border-slate-200 rounded-lg p-2 mt-1.5">
-                      Estimasi jatuh tempo pembayaran: <strong className="text-brand-700">{estimatedDueDateStr}</strong>{" "}
-                      (dihitung dari tenggat selesai proyek).
+                  {blocked && (
+                    <p className="text-sm text-amber-900 bg-amber-50/70 border border-amber-200 rounded-xl px-4 py-3">
+                      Kuota paket Gratis sudah penuh dan kredit Per Proyek habis. Selesaikan atau batalkan kesepakatan lama di
+                      dashboard, atau <Link href="/#harga" className="font-semibold underline text-[#6366F1]">tambah kredit / upgrade ke Pro</Link>.
                     </p>
                   )}
                 </div>
               )}
             </div>
-          )}
+          </section>
+        )}
 
-          <div>
-            <label className="label">Cara pembayaran</label>
-            <input
-              type="text"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              placeholder="Contoh: Transfer Bank BCA 123-456-7890 a.n. Fadli Bilal / QRIS"
-              className="input"
-            />
-          </div>
-
-          {milestones.length > 0 && (
-            <div className="rounded-xl border border-slate-200 divide-y divide-slate-100 text-sm bg-white overflow-hidden shadow-xs">
-              <div className="px-4 py-2.5 bg-slate-50 flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-                  <Calculator className="w-3.5 h-3.5 text-brand-600" />
-                  Rincian Tahap Pembayaran (Otomatis Dihitung)
-                </p>
-                <span className="text-xs font-bold text-slate-900">Total: {formatCurrencyIDR(safeTotalValue)}</span>
-              </div>
-              {milestones.map((m, idx) => (
-                <div key={idx} className="px-4 py-3 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center">
-                      {idx + 1}
-                    </span>
-                    <span className="text-slate-700">{m.title}</span>
-                  </div>
-                  <span className="font-bold text-slate-900">{formatCurrencyIDR(m.amount)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </FormSection>
-
-        <FormSection number={4} title="Revisi & jadwal" desc="Batasi jumlah revisi dan tentukan tenggat waktunya.">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="label">Jatah revisi gratis</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={revisionCount}
-                  onChange={(e) => setRevisionCount(Number(e.target.value))}
-                  placeholder="Contoh: 3"
-                  className="input w-24"
-                />
-                <span className="text-sm text-slate-500">kali revisi</span>
-              </div>
-            </div>
-            <div>
-              <label className="label">Biaya revisi tambahan (Rp)</label>
-              <input
-                type="number"
-                min={0}
-                step={50000}
-                value={extraRevisionRate}
-                onChange={(e) => setExtraRevisionRate(Number(e.target.value))}
-                placeholder="Contoh: 300000"
-                className="input"
-              />
-              <p className="hint">Per revisi, jika jatah gratis sudah habis.</p>
-            </div>
-          </div>
-
-          <div>
-            <label className="label">Ketentuan revisi</label>
-            <textarea
-              rows={2}
-              value={revisionTerms}
-              onChange={(e) => setRevisionTerms(e.target.value)}
-              placeholder="Contoh: Revisi mencakup perbaikan tata letak, teks, dan penyesuaian visual tanpa mengubah konsep dasar yang disepakati."
-              className="input leading-relaxed"
-            />
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900 leading-relaxed space-y-1">
-            <p className="font-semibold text-blue-950 flex items-center gap-1.5">
-              <ClipboardList className="w-4 h-4 text-blue-700" /> Prinsip Hukum Revisi di Sepakatin
-            </p>
-            <p>
-              Revisi selama masih dalam jatah (<strong>{revisionCount}x</strong>) cukup dicatat mandiri tanpa biaya &amp; tanpa perlu dokumen baru bermaterai.
-            </p>
-            <p className="text-blue-800">
-              Jika terjadi revisi di tengah jalan yang <strong>melebihi jatah {revisionCount}x</strong> atau ada penambahan ruang lingkup pekerjaan, freelancer dapat menerbitkan <strong>Dokumen Kesepakatan Baru (Addendum) bermaterai</strong> dengan biaya tambahan Rp{(extraRevisionRate || 0).toLocaleString("id-ID")}/revisi.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="label">Tanggal mulai</label>
-              <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input" />
-            </div>
-            <div>
-              <label className="label">Tenggat selesai *</label>
-              <input type="date" required value={deadline} onChange={(e) => setDeadline(e.target.value)} className="input" />
-            </div>
-          </div>
-        </FormSection>
-
-        <FormSection number={5} title="Hak cipta & pembatalan" desc="Siapa pemilik hasil kerja dan apa yang terjadi jika proyek batal.">
-          <div>
-            <label className="label">Kepemilikan hasil kerja</label>
-            <textarea
-              rows={2}
-              value={ipTerms}
-              onChange={(e) => setIpTerms(e.target.value)}
-              placeholder="Contoh: Hak cipta dan seluruh file master hasil kerja diserahkan penuh kepada Klien setelah pembayaran dilunasi 100%."
-              className="input leading-relaxed"
-            />
-          </div>
-          <div>
-            <label className="label">Jika proyek dibatalkan</label>
-            <textarea
-              rows={2}
-              value={terminationTerms}
-              onChange={(e) => setTerminationTerms(e.target.value)}
-              placeholder="Contoh: Apabila proyek dibatalkan sepihak oleh Klien, Klien wajib membayar kompensasi atas tahapan pekerjaan yang sudah selesai dikerjakan."
-              className="input leading-relaxed"
-            />
-          </div>
-        </FormSection>
-
-        {isPro ? (
-          <div className="card p-5 bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-200 flex items-center gap-3.5">
-            <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Crown className="w-4 h-4" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-emerald-950">Status: Langganan Pro Aktif</h3>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Fitur Resmi Penuh
+        {/* TAHAP 5: TINJAU RINGKASAN & SIMPAN (REVIEW STEP) */}
+        {currentStep === 5 && (
+          <section className="space-y-6 animate-in fade-in duration-150">
+            <div className="card p-6 sm:p-7 space-y-6">
+              <div className="flex items-start gap-3 pb-4 border-b border-[#E8E8EC]">
+                <span className="w-8 h-8 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                  5
                 </span>
+                <div>
+                  <p className="kicker">Tahap 5 dari 5</p>
+                  <h2 className="card-title font-display text-lg text-[#0A0A0A]">Tinjau Ringkasan & Terbitkan</h2>
+                  <p className="text-xs sm:text-sm text-[#6B6B6B] mt-0.5">
+                    Periksa kembali data kesepakatan sebelum disimpan sebagai draf atau dikirimkan langsung ke klien.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed">
-                Dokumen ini otomatis berfitur resmi lengkap: Tanda Tangan Digital Resmi, bersih tanpa watermark, pengunci batas revisi, dan riwayat addendum tanpa batas.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <section className="card p-6 sm:p-7 space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
-                <FileCheck className="w-4 h-4" />
-              </span>
-              <div>
-                <h2 className="card-title">Tipe Penerbitan Kesepakatan</h2>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  Pilih apakah kesepakatan ini diterbitkan dengan kuota Gratis atau menggunakan saldo kredit Per Proyek berfitur resmi:
-                </p>
-              </div>
-            </div>
 
-            {usage && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {[
-                  {
-                    credit: false,
-                    title: "Paket Gratis (Rp0)",
-                    badge: null,
-                    note: `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif`,
-                    features: [
-                      "Draf standar & konfirmasi centang online",
-                      "Maksimal 1 kali revisi draf",
-                      "PDF memuat watermark Sepakatin",
-                    ],
-                    disabled: freeFull,
-                  },
-                  {
-                    credit: true,
-                    title: "Per Proyek (Pakai 1 Kredit)",
-                    badge: "Fitur Resmi Penuh",
-                    note: `Sisa saldo: ${usage.credits} kredit proyek`,
-                    features: [
-                      "Tanda Tangan Digital Resmi (gores layar)",
-                      "Dokumen bersih 100% tanpa watermark",
-                      "Pengunci batas revisi & anti-revisi liar",
-                      "Format 2 salinan resmi & verifikasi SHA-256",
-                    ],
-                    disabled: usage.credits < 1,
-                  },
-                ].map((opt) => (
-                  <button
-                    type="button"
-                    key={opt.title}
-                    disabled={opt.disabled}
-                    onClick={() => setUseCredit(opt.credit)}
-                    className={`text-left p-4 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                      useCredit === opt.credit
-                        ? "border-brand-600 bg-brand-50/60 ring-4 ring-brand-600/10 shadow-xs"
-                        : "border-slate-200 hover:border-slate-300 bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-bold text-slate-900">{opt.title}</p>
-                      {opt.badge && (
-                        <span className="text-[10px] font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full">
-                          {opt.badge}
-                        </span>
-                      )}
+              {/* Ringkasan Pra-Penerbitan (Pre-Submission Summary) */}
+              <div className="space-y-4">
+                {/* Bagian 1: Proyek & Kontak */}
+                <div className="doc-box space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">1. Nama Proyek & Para Pihak</span>
+                    <button type="button" onClick={() => setCurrentStep(1)} className="text-xs font-semibold text-[#6366F1] hover:underline">
+                      Edit
+                    </button>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900">{projectName || "(Nama proyek belum diisi)"}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 pt-1 border-t border-slate-200">
+                    <div>
+                      <p className="font-bold text-slate-900">Penyedia Jasa (Anda):</p>
+                      <p>{freelancerName || user.fullName} {freelancerRole ? `(${freelancerRole})` : ""}</p>
+                      <p>{freelancerEmail || user.email} {freelancerPhone ? `• ${freelancerPhone}` : ""}</p>
                     </div>
-                    <p className="text-xs font-semibold text-brand-700 mt-1">{opt.note}</p>
-                    <ul className="mt-2.5 space-y-1 text-xs text-slate-600">
-                      {opt.features.map((f, i) => (
-                        <li key={i} className="flex items-center gap-1.5">
-                          <span className="text-brand-600 font-bold">•</span>
-                          <span>{f}</span>
+                    <div>
+                      <p className="font-bold text-slate-900">Klien (Pemberi Kerja):</p>
+                      <p>{clientName || "(Nama klien belum diisi)"} {clientCompany ? `(${clientCompany})` : ""}</p>
+                      <p>{clientEmail || "(Email belum diisi)"} {clientPhone ? `• ${clientPhone}` : ""}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian 2: Ruang Lingkup & Luaran */}
+                <div className="doc-box space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">2. Ruang Lingkup & Hasil Kerja</span>
+                    <button type="button" onClick={() => setCurrentStep(2)} className="text-xs font-semibold text-[#6366F1] hover:underline">
+                      Edit
+                    </button>
+                  </div>
+                  {scopeDesc && <p className="text-xs text-slate-700 italic leading-relaxed">&ldquo;{scopeDesc}&rdquo;</p>}
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 mb-1.5">Hasil Kerja yang Diserahkan (Deliverables):</p>
+                    <ul className="space-y-1 text-xs text-slate-700">
+                      {deliverables.filter((d) => d.trim().length > 0).map((d, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="font-bold text-emerald-600">{i + 1}.</span>
+                          <span>{d}</span>
                         </li>
                       ))}
                     </ul>
-                  </button>
-                ))}
-              </div>
-            )}
+                  </div>
+                  {exclusions.filter((x) => x.trim().length > 0).length > 0 && (
+                    <div className="pt-2 border-t border-slate-200">
+                      <p className="text-xs font-bold text-slate-900 mb-1">Di Luar Kesepakatan (Exclusions):</p>
+                      <ul className="space-y-0.5 text-xs text-slate-600">
+                        {exclusions.filter((x) => x.trim().length > 0).map((x, i) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <span className="text-slate-400">•</span>
+                            <span>{x}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
 
-            {blocked && (
-              <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                Kuota paket Gratis sudah penuh dan kredit Per Proyek habis. Selesaikan atau batalkan kesepakatan lama di
-                dashboard, atau <Link href="/#harga" className="font-semibold underline">tambah kredit / upgrade ke Pro</Link>.
+                {/* Bagian 3: Biaya & Termin */}
+                <div className="doc-box space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">3. Biaya & Skema Pembayaran</span>
+                    <button type="button" onClick={() => setCurrentStep(3)} className="text-xs font-semibold text-[#6366F1] hover:underline">
+                      Edit
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-slate-500">Total Biaya Kesepakatan</p>
+                      <p className="text-lg font-bold font-display text-slate-900">{formatCurrencyIDR(safeTotalValue)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-slate-500">Uang Muka (DP)</p>
+                      <p className="text-sm font-bold text-indigo-700">
+                        {formatCurrencyIDR(effectiveDpAmount)} ({effectiveDpPercent}%)
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-slate-500">Sisa Pelunasan</p>
+                      <p className="text-sm font-bold text-slate-900">
+                        {formatCurrencyIDR(effectiveRemainingAmount)} ({remainingPercent}%)
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 pt-2 border-t border-slate-200">
+                    <strong>Cara Pembayaran:</strong> {paymentMethod || "Transfer Bank / Rekening Resmi Penyedia Jasa"}
+                  </p>
+                </div>
+
+                {/* Bagian 4: Ketentuan & Jadwal */}
+                <div className="doc-box space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">4. Jadwal & Ketentuan Revisi</span>
+                    <button type="button" onClick={() => setCurrentStep(4)} className="text-xs font-semibold text-[#6366F1] hover:underline">
+                      Edit
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+                    <div>
+                      <p><strong>Periode Pekerjaan:</strong> {startDate} s.d. {deadline}</p>
+                      <p><strong>Batas Pelunasan:</strong> Maksimal {effectiveDueDays} hari kerja setelah serah terima</p>
+                    </div>
+                    <div>
+                      <p><strong>Jatah Revisi Gratis:</strong> {revisionCount} kali putaran</p>
+                      <p><strong>Tarif Revisi Tambahan:</strong> {formatCurrencyIDR(extraRevisionRate || 0)} / revisi</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Format Dokumen yang Diterbitkan */}
+                <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/50 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <FileCheck className="w-4 h-4 text-[#6366F1]" />
+                    <div>
+                      <p className="font-bold text-indigo-950">
+                        {isPro
+                          ? "Dokumen Berfitur Resmi Penuh (Langganan Pro)"
+                          : useCredit
+                          ? "Dokumen Berfitur Resmi Penuh (Pakai 1 Kredit Proyek)"
+                          : "Dokumen Paket Gratis (Watermark Sepakatin)"}
+                      </p>
+                      <p className="text-indigo-800">
+                        {isPro || useCredit
+                          ? "Termasuk Tanda Tangan Digital Resmi (gores layar), tanpa watermark, dan verifikasi SHA-256."
+                          : "Termasuk draf standar dan persetujuan online."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Petunjuk Langkah Selanjutnya */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed space-y-1">
+              <p className="font-bold text-slate-900">Langkah Setelah Penyimpanan:</p>
+              <p>
+                - <strong>Simpan Draf:</strong> Disimpan di dashboard Anda tanpa mengirim notifikasi ke klien. Anda masih bisa mengeditnya kapan saja.
               </p>
-            )}
+              <p>
+                - <strong>Simpan & Kirim ke Klien:</strong> Nomor dokumen langsung diterbitkan dan tautan persetujuan siap Anda bagikan kepada klien melalui WhatsApp atau email.
+              </p>
+            </div>
           </section>
         )}
 
@@ -1121,19 +1530,66 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           <p className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">{submitError}</p>
         )}
 
+        {/* Action Bar Navigasi Tahap */}
         <div className="card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
-            Setelah disimpan, kesepakatan mendapat nomor dokumen sendiri dan bisa dikirim ke klien.
-          </p>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button type="submit" disabled={isSubmitting || blocked} className="btn btn-secondary flex-1 sm:flex-none">
-              <Save className="w-4 h-4" />
-              Simpan Draf
-            </button>
-            <button type="button" disabled={isSubmitting || blocked} onClick={(e) => handleSubmit(e, true)} className="btn btn-primary flex-1 sm:flex-none">
-              <Send className="w-4 h-4" />
-              Simpan & Kirim ke Klien
-            </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={handlePrevStep}
+                disabled={isSubmitting}
+                className="btn btn-secondary flex-1 sm:flex-none"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Sebelumnya
+              </button>
+            )}
+
+            {currentStep < 5 && (
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, false)}
+                disabled={isSubmitting || blocked}
+                className="btn btn-ghost text-xs text-slate-500 hover:text-slate-800 hidden sm:flex items-center gap-1.5"
+                title="Simpan draf sekarang tanpa harus sampai tahap akhir"
+              >
+                <Save className="w-3.5 h-3.5" />
+                Simpan Draf Sekarang
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            {currentStep < 5 ? (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="btn btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
+              >
+                <span>Lanjut ke Tahap {currentStep + 1}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || blocked}
+                  className="btn btn-secondary flex-1 sm:flex-none"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSubmitting ? "Menyimpan..." : "Simpan sebagai Draf"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting || blocked}
+                  onClick={(e) => handleSubmit(e, true)}
+                  className="btn btn-primary flex-1 sm:flex-none"
+                >
+                  <Send className="w-4 h-4" />
+                  {isSubmitting ? "Menerbitkan..." : "Simpan & Kirim ke Klien"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </form>

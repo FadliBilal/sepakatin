@@ -22,13 +22,25 @@ export function AgreementDocument({ content, versionNumber, status, children }: 
 
   return (
     <div className="card p-6 sm:p-10 space-y-8">
-      <div className="pb-6 border-b-2 border-slate-900 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="pb-6 border-b border-[#E8E8EC] flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold text-brand-600">Sepakatin · Surat Kesepakatan Kerja</p>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">{content.projectName}</h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Nomor dokumen <strong className="text-slate-900">{content.contractId}</strong> · Versi {versionNumber}
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
+            {content.parentContractId ? "Sepakatin · Addendum Kesepakatan Kerja" : "Sepakatin · Surat Kesepakatan Kerja"}
           </p>
+          <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0A0A0A] mt-1">{content.projectName}</h2>
+          <p className="text-xs text-[#6B6B6B] mt-1.5 flex items-center gap-2">
+            <span>Nomor dokumen:</span>
+            <span className="font-mono font-semibold text-[#0A0A0A] px-2 py-0.5 rounded bg-slate-100 border border-[#E8E8EC]">{content.contractId}</span>
+            <span>·</span>
+            <span>Versi {versionNumber}</span>
+          </p>
+          {content.parentContractId && (
+            <div className="mt-3 inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium">
+              <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-200/80 px-1.5 py-0.5 rounded">Addendum</span>
+              <span>Terikat pada Kontrak Induk:</span>
+              <strong className="font-mono font-bold">{content.parentContractId}</strong>
+            </div>
+          )}
         </div>
         <StatusBadge status={status} className="self-start" />
       </div>
@@ -36,7 +48,7 @@ export function AgreementDocument({ content, versionNumber, status, children }: 
       {children}
 
       <section>
-        <h3 className="doc-heading">Pasal 1 · Para pihak</h3>
+        <h3 className="doc-heading">Pasal 1 · Para Pihak</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="doc-box space-y-1.5">
             <p className="text-xs font-semibold text-slate-500 mb-1">Pihak pertama (Freelancer)</p>
@@ -99,14 +111,14 @@ export function AgreementDocument({ content, versionNumber, status, children }: 
         </div>
 
         {content.payment.milestones && content.payment.milestones.length > 0 && (
-          <div className="mt-4 rounded-xl border border-slate-200 divide-y divide-slate-100 text-sm">
+          <div className="mt-4 rounded-xl border border-[#E8E8EC] divide-y divide-[#E8E8EC] text-sm">
             {content.payment.milestones.map((m, idx) => (
               <div key={idx} className="px-4 py-3 flex items-center justify-between gap-4">
-                <span className="text-slate-700">
-                  <span className="text-slate-400 mr-2">Tahap {idx + 1}</span>
+                <span className="text-[#4B4B4B]">
+                  <span className="text-[#8E8E93] mr-2">Tahap {idx + 1}</span>
                   {m.title}
                 </span>
-                <span className="font-semibold text-slate-900 whitespace-nowrap">{formatCurrencyIDR(m.amount)}</span>
+                <span className="font-semibold font-display text-[#0A0A0A] whitespace-nowrap">{formatCurrencyIDR(m.amount)}</span>
               </div>
             ))}
           </div>

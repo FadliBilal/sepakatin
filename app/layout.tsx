@@ -1,10 +1,4 @@
 import type { Metadata } from "next";
-import "@fontsource/poppins/300.css";
-import "@fontsource/poppins/400.css";
-import "@fontsource/poppins/500.css";
-import "@fontsource/poppins/600.css";
-import "@fontsource/poppins/700.css";
-import "@fontsource/poppins/400-italic.css";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -136,6 +130,12 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable @next/next/no-page-custom-font */}
+        <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        {/* eslint-enable @next/next/no-page-custom-font */}
         <link rel="icon" href="/icon.png?v=2" type="image/png" />
         <link rel="shortcut icon" href="/icon.png?v=2" />
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
@@ -144,7 +144,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="font-sans bg-white text-slate-900 min-h-screen flex flex-col antialiased">
+      <body className="font-sans bg-[#FAFAFA] text-[#0A0A0A] min-h-screen flex flex-col antialiased">
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

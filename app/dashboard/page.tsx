@@ -94,38 +94,38 @@ function Dashboard({ user }: { user: SessionUser }) {
     : `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif · ${usage.credits} kredit proyek`;
 
   const stats = [
-    { icon: Wallet, label: "Total nilai proyek", value: formatCurrencyIDR(totalValue), note: `${counted.length} proyek tercatat`, color: "text-brand-600 bg-brand-50" },
+    { icon: Wallet, label: "Total nilai proyek", value: formatCurrencyIDR(totalValue), note: `${counted.length} proyek tercatat`, color: "text-blue-600 bg-blue-50" },
     { icon: CheckCircle2, label: "Sudah disepakati", value: String(agreedCount), note: "Disetujui kedua pihak", color: "text-emerald-600 bg-emerald-50" },
     { icon: Clock, label: "Menunggu tindakan", value: String(pendingCount), note: "Menunggu klien atau revisi", color: "text-amber-600 bg-amber-50" },
-    { icon: Zap, label: "Paket Anda", value: usage ? (isPro ? "Pro" : "Gratis") : "…", note: planNote, color: "text-indigo-600 bg-indigo-50" },
+    { icon: Zap, label: "Paket Anda", value: usage ? (isPro ? "Pro" : "Gratis") : "…", note: planNote, color: "text-blue-600 bg-blue-50" },
   ];
 
   return (
     <div className="container-page py-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-[#E8E8EC]">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <p className="kicker">Halo, {firstName}!</p>
             {usage && (
               <div className="flex items-center gap-1.5">
                 <span
-                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                  className={`text-[11px] font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1 ${
                     isPro
-                      ? "bg-brand-50 text-brand-700 border border-brand-200"
-                      : "bg-slate-100 text-slate-700 border border-slate-200"
+                      ? "bg-orange-50 text-orange-600 border border-orange-200"
+                      : "bg-[#F4F4F6] text-[#4B4B4B] border border-[#E8E8EC]"
                   }`}
                 >
-                  <Zap className="w-3 h-3 text-brand-600" />
+                  <Zap className="w-3 h-3 text-orange-600" />
                   {isPro ? "Paket Pro" : "Paket Gratis"}
                 </span>
-                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#F4F4F6] text-[#6B6B6B] border border-[#E8E8EC]">
                   {usage.credits} Kredit Proyek
                 </span>
               </div>
             )}
           </div>
-          <h1 className="page-title mt-1">Kesepakatan Saya</h1>
-          <p className="text-sm text-slate-500 mt-1">Pantau semua proyek dan status persetujuannya di sini.</p>
+          <h1 className="page-title mt-1 font-display">Kesepakatan Saya</h1>
+          <p className="text-sm text-[#6B6B6B] mt-1">Pantau semua proyek dan status persetujuannya di sini.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -135,7 +135,7 @@ function Dashboard({ user }: { user: SessionUser }) {
             className="btn btn-secondary btn-sm"
             title="Segarkan data profil & kesepakatan terbaru"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-brand-600" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
             Segarkan
           </button>
           <Link href="/agreements/new" className="btn btn-primary">
@@ -149,19 +149,19 @@ function Dashboard({ user }: { user: SessionUser }) {
         {stats.map((s) => (
           <div key={s.label} className="card p-5">
             <div className="flex items-center gap-3 mb-3">
-              <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color}`}>
+              <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${s.color}`}>
                 <s.icon className="w-4 h-4" />
               </span>
-              <span className="text-sm font-medium text-slate-500">{s.label}</span>
+              <span className="text-xs font-medium text-[#6B6B6B]">{s.label}</span>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{s.note}</p>
+            <p className="text-2xl font-bold font-display text-[#0A0A0A]">{s.value}</p>
+            <p className="text-xs text-[#8E8E93] mt-1">{s.note}</p>
           </div>
         ))}
       </div>
 
       {freeLimitReached && (
-        <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50/70 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <p className="text-sm text-amber-900 leading-relaxed">
             <strong>Kuota paket Gratis penuh.</strong> Tandai selesai atau batalkan kesepakatan lama
             {usage && usage.credits > 0 ? `, atau pakai 1 dari ${usage.credits} kredit Per Proyek Anda` : ", atau tambah kredit Per Proyek / upgrade ke Pro instan via QRIS"}.
@@ -187,21 +187,21 @@ function Dashboard({ user }: { user: SessionUser }) {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="card-title flex items-center gap-2">
-            <FileText className="w-4 h-4 text-brand-600" />
+          <h2 className="card-title flex items-center gap-2 font-display">
+            <FileText className="w-4 h-4 text-blue-600" />
             Daftar Kesepakatan
           </h2>
-          <span className="text-sm text-slate-500">{agreements.length} kesepakatan</span>
+          <span className="text-xs text-[#8E8E93]">{agreements.length} kesepakatan</span>
         </div>
 
         {isLoading ? (
-          <div className="card p-12 text-center text-sm text-slate-400 animate-pulse">Memuat kesepakatan...</div>
+          <div className="card p-12 text-center text-sm text-[#8E8E93] animate-pulse">Memuat kesepakatan...</div>
         ) : loadError ? (
-          <div className="card p-12 text-center text-sm text-rose-700">{loadError}</div>
+          <div className="card p-12 text-center text-sm text-rose-600 border-rose-200 bg-rose-50/50">{loadError}</div>
         ) : agreements.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
-            <p className="card-title mb-2">Belum ada kesepakatan</p>
-            <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+          <div className="rounded-xl border border-dashed border-[#E8E8EC] bg-white p-12 text-center">
+            <p className="card-title mb-2 font-display">Belum ada kesepakatan</p>
+            <p className="text-sm text-[#6B6B6B] mb-6 max-w-sm mx-auto">
               Buat kesepakatan pertama Anda untuk mencatat pekerjaan, pembayaran, dan jatah revisi.
             </p>
             <Link href="/agreements/new" className="btn btn-primary">
@@ -210,7 +210,7 @@ function Dashboard({ user }: { user: SessionUser }) {
             </Link>
           </div>
         ) : (
-          <div className="card divide-y divide-slate-100 overflow-hidden">
+          <div className="card divide-y divide-[#E8E8EC] overflow-hidden">
             {agreements.map((agr) => {
               const content = agr.currentVersion.contentJson;
               const approvalsCount = agr.approvals.filter(
@@ -220,36 +220,36 @@ function Dashboard({ user }: { user: SessionUser }) {
               return (
                 <div
                   key={agr.id}
-                  className="p-5 sm:p-6 hover:bg-slate-50/70 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+                  className="p-5 sm:p-6 hover:bg-[#FAFAFA] transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-5"
                 >
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge status={agr.status} />
-                      <span className="text-xs font-medium text-slate-500">
-                        {agr.contractId} · Versi {agr.currentVersionNumber}
+                      <span className="font-mono text-xs font-semibold text-[#8E8E93]">
+                        {agr.contractId} · v{agr.currentVersionNumber}
                       </span>
-                      <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[11px] font-semibold text-[#4B4B4B] bg-[#F4F4F6] border border-[#E8E8EC] px-2 py-0.5 rounded">
                         {agr.plan === "pro" ? "Pro" : agr.plan === "per-proyek" ? "Per Proyek" : "Gratis"}
                       </span>
                     </div>
 
-                    <Link href={`/agreements/${agr.id}`} className="block text-base font-semibold text-slate-900 hover:text-brand-600 transition-colors">
+                    <Link href={`/agreements/${agr.id}`} className="block text-base font-semibold font-display text-[#0A0A0A] hover:text-blue-600 transition-colors">
                       {content.projectName}
                     </Link>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-[#6B6B6B]">
                       <span>
-                        Klien: <strong className="font-medium text-slate-700">{content.client.name}</strong>
+                        Klien: <strong className="font-medium text-[#0A0A0A]">{content.client.name}</strong>
                         {content.client.company ? ` (${content.client.company})` : ""}
                       </span>
                       <span>
-                        Nilai: <strong className="font-semibold text-slate-900">{formatCurrencyIDR(content.payment.totalValue)}</strong>
+                        Nilai: <strong className="font-semibold text-[#0A0A0A]">{formatCurrencyIDR(content.payment.totalValue)}</strong>
                       </span>
                       <span>
-                        Tenggat: <strong className="font-medium text-slate-700">{formatDateID(content.timeline.deadline)}</strong>
+                        Tenggat: <strong className="font-medium text-[#0A0A0A]">{formatDateID(content.timeline.deadline)}</strong>
                       </span>
                       <span>
-                        Disetujui: <strong className="font-semibold text-emerald-700">{approvalsCount}/2 pihak</strong>
+                        Disetujui: <strong className="font-semibold text-emerald-600">{approvalsCount}/2 pihak</strong>
                       </span>
                     </div>
                   </div>
@@ -258,7 +258,7 @@ function Dashboard({ user }: { user: SessionUser }) {
                     {agr.status === "DRAFT" ? (
                       <Link
                         href={`/agreements/${agr.id}`}
-                        className="btn btn-secondary btn-sm text-slate-600"
+                        className="btn btn-secondary btn-sm text-[#4B4B4B]"
                         title="Buka kesepakatan untuk ditinjau dan dikirim ke klien"
                       >
                         <Clock className="w-3.5 h-3.5 text-amber-500" />

@@ -124,11 +124,11 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="card p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 relative">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="p-6 sm:p-8 max-w-md w-full rounded-xl border border-[#E8E8EC] bg-white shadow-lg space-y-5 animate-in fade-in zoom-in-95 duration-150 relative">
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          className="absolute right-3 top-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-[#8E8E93] hover:text-[#0A0A0A] hover:bg-[#F4F4F6] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
           aria-label="Tutup dialog pembayaran"
         >
           <X className="w-5 h-5" />
@@ -136,19 +136,19 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
 
         {step === "loading" && (
           <div className="py-12 text-center space-y-3">
-            <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto" />
-            <p className="text-sm font-semibold text-slate-700">Menyiapkan QRIS Mayar.id...</p>
-            <p className="text-xs text-slate-500">Menghubungkan gateway pembayaran resmi</p>
+            <Loader2 className="w-7 h-7 text-[#6366F1] animate-spin mx-auto" />
+            <p className="text-sm font-semibold text-[#0A0A0A]">Menyiapkan QRIS Mayar.id...</p>
+            <p className="text-xs text-[#6B6B6B]">Menghubungkan gateway pembayaran resmi</p>
           </div>
         )}
 
         {step === "error" && (
           <div className="py-6 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
-              <AlertCircle className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
+              <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Gagal Menyiapkan Pembayaran</h3>
+              <h3 className="text-base font-bold font-display text-[#0A0A0A]">Gagal Menyiapkan Pembayaran</h3>
               <p className="text-xs text-rose-600 mt-1">{errorMessage}</p>
             </div>
             <button onClick={onClose} className="btn btn-secondary btn-sm w-full">
@@ -159,20 +159,20 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
 
         {step === "ready" && checkoutData && (
           <div className="space-y-4">
-            <div className="text-center pb-2 border-b border-slate-100">
-              <span className="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <div className="text-center pb-2 border-b border-[#E8E8EC]">
+              <span className="text-[10px] font-semibold text-[#6366F1] bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded uppercase tracking-wider">
                 Pembayaran Instan (QRIS / GoPay)
               </span>
-              <h3 className="text-lg font-bold text-slate-900 mt-2">{packageName}</h3>
-              <p className="text-2xl font-black text-brand-700 mt-1">
+              <h3 className="text-lg font-bold font-display text-[#0A0A0A] mt-2">{packageName}</h3>
+              <p className="text-2xl font-bold font-display text-[#6366F1] mt-1">
                 {formatCurrencyIDR(packagePrice)}
               </p>
-              <p className="text-[11px] text-slate-400">Harga pas tanpa biaya tambahan</p>
+              <p className="text-[11px] text-[#8E8E93]">Harga pas tanpa biaya tambahan</p>
             </div>
 
             {/* QRIS Display Container */}
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-3">
-              <div className="bg-white p-3 rounded-xl inline-block shadow-sm border border-slate-200">
+            <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E8E8EC] text-center space-y-3">
+              <div className="bg-white p-3 rounded-lg inline-block shadow-xs border border-[#E8E8EC]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={
@@ -184,13 +184,13 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
                 />
               </div>
 
-              <div className="text-xs text-slate-600 space-y-1">
-                <p className="font-semibold text-slate-800 flex items-center justify-center gap-1.5">
-                  <QrCode className="w-3.5 h-3.5 text-brand-600" />
+              <div className="text-xs text-[#6B6B6B] space-y-1">
+                <p className="font-semibold text-[#0A0A0A] flex items-center justify-center gap-1.5">
+                  <QrCode className="w-3.5 h-3.5 text-[#6366F1]" />
                   Scan QRIS dengan GoPay / OVO / Dana / BCA
                 </p>
-                <p className="text-[11px] text-slate-500">
-                  Pembayaran diverifikasi otomatis 24/7 dalam 1–2 detik setelah berhasil transfer.
+                <p className="text-[11px] text-[#8E8E93]">
+                  Pembayaran diverifikasi otomatis 24/7 dalam 1-2 detik setelah berhasil transfer.
                 </p>
               </div>
 
@@ -211,12 +211,12 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
 
             {/* Mode Sandbox Tester / WhatsApp Activation */}
             {checkoutData.isSandbox && (
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs text-left">
-                <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                  <Zap className="w-4 h-4 text-brand-600" />
+              <div className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E8E8EC] space-y-2.5 text-xs text-left">
+                <div className="flex items-center gap-1.5 font-bold font-display text-[#0A0A0A]">
+                  <Zap className="w-4 h-4 text-[#6366F1]" />
                   Aktivasi Instan via WhatsApp
                 </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">
+                <p className="text-[#6B6B6B] text-[11px] leading-relaxed">
                   Gerbang pembayaran QRIS otomatis sedang dalam proses aktivasi KYC merchant. Anda dapat melakukan aktivasi instan untuk <strong>{packageName}</strong> ({formatCurrencyIDR(packagePrice)}) langsung melalui WhatsApp resmi kami:
                 </p>
                 <a

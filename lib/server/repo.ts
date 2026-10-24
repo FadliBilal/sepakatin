@@ -251,7 +251,13 @@ export async function mutate(
 
 export async function createForUser(
   user: User,
-  body: { content: ContractContentJSON; sendDirectly?: boolean; useCredit?: boolean }
+  body: {
+    content: ContractContentJSON;
+    sendDirectly?: boolean;
+    useCredit?: boolean;
+    parentAgreementId?: string;
+    parentContractId?: string;
+  }
 ): Promise<AgreementRecord> {
   const db = getAdmin();
   const profile = await getProfile(user);
@@ -282,6 +288,8 @@ export async function createForUser(
         ownerId: user.id,
         plan,
         sendDirectly: Boolean(body.sendDirectly),
+        parentAgreementId: body.parentAgreementId || body.content.parentAgreementId,
+        parentContractId: body.parentContractId || body.content.parentContractId,
       });
       const { error } = await db.from("agreements").insert({
         id: record.id,

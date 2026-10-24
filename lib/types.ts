@@ -74,6 +74,8 @@ export interface TerminationTerms {
 export interface ContractContentJSON {
   contractId: string;
   projectName: string;
+  parentAgreementId?: string;
+  parentContractId?: string;
   freelancer: PartyInfo;
   client: PartyInfo;
   scope: ScopeTerms;
@@ -141,12 +143,15 @@ export interface ActivityLogItem {
     | "SENT_TO_CLIENT"
     | "VIEWED_BY_CLIENT"
     | "CHANGE_REQUESTED"
+    | "CHANGE_REJECTED"
     | "VERSION_BUMPED"
     | "FREELANCER_APPROVED"
     | "CLIENT_APPROVED"
     | "AGREED_LOCKED"
+    | "STARTED"
     | "COMPLETED"
-    | "CANCELLED";
+    | "CANCELLED"
+    | "REJECTED";
   description: string;
   createdAt: string;
 }
@@ -194,6 +199,8 @@ export interface AgreementRecord {
   id: string;
   projectId: string;
   contractId: string; // e.g. SPK-2026-00124
+  parentAgreementId?: string;
+  parentContractId?: string;
   status: AgreementStatus;
   currentVersionNumber: number;
   reviewToken: string; // Unique URL token for client review
@@ -239,6 +246,7 @@ export interface ProjectRecord {
 
 export interface PublicVerificationData {
   contractId: string;
+  parentContractId?: string;
   status: AgreementStatus;
   projectName: string;
   versionNumber: number;

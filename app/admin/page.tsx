@@ -273,42 +273,42 @@ export default function AdminPage() {
       )}
 
       {/* Admin Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E8EC] pb-6">
         <div>
           <div className="flex items-center gap-2.5 mb-2">
             <span className="eyebrow">
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
               Panel Pengelola Platform
             </span>
             {stats?.isSupabaseConnected ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Supabase Cloud Aktif
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Mode Lokal (Demo)
               </span>
             )}
           </div>
-          <h1 className="page-title">Dasbor Administrator</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="page-title font-display">Dasbor Administrator</h1>
+          <p className="text-sm text-[#6B6B6B] mt-1">
             Pantau statistik platform, atur paket dan kredit pengguna, serta lakukan moderasi kesepakatan.
           </p>
         </div>
 
         <button onClick={loadAdminData} disabled={isLoading} className="btn btn-secondary self-start sm:self-auto">
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 text-blue-600 ${isLoading ? "animate-spin" : ""}`} />
           Segarkan Data
         </button>
       </div>
 
       {loadError && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-rose-900">Gagal memuat data panel</p>
-            <p className="text-sm text-rose-800 mt-0.5">{loadError}</p>
+            <p className="text-sm font-semibold text-rose-900 font-display">Gagal memuat data panel</p>
+            <p className="text-xs sm:text-sm text-rose-800 mt-0.5">{loadError}</p>
           </div>
           <button onClick={loadAdminData} disabled={isLoading} className="btn btn-secondary btn-sm self-start sm:self-auto">
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -318,7 +318,7 @@ export default function AdminPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-200">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#E8E8EC]">
         <button
           onClick={() => setActiveTab("overview")}
           className={`tab ${activeTab === "overview" ? "tab-active" : "tab-idle"}`}

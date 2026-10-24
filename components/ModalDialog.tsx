@@ -53,27 +53,27 @@ export function ModalDialog({
     switch (type) {
       case "danger":
         return (
-          <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <Trash2 className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
+            <Trash2 className="w-5 h-5" />
           </div>
         );
       case "warning":
         return (
-          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <AlertTriangle className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5" />
           </div>
         );
       case "success":
         return (
-          <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
         );
       case "info":
       default:
         return (
-          <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <Info className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg bg-indigo-50 text-[#6366F1] flex items-center justify-center flex-shrink-0">
+            <Info className="w-5 h-5" />
           </div>
         );
     }
@@ -82,11 +82,11 @@ export function ModalDialog({
   const getConfirmBtnClass = () => {
     switch (type) {
       case "danger":
-        return "bg-rose-600 hover:bg-rose-700 text-white shadow-sm";
+        return "bg-rose-600 hover:bg-rose-700 text-white shadow-xs";
       case "warning":
-        return "bg-amber-600 hover:bg-amber-700 text-white shadow-sm";
+        return "bg-amber-600 hover:bg-amber-700 text-white shadow-xs";
       case "success":
-        return "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm";
+        return "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs";
       case "info":
       default:
         return "btn-primary";
@@ -94,9 +94,9 @@ export function ModalDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="card max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 bg-white relative animate-in zoom-in-95 duration-150"
+        className="max-w-md w-full p-6 space-y-4 rounded-xl border border-[#E8E8EC] bg-white relative shadow-lg animate-in zoom-in-95 duration-150"
         role="dialog"
         aria-modal="true"
       >
@@ -105,28 +105,28 @@ export function ModalDialog({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="absolute top-4 right-4 p-1.5 rounded-md text-[#8E8E93] hover:text-[#0A0A0A] hover:bg-[#F4F4F6] transition-colors"
             aria-label="Tutup"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
 
         {/* Konten Modal */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3.5">
           {getIcon()}
-          <div className="space-y-1.5 flex-1 pr-6">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+          <div className="space-y-1 flex-1 pr-6">
+            <h3 className="text-base font-bold font-display text-[#0A0A0A] leading-snug">
               {title}
             </h3>
-            <div className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <div className="text-xs sm:text-sm text-[#6B6B6B] leading-relaxed">
               {description}
             </div>
           </div>
         </div>
 
         {/* Tombol Aksi */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+        <div className="pt-3 border-t border-[#E8E8EC] flex items-center justify-end gap-2.5">
           {isConfirmation ? (
             <>
               <button

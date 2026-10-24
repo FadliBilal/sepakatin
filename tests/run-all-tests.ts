@@ -10,12 +10,13 @@ import { runSecurityAndAuditTests } from "./09-security-tokens-audit.test";
 import { runUiWatermarkAndGuideTests } from "./10-ui-watermark-ematerai-guide.test";
 import { runPaymentsNotificationsQrTests } from "./11-payments-notifications-qrcode.test";
 import { runProductionReliabilityAndSecurityTests } from "./12-production-reliability-and-security.test";
+import { runTest13 } from "./13-audit-flow-lifecycle-and-addendum.test";
 
 async function main() {
   const startTime = Date.now();
 
   console.log("================================================================================");
-  console.log("     SEPAKATIN PLATFORM — SUITE PENGUJIAN UNIT FITUR & PEMBUKTIAN ALUR         ");
+  console.log("     SEPAKATIN PLATFORM - SUITE PENGUJIAN UNIT FITUR & PEMBUKTIAN ALUR         ");
   console.log("================================================================================");
   console.log(`Waktu Pengujian : ${new Date().toLocaleString("id-ID")}`);
   console.log(`Lingkungan Node : ${process.version}`);
@@ -33,6 +34,7 @@ async function main() {
     { name: "Fitur 10: Watermark Dokumen & Panduan e-Meterai Resmi (UU 10/2020)", fn: runUiWatermarkAndGuideTests },
     { name: "Fitur 11: Pembayaran Mayar, Notifikasi Transaksional & QR Code Verifikasi", fn: runPaymentsNotificationsQrTests },
     { name: "Fitur 12: Keandalan Mutasi, Idempotensi, Verifikasi Webhook & Keamanan Berkas", fn: runProductionReliabilityAndSecurityTests },
+    { name: "Fitur 13: Siklus Hidup Alur Kerja, Mulai Pengerjaan, Penolakan & Addendum", fn: runTest13 },
   ];
 
   let passedSuites = 0;

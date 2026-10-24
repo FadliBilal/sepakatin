@@ -9,6 +9,7 @@ export interface ChangeRequestsTabProps {
   changeRequests: ChangeRequest[];
   revisionContent: ContractContentJSON["revision"];
   onOpenNewVersionModal: () => void;
+  onRejectChangeRequest?: (requestId: string) => void;
   agreementId?: string;
   isLocked?: boolean;
 }
@@ -28,6 +29,7 @@ export function ChangeRequestsTab({
   changeRequests,
   revisionContent,
   onOpenNewVersionModal,
+  onRejectChangeRequest,
   isLocked,
 }: ChangeRequestsTabProps) {
   const isOverLimit = changeRequests.length > revisionContent.count;
@@ -122,9 +124,20 @@ export function ChangeRequestsTab({
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">{cr.description}</p>
-                <p className="text-xs text-slate-400">
-                  Dari {cr.requestedBy} · {formatDateTimeID(cr.createdAt)}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <p className="text-xs text-slate-400">
+                    Dari {cr.requestedBy} · {formatDateTimeID(cr.createdAt)}
+                  </p>
+                  {cr.status === "OPEN" && onRejectChangeRequest && (
+                    <button
+                      type="button"
+                      onClick={() => onRejectChangeRequest(cr.id)}
+                      className="btn btn-ghost btn-sm text-rose-600 hover:bg-rose-50 border border-rose-200 text-xs py-1"
+                    >
+                      Tolak Permintaan
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

@@ -20,6 +20,7 @@ import {
   getAgreementByReviewToken,
   approveVersion,
   requestChange,
+  rejectAgreement,
   submitVisualSignature,
   fetchStampedDocumentUrl,
   errorMessage,
@@ -52,6 +53,11 @@ export default function ClientReviewPage() {
   const [changeTitle, setChangeTitle] = useState("");
   const [changeDescription, setChangeDescription] = useState("");
   const [isSubmittingChange, setIsSubmittingChange] = useState(false);
+
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectName, setRejectName] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const [isSubmittingReject, setIsSubmittingReject] = useState(false);
 
   // Modal Dialog Kustom
   const [dialogState, setDialogState] = useState<{
@@ -341,6 +347,39 @@ export default function ClientReviewPage() {
     }
   };
 
+  const handleRejectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rejectName.trim()) {
+      showAlert({
+        title: "Nama Wajib Diisi",
+        description: "Mohon isi nama Anda untuk mencatat penolakan kesepakatan.",
+        type: "warning",
+      });
+      return;
+    }
+    setIsSubmittingReject(true);
+    try {
+      const updated = await rejectAgreement(token, rejectName.trim(), rejectReason.trim());
+      if (updated) {
+        setAgreement({ ...updated });
+        setShowRejectModal(false);
+        showAlert({
+          title: "Kesepakatan Telah Ditolak",
+          description: "Penolakan Anda telah dicatat di sistem dan diberitahukan kepada freelancer.",
+          type: "info",
+        });
+      }
+    } catch (err) {
+      showAlert({
+        title: "Gagal Menolak Kesepakatan",
+        description: errorMessage(err),
+        type: "danger",
+      });
+    } finally {
+      setIsSubmittingReject(false);
+    }
+  };
+
   const materaiImage = (sizeClass: string) =>
     agreement.ematerai && (
       <div className="flex flex-col items-center gap-1 flex-shrink-0">
@@ -364,13 +403,13 @@ export default function ClientReviewPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-      <div className="rounded-2xl border border-brand-100 bg-brand-50/60 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="kicker">Undangan meninjau kesepakatan</p>
-          <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+          <h2 className="font-display text-lg font-bold text-[#0A0A0A] mt-0.5">
             {content.freelancer.name} mengajak Anda menyetujui kesepakatan kerja
           </h2>
-          <p className="text-sm text-slate-600 mt-0.5">
+          <p className="text-xs text-[#6B6B6B] mt-0.5">
             Baca isinya dulu. Jika sudah sesuai, setujui di bagian bawah. Gratis, tanpa perlu daftar akun.
           </p>
         </div>
@@ -396,12 +435,12 @@ export default function ClientReviewPage() {
             <li
               key={stage.label}
               aria-current={isCurrent ? "step" : undefined}
-              className={`rounded-xl border px-3 py-2.5 ${
+              className={`rounded-lg border px-3 py-2.5 ${
                 stage.done
-                  ? "border-emerald-200 bg-emerald-50"
+                  ? "border-emerald-200 bg-emerald-50/70"
                   : isCurrent
-                  ? "border-brand-300 bg-brand-50"
-                  : "border-slate-200 bg-white"
+                  ? "border-brand-300 bg-brand-50/80"
+                  : "border-[#E8E8EC] bg-white"
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -481,18 +520,18 @@ export default function ClientReviewPage() {
       )}
 
       {agreement.versions && agreement.versions.length > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-lg bg-white border border-[#E8E8EC]">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500">Versi Dokumen:</span>
+            <span className="text-xs font-semibold text-[#6B6B6B]">Versi Dokumen:</span>
             {agreement.versions.map((v) => (
               <button
                 key={v.id}
                 type="button"
                 onClick={() => setSelectedVersionNum(v.versionNumber)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                   activeVersion.versionNumber === v.versionNumber
-                    ? "bg-brand-600 text-white"
-                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                    ? "bg-[#6366F1] text-white shadow-xs"
+                    : "bg-white text-[#0A0A0A] border border-[#E8E8EC] hover:bg-slate-50"
                 }`}
               >
                 Versi {v.versionNumber} {v.versionNumber === currentVersion.versionNumber ? "(Aktif)" : "(Riwayat)"}
@@ -509,33 +548,44 @@ export default function ClientReviewPage() {
 
       <AgreementDocument content={content} versionNumber={activeVersion.versionNumber} status={agreement.status}>
         {agreement.status === "AGREED" && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-4 flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-semibold text-emerald-900">Kesepakatan ini sudah disetujui kedua pihak</p>
-              <p className="text-emerald-700">Dokumen dikunci dan menjadi acuan resmi proyek.</p>
+              <p className="font-semibold text-emerald-950">Kesepakatan ini sudah disetujui kedua pihak</p>
+              <p className="text-emerald-800 text-xs mt-0.5">Dokumen dikunci dan menjadi acuan resmi proyek.</p>
             </div>
           </div>
         )}
         {agreement.status === "PENDING_APPROVAL" && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
+          <div className="rounded-lg border border-blue-200 bg-blue-50/80 p-4 flex items-center gap-3">
             <Clock className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-semibold text-blue-900">
+              <p className="font-semibold text-blue-950">
                 Pembaruan Versi {currentVersion.versionNumber} Menunggu Persetujuan
               </p>
-              <p className="text-blue-800">
+              <p className="text-blue-800 text-xs mt-0.5">
                 Freelancer telah memperbarui kesepakatan ini menjadi Versi {currentVersion.versionNumber}. Mohon periksa klausul terbaru di bawah ini dan berikan tanda tangan serta persetujuan Anda.
               </p>
             </div>
           </div>
         )}
         {agreement.status === "CHANGES_REQUESTED" && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-center gap-3">
+          <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-900">Permintaan perubahan sedang diproses</p>
-              <p className="text-amber-800">Freelancer sedang menyiapkan versi baru berdasarkan permintaan Anda.</p>
+              <p className="font-semibold text-amber-950">Permintaan perubahan sedang diproses</p>
+              <p className="text-amber-800 text-xs mt-0.5">Freelancer sedang menyiapkan versi baru berdasarkan permintaan Anda.</p>
+            </div>
+          </div>
+        )}
+        {agreement.status === "REJECTED" && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50/80 p-4 flex items-center gap-3">
+            <X className="w-5 h-5 text-rose-600 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="font-semibold text-rose-950">Kesepakatan Ini Telah Ditolak</p>
+              <p className="text-rose-800 text-xs mt-0.5">
+                Klien telah menolak draf kesepakatan ini. Proses kerja sama dihentikan dan dokumen tidak dapat disahkan.
+              </p>
             </div>
           </div>
         )}
@@ -557,10 +607,20 @@ export default function ClientReviewPage() {
             </p>
           </div>
           {!isDocumentLocked && !clientApproval && (
-            <button type="button" onClick={() => setShowChangeModal(true)} className="btn btn-secondary">
-              <Edit3 className="w-4 h-4" />
-              Minta Perubahan
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowRejectModal(true)}
+                className="btn btn-ghost text-rose-600 hover:bg-rose-50 border border-rose-200"
+              >
+                <X className="w-4 h-4" />
+                Tolak Kesepakatan
+              </button>
+              <button type="button" onClick={() => setShowChangeModal(true)} className="btn btn-secondary">
+                <Edit3 className="w-4 h-4" />
+                Minta Perubahan
+              </button>
+            </div>
           )}
         </div>
 
@@ -829,6 +889,67 @@ export default function ClientReviewPage() {
                 </button>
                 <button type="submit" disabled={isSubmittingChange} className="btn btn-primary">
                   {isSubmittingChange ? "Mengirim..." : "Kirim Permintaan"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="card max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="card-title text-rose-700 flex items-center gap-2">
+                <X className="w-5 h-5" /> Tolak Kesepakatan
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowRejectModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Jika Anda tidak menyetujui ruang lingkup kerja sama ini dan tidak ingin melanjutkannya, Anda dapat menolak draf kesepakatan ini.
+            </p>
+            <form onSubmit={handleRejectSubmit} className="space-y-4">
+              <div>
+                <label className="label">Nama Anda *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nama lengkap Anda"
+                  value={rejectName}
+                  onChange={(e) => setRejectName(e.target.value)}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="label">Alasan Penolakan (Opsional)</label>
+                <textarea
+                  rows={3}
+                  placeholder="Tuliskan alasan penolakan agar freelancer memahami alasan pembatalan ini..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="input leading-relaxed"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectModal(false)}
+                  className="btn btn-secondary"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReject}
+                  className="btn btn-primary bg-rose-600 hover:bg-rose-700 border-rose-600 text-white"
+                >
+                  {isSubmittingReject ? "Memproses..." : "Konfirmasi Tolak"}
                 </button>
               </div>
             </form>

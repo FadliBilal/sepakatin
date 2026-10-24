@@ -155,7 +155,7 @@ export function SignatureTab({
 
         {/* Banner Pembaruan Versi Baru (Amandemen / Revisi) */}
         {agreement.status === "PENDING_APPROVAL" && !bothSigned && (
-          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2.5 text-xs text-blue-900">
+          <div className="p-4 rounded-lg bg-blue-50/80 border border-blue-200 flex items-start gap-2.5 text-xs text-blue-900">
             <Clock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-blue-950">
@@ -171,11 +171,11 @@ export function SignatureTab({
         {/* Grid 2 Kotak Tanda Tangan */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
           {/* Kotak Freelancer */}
-          <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-4">
+          <div className="p-5 rounded-lg border border-[#E8E8EC] bg-white space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pihak Pertama</span>
-                <h4 className="text-sm font-bold text-slate-900">Tanda Tangan Anda (Freelancer)</h4>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">Pihak Pertama</span>
+                <h4 className="font-display text-sm font-bold text-[#0A0A0A]">Tanda Tangan Anda (Freelancer)</h4>
               </div>
               {freelancerSig ? (
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
@@ -278,11 +278,11 @@ export function SignatureTab({
           </div>
 
           {/* Kotak Klien */}
-          <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-4">
+          <div className="p-5 rounded-lg border border-[#E8E8EC] bg-white space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pihak Kedua</span>
-                <h4 className="text-sm font-bold text-slate-900">Tanda Tangan Klien</h4>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">Pihak Kedua</span>
+                <h4 className="font-display text-sm font-bold text-[#0A0A0A]">Tanda Tangan Klien</h4>
               </div>
               {isClientSigned ? (
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">

@@ -287,7 +287,12 @@ export { getCachedRemoteUsage };
 
 export async function createAgreement(
   content: ContractContentJSON,
-  options: { sendDirectly: boolean; useCredit: boolean }
+  options: {
+    sendDirectly: boolean;
+    useCredit: boolean;
+    parentAgreementId?: string;
+    parentContractId?: string;
+  }
 ): Promise<AgreementRecord> {
   if (isSupabaseConfigured) {
     const res = await api<{ agreement: AgreementRecord }>("/api/agreements", {
@@ -321,7 +326,15 @@ export async function createAgreement(
   let contractId = generateContractId();
   while (list.some((a) => a.contractId === contractId)) contractId = generateContractId();
 
-  const record = await buildNewAgreement({ content, contractId, ownerId: user.id, plan, sendDirectly: options.sendDirectly });
+  const record = await buildNewAgreement({
+    content,
+    contractId,
+    ownerId: user.id,
+    plan,
+    sendDirectly: options.sendDirectly,
+    parentAgreementId: options.parentAgreementId || content.parentAgreementId,
+    parentContractId: options.parentContractId || content.parentContractId,
+  });
   writeLocal([record, ...list]);
   if (plan === "per-proyek") setLocalCredits(user.id, usage.credits - 1);
   refreshAccount();
@@ -370,12 +383,32 @@ export async function regenerateReviewToken(id: string): Promise<AgreementRecord
   return ownerAction(id, { type: "regenerateReviewToken" });
 }
 
+export async function startWork(id: string): Promise<AgreementRecord> {
+  return ownerAction(id, { type: "startWork" });
+}
+
 export async function completeAgreement(id: string): Promise<AgreementRecord> {
   return ownerAction(id, { type: "complete" });
 }
 
 export async function cancelAgreement(id: string): Promise<AgreementRecord> {
   return ownerAction(id, { type: "cancel" });
+}
+
+export async function rejectAgreement(
+  token: string,
+  clientName?: string,
+  reason?: string
+): Promise<AgreementRecord> {
+  return clientAction(token, { type: "reject", name: clientName || "Klien", reason });
+}
+
+export async function rejectChangeRequest(
+  id: string,
+  requestId: string,
+  reason?: string
+): Promise<AgreementRecord> {
+  return ownerAction(id, { type: "rejectChangeRequest", requestId, reason });
 }
 
 export async function deleteAgreement(id: string): Promise<void> {

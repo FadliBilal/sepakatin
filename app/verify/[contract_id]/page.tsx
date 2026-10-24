@@ -71,16 +71,16 @@ export default function PublicContractVerificationPage() {
         {/* Hasil pengecekan */}
         <div
           className={`p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-            isOriginal ? "bg-gradient-to-r from-brand-600 to-brand-700" : "bg-gradient-to-r from-rose-600 to-rose-700"
+            isOriginal ? "bg-[#6366F1]" : "bg-rose-600"
           }`}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center border border-white/20 flex-shrink-0">
-              {isOriginal ? <ShieldCheck className="w-7 h-7" /> : <ShieldAlert className="w-7 h-7" />}
+            <div className="w-11 h-11 rounded-lg bg-white/15 flex items-center justify-center border border-white/20 flex-shrink-0">
+              {isOriginal ? <ShieldCheck className="w-6 h-6" /> : <ShieldAlert className="w-6 h-6" />}
             </div>
             <div>
-              <p className="text-sm text-white/80">Hasil pengecekan Sepakatin</p>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              <p className="text-xs text-white/80 uppercase tracking-wider font-semibold">Hasil pengecekan Sepakatin</p>
+              <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight">
                 {!isOriginal
                   ? "Isi dokumen tidak cocok"
                   : isAgreed
@@ -89,7 +89,7 @@ export default function PublicContractVerificationPage() {
               </h1>
             </div>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1.5 bg-white/20 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5">
+          <span className="self-start sm:self-auto px-3 py-1 bg-white/20 rounded-md text-xs font-semibold inline-flex items-center gap-1.5">
             {isOriginal ? (
               <>
                 <Check className="w-4 h-4 text-emerald-300" /> Asli, tidak diubah
@@ -103,32 +103,32 @@ export default function PublicContractVerificationPage() {
         </div>
 
         <div className="p-6 sm:p-8 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-6 border-b border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-6 border-b border-[#E8E8EC]">
             <div>
-              <p className="text-xs font-medium text-slate-500">Nomor dokumen</p>
-              <p className="text-lg font-bold text-brand-600">{verifyData.contractId}</p>
+              <p className="text-xs font-medium text-[#6B6B6B]">Nomor dokumen</p>
+              <p className="text-lg font-bold font-mono text-[#6366F1]">{verifyData.contractId}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500 mb-1">Status</p>
+              <p className="text-xs font-medium text-[#6B6B6B] mb-1">Status</p>
               <StatusBadge status={verifyData.status} />
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Versi dokumen</p>
-              <p className="text-sm font-semibold text-slate-900">Versi {verifyData.versionNumber}</p>
+              <p className="text-xs font-medium text-[#6B6B6B]">Versi dokumen</p>
+              <p className="text-sm font-semibold font-mono text-[#0A0A0A]">Versi {verifyData.versionNumber}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Persetujuan</p>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-xs font-medium text-[#6B6B6B]">Persetujuan</p>
+              <p className="text-sm font-semibold text-[#0A0A0A]">
                 {verifyData.partiesApprovedCount} dari {verifyData.totalPartiesRequired} pihak sudah setuju
               </p>
             </div>
           </div>
 
-          <div className="space-y-4 pb-6 border-b border-slate-100">
+          <div className="space-y-4 pb-6 border-b border-[#E8E8EC]">
             <div>
-              <p className="text-xs font-medium text-slate-500">Nama proyek</p>
-              <p className="text-base font-bold text-slate-900 mt-0.5">{verifyData.projectName}</p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs font-medium text-[#6B6B6B]">Nama proyek</p>
+              <p className="text-base font-bold font-display text-[#0A0A0A] mt-0.5">{verifyData.projectName}</p>
+              <p className="text-xs text-[#6B6B6B] mt-1">
                 Berlaku {formatDateID(verifyData.validFrom)} s.d. {formatDateID(verifyData.validUntil)}
               </p>
             </div>
@@ -138,9 +138,9 @@ export default function PublicContractVerificationPage() {
                 { role: "Pihak pertama (Freelancer)", name: verifyData.freelancerName, at: verifyData.freelancerApprovedAt },
                 { role: "Pihak kedua (Klien)", name: verifyData.clientName, at: verifyData.clientApprovedAt },
               ].map((p) => (
-                <div key={p.role} className="doc-box">
-                  <p className="text-xs font-medium text-slate-500">{p.role}</p>
-                  <p className="text-sm font-bold text-slate-900 mt-1">{p.name}</p>
+                <div key={p.role} className="p-4 rounded-lg border border-[#E8E8EC] bg-[#FAFAFA]">
+                  <p className="text-xs font-medium text-[#6B6B6B]">{p.role}</p>
+                  <p className="text-sm font-bold text-[#0A0A0A] mt-1">{p.name}</p>
                   {p.at ? (
                     <p className="text-xs text-emerald-700 font-medium mt-1.5 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -158,33 +158,33 @@ export default function PublicContractVerificationPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="text-sm text-slate-500 space-y-1">
-              <p className="font-semibold text-slate-900">Dicek pada</p>
+            <div className="text-sm text-[#6B6B6B] space-y-1">
+              <p className="font-semibold text-[#0A0A0A]">Dicek pada</p>
               <p>{formatDateTimeID(verifyData.verifiedAt)}</p>
-              <p className="text-xs text-slate-400 max-w-xs">
+              <p className="text-xs text-[#8E8E93] max-w-xs">
                 Pindai kode QR ini dengan kamera HP untuk membuka halaman pengecekan ini.
               </p>
             </div>
-            <div className="p-3 bg-white border border-slate-200 rounded-xl flex-shrink-0">
+            <div className="p-3 bg-white border border-[#E8E8EC] rounded-lg flex-shrink-0">
               {currentUrl && <QRCodeViewer value={currentUrl} size={110} />}
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-50 px-6 sm:px-8 py-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#FAFAFA] px-6 sm:px-8 py-3.5 border-t border-[#E8E8EC] flex flex-wrap items-center justify-between gap-3">
           {verifyData.hasStampedDocuments ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-full">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               {verifyData.stampedDocumentsCount === 2
                 ? "2/2 Salinan Berkas Bermeterai Resmi Tersedia"
                 : "Berkas Bermeterai Resmi Tersedia"}
             </span>
           ) : (
-            <span className="text-xs text-slate-500">
-              Pencatatan integritas kriptografis SHA-256
+            <span className="text-xs text-[#6B6B6B] font-mono">
+              Integritas kriptografis SHA-256
             </span>
           )}
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#8E8E93]">
             Terverifikasi oleh Sepakatin Trust Network
           </span>
         </div>
