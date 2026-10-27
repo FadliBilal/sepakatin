@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -31,6 +31,14 @@ export default function LoginPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const { user, ready } = useSession();
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const handleTurnstileReset = useCallback(() => {
+    setTurnstileToken("");
+  }, []);
 
   useEffect(() => {
     if (ready && user) router.replace(nextPath(isAdmin(user)));
@@ -160,9 +168,9 @@ export default function LoginPage() {
             <TurnstileWidget
               ref={turnstileRef}
               action="login"
-              onVerify={(token) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken("")}
-              onError={() => setTurnstileToken("")}
+              onVerify={handleTurnstileVerify}
+              onExpire={handleTurnstileReset}
+              onError={handleTurnstileReset}
             />
 
             <button

@@ -5,7 +5,6 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useCallback,
   useState,
 } from "react";
 
@@ -51,29 +50,17 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
     const widgetIdRef = useRef<string | null>(null);
     const [renderError, setRenderError] = useState<string | null>(null);
 
+    const onVerifyRef = useRef(onVerify);
+    onVerifyRef.current = onVerify;
+
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
+
+    const onExpireRef = useRef(onExpire);
+    onExpireRef.current = onExpire;
+
     const siteKey =
       process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() || DEFAULT_SITEKEY;
-
-    const handleVerify = useCallback(
-      (token: string) => {
-        setRenderError(null);
-        onVerify(token);
-      },
-      [onVerify]
-    );
-
-    const handleError = useCallback(
-      (err?: string) => {
-        console.warn("[Turnstile] Cloudflare challenge error:", err);
-        setRenderError(err || "Gagal memverifikasi Turnstile");
-        if (onError) onError(err);
-      },
-      [onError]
-    );
-
-    const handleExpire = useCallback(() => {
-      if (onExpire) onExpire();
-    }, [onExpire]);
 
     useImperativeHandle(ref, () => ({
       reset: () => {
@@ -100,10 +87,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
         }
 
         if (widgetIdRef.current) {
-          try {
-            window.turnstile.remove(widgetIdRef.current);
-          } catch {}
-          widgetIdRef.current = null;
+          return true;
         }
 
         try {
@@ -112,9 +96,18 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
           }
           const id = window.turnstile.render(containerRef.current, {
             sitekey: siteKey,
-            callback: handleVerify,
-            "error-callback": handleError,
-            "expired-callback": handleExpire,
+            callback: (token: string) => {
+              setRenderError(null);
+              onVerifyRef.current(token);
+            },
+            "error-callback": (err?: string) => {
+              console.warn("[Turnstile] Cloudflare challenge error:", err);
+              setRenderError(err || "Gagal memverifikasi Turnstile");
+              onErrorRef.current?.(err);
+            },
+            "expired-callback": () => {
+              onExpireRef.current?.();
+            },
             theme: "light",
             size: "normal",
             appearance: "always",
@@ -157,7 +150,10 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
 
       return () => {
         isCancelled = true;
-        if (intervalId) clearInterval(intervalId);
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
         clearTimeout(timeoutId);
         if (widgetIdRef.current && window.turnstile) {
           try {
@@ -166,7 +162,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
           widgetIdRef.current = null;
         }
       };
-    }, [siteKey, handleVerify, handleError, handleExpire, action]);
+    }, [siteKey, action]);
 
     return (
       <div className={`w-full flex flex-col items-center justify-center py-2 ${className || ""}`}>

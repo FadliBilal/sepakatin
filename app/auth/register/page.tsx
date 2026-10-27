@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -31,6 +31,14 @@ export default function RegisterPage() {
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const handleTurnstileReset = useCallback(() => {
+    setTurnstileToken("");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,9 +284,9 @@ export default function RegisterPage() {
             <TurnstileWidget
               ref={turnstileRef}
               action="register"
-              onVerify={(token) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken("")}
-              onError={() => setTurnstileToken("")}
+              onVerify={handleTurnstileVerify}
+              onExpire={handleTurnstileReset}
+              onError={handleTurnstileReset}
             />
 
             <button
