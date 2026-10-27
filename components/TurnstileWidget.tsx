@@ -8,7 +8,6 @@ import React, {
   useCallback,
   useState,
 } from "react";
-import Script from "next/script";
 
 declare global {
   interface Window {
@@ -28,7 +27,6 @@ declare global {
       reset: (widgetId: string) => void;
       remove: (widgetId: string) => void;
     };
-    onTurnstileLoaded?: () => void;
   }
 }
 
@@ -50,7 +48,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
   function TurnstileWidget({ onVerify, onError, onExpire, action, className }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
     const widgetIdRef = useRef<string | null>(null);
-    const [scriptReady, setScriptReady] = useState(false);
+    const [renderError, setRenderError] = useState<string | null>(null);
 
     const siteKey =
       process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() ||
@@ -58,6 +56,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
 
     const handleVerify = useCallback(
       (token: string) => {
+        setRenderError(null);
         onVerify(token);
       },
       [onVerify]
@@ -65,6 +64,8 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
 
     const handleError = useCallback(
       (err?: string) => {
+        console.warn("[Turnstile] Cloudflare challenge error:", err);
+        setRenderError(err || "Gagal memverifikasi Turnstile");
         if (onError) onError(err);
       },
       [onError]
@@ -84,43 +85,77 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
       },
     }));
 
-    const renderWidget = useCallback(() => {
+    useEffect(() => {
       if (!siteKey) {
         handleVerify("turnstile_unconfigured_bypass");
         return;
       }
 
-      if (!containerRef.current || !window.turnstile) return;
+      let intervalId: ReturnType<typeof setInterval> | null = null;
+      let isCancelled = false;
 
-      if (widgetIdRef.current) {
+      const initTurnstile = () => {
+        if (isCancelled) return true;
+        if (!containerRef.current || !window.turnstile) return false;
+
+        if (widgetIdRef.current) {
+          try {
+            window.turnstile.remove(widgetIdRef.current);
+          } catch {}
+          widgetIdRef.current = null;
+        }
+
         try {
-          window.turnstile.remove(widgetIdRef.current);
-        } catch {}
-        widgetIdRef.current = null;
+          const id = window.turnstile.render(containerRef.current, {
+            sitekey: siteKey,
+            callback: handleVerify,
+            "error-callback": handleError,
+            "expired-callback": handleExpire,
+            theme: "light",
+            size: "normal",
+            action: action || "auth",
+          });
+          widgetIdRef.current = id;
+          return true;
+        } catch (err) {
+          console.warn("[Turnstile] Render exception:", err);
+          return false;
+        }
+      };
+
+      // 1. Coba render langsung jika library sudah terpasang
+      if (initTurnstile()) return;
+
+      // 2. Pastikan script tag ada di DOM
+      const SCRIPT_ID = "cf-turnstile-script";
+      if (!document.getElementById(SCRIPT_ID)) {
+        const script = document.createElement("script");
+        script.id = SCRIPT_ID;
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
       }
 
-      try {
-        const id = window.turnstile.render(containerRef.current, {
-          sitekey: siteKey,
-          callback: handleVerify,
-          "error-callback": handleError,
-          "expired-callback": handleExpire,
-          theme: "light",
-          size: "normal",
-          action: action || "auth",
-        });
-        widgetIdRef.current = id;
-      } catch (err) {
-        console.warn("[Turnstile] Render error:", err);
-      }
-    }, [siteKey, handleVerify, handleError, handleExpire, action]);
+      // 3. Polling sampai window.turnstile siap
+      intervalId = setInterval(() => {
+        if (initTurnstile() && intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }, 80);
 
-    useEffect(() => {
-      if (scriptReady && window.turnstile) {
-        renderWidget();
-      }
+      const timeoutId = setTimeout(() => {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      }, 10000);
 
       return () => {
+        isCancelled = true;
+        if (intervalId) clearInterval(intervalId);
+        clearTimeout(timeoutId);
         if (widgetIdRef.current && window.turnstile) {
           try {
             window.turnstile.remove(widgetIdRef.current);
@@ -128,26 +163,22 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
           widgetIdRef.current = null;
         }
       };
-    }, [scriptReady, renderWidget]);
-
-    useEffect(() => {
-      if (typeof window !== "undefined" && window.turnstile) {
-        setScriptReady(true);
-      }
-    }, []);
+    }, [siteKey, handleVerify, handleError, handleExpire, action]);
 
     if (!siteKey) {
       return null;
     }
 
     return (
-      <div className={`w-full flex justify-center py-2 ${className || ""}`}>
-        <Script
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-          strategy="afterInteractive"
-          onLoad={() => setScriptReady(true)}
-        />
+      <div className={`w-full flex flex-col items-center justify-center py-2 ${className || ""}`}>
         <div ref={containerRef} className="min-h-[65px] flex items-center justify-center" />
+        {renderError && (
+          <p className="text-[11px] text-rose-600 mt-1">
+            {renderError.includes("400010") || renderError.includes("domain")
+              ? "Domain ini (localhost) belum didaftarkan di Cloudflare Turnstile dashboard."
+              : "Verifikasi Cloudflare Turnstile mengalami kendala."}
+          </p>
+        )}
       </div>
     );
   }

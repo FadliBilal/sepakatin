@@ -140,6 +140,11 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/icon.png?v=2" />
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
         <script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          async
+          defer
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
