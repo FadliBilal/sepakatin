@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -76,8 +76,31 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const addendumToId = searchParams?.get("addendum_to");
   const [parentAgreement, setParentAgreement] = useState<AgreementRecord | null>(null);
 
-  // Navigasi Tahap Form (1 s.d. 5)
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [focusedInputKey, setFocusedInputKey] = useState<string | null>(null);
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  useEffect(() => {
+    if (focusedInputKey && inputRefs.current[focusedInputKey]) {
+      inputRefs.current[focusedInputKey]?.focus();
+      setFocusedInputKey(null);
+    }
+  }, [focusedInputKey]);
+
+  const handleAddListItem = (listKey: string, list: string[], setList: (v: string[]) => void) => {
+    const nextIdx = list.length;
+    setList([...list, ""]);
+    setFocusedInputKey(`${listKey}-${nextIdx}`);
+  };
+
+  const handleCurrencyChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (n: number) => void
+  ) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    const num = raw ? parseInt(raw, 10) : 0;
+    setter(num);
+  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [usage, setUsage] = useState<AccountUsage | null>(null);
@@ -159,7 +182,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const freeFull = !!usage && !isPro && usage.activeFreeAgreements >= usage.maxActiveFreeAgreements;
   const blocked = !!usage && !isPro && (useCredit ? usage.credits < 1 : freeFull);
 
-  // Tahap 1: Proyek & Para Pihak
   const [projectName, setProjectName] = useState("");
 
   const [freelancerName, setFreelancerName] = useState(user.fullName || "");
@@ -172,7 +194,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const [clientPhone, setClientPhone] = useState("");
   const [clientCompany, setClientCompany] = useState("");
 
-  // Tahap 2: Pekerjaan & Luaran (Deliverables)
   const [scopeDesc, setScopeDesc] = useState("");
   const [deliverables, setDeliverables] = useState<string[]>(["", "", ""]);
   const [exclusions, setExclusions] = useState<string[]>(["", ""]);
@@ -181,7 +202,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
     "Sudah dicoba tanpa kendala di komputer dan ponsel",
   ];
 
-  // Tahap 3: Pembayaran & DP
   const [totalValue, setTotalValue] = useState<number>(5000000);
   const [dpSelection, setDpSelection] = useState<string>("50");
   const [customDpMode, setCustomDpMode] = useState<"percent" | "amount">("percent");
@@ -192,7 +212,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   const [customDueDays, setCustomDueDays] = useState<number>(7);
   const [paymentMethod, setPaymentMethod] = useState("");
 
-  // Tahap 4: Revisi, Jadwal, Hak Cipta & Pembatalan
   const [revisionCount, setRevisionCount] = useState<number>(3);
   const [revisionTerms, setRevisionTerms] = useState("");
   const [extraRevisionRate, setExtraRevisionRate] = useState<number>(300000);
@@ -418,20 +437,6 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleJumpToStep = (targetStep: number) => {
-    if (targetStep < currentStep) {
-      setCurrentStep(targetStep);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    // Validasi bertahap jika ingin melompat maju
-    for (let s = currentStep; s < targetStep; s++) {
-      if (!validateStep(s)) return;
-    }
-    setCurrentStep(targetStep);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleSubmit = async (e: React.FormEvent, sendDirectly: boolean) => {
     e.preventDefault();
 
@@ -558,6 +563,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
   };
 
   const listEditor = (
+    listKey: string,
     label: string,
     hint: string,
     list: string[],
@@ -571,34 +577,53 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           <p className="label mb-0">{label}</p>
           <p className="hint mt-0">{hint}</p>
         </div>
-        <button type="button" onClick={() => setList([...list, ""])} className="btn btn-ghost btn-sm">
+        <button
+          type="button"
+          onClick={() => handleAddListItem(listKey, list, setList)}
+          className="btn btn-secondary btn-sm text-xs font-semibold"
+        >
           <Plus className="w-4 h-4" />
-          Tambah
+          Tambah Baris
         </button>
       </div>
       <div className="space-y-2">
-        {list.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-400 w-5 text-right">{bullet(idx)}</span>
-            <input
-              type="text"
-              value={item}
-              onChange={(e) => updateList(list, setList, idx, e.target.value)}
-              placeholder={typeof placeholder === "function" ? placeholder(idx) : placeholder}
-              className="input"
-            />
-            {list.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setList(list.filter((_, i) => i !== idx))}
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                aria-label="Hapus baris"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        ))}
+        {list.map((item, idx) => {
+          const itemKey = `${listKey}-${idx}`;
+          return (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-400 w-5 text-right">{bullet(idx)}</span>
+              <input
+                ref={(el) => {
+                  inputRefs.current[itemKey] = el;
+                }}
+                type="text"
+                value={item}
+                onChange={(e) => updateList(list, setList, idx, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddListItem(listKey, list, setList);
+                  }
+                }}
+                placeholder={typeof placeholder === "function" ? placeholder(idx) : placeholder}
+                className="input"
+              />
+              {list.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    delete inputRefs.current[itemKey];
+                    setList(list.filter((_, i) => i !== idx));
+                  }}
+                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  aria-label="Hapus baris"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -664,21 +689,29 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
           {WIZARD_STEPS.map((step) => {
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
+            const isFuture = step.id > currentStep;
             const Icon = step.icon;
 
             return (
               <button
                 key={step.id}
                 type="button"
-                onClick={() => handleJumpToStep(step.id)}
+                disabled={isFuture}
+                onClick={() => {
+                  if (step.id < currentStep) {
+                    setCurrentStep(step.id);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
                 aria-current={isCurrent ? "step" : undefined}
                 className={`relative flex flex-col items-center sm:items-start p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                   isCurrent
-                    ? "border-[#6366F1] bg-indigo-50/40 ring-2 ring-[#6366F1]/20 shadow-xs"
+                    ? "border-[#6366F1] bg-indigo-50/40 ring-2 ring-[#6366F1]/20 shadow-xs cursor-default"
                     : isCompleted
-                    ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
-                    : "border-[#E8E8EC] bg-white hover:border-slate-300 opacity-75"
+                    ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300 cursor-pointer"
+                    : "border-[#E8E8EC] bg-slate-50/60 opacity-60 cursor-not-allowed"
                 }`}
+                title={isFuture ? "Selesaikan tahap saat ini terlebih dahulu dan tekan 'Lanjut'" : isCompleted ? `Kembali ke Tahap ${step.id}` : undefined}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span
@@ -794,9 +827,9 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
 
               <div className="doc-box space-y-3.5">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                  <p className="text-sm font-bold text-slate-900">Pihak Kedua (Klien / Pemberi Kerja)</p>
-                  <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                    Pemberi Kerja
+                  <p className="text-sm font-bold text-slate-900">Pihak Kedua (Reviewer / Klien)</p>
+                  <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                    Reviewer
                   </span>
                 </div>
                 <div>
@@ -876,6 +909,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
             </div>
 
             {listEditor(
+              "deliverables",
               "Hasil Kerja yang Diserahkan (Deliverables) *",
               "Daftar konkret apa yang akan diterima klien saat serah terima proyek (minimal 1 butir).",
               deliverables,
@@ -885,6 +919,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
             )}
 
             {listEditor(
+              "exclusions",
               "Batasan & Hal yang Tidak Termasuk (Exclusions)",
               "Tuliskan pekerjaan yang berada di luar kesepakatan ini untuk mencegah permintaan tugas tambahan tanpa biaya.",
               exclusions,
@@ -923,17 +958,21 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <label className="label">Total Biaya Proyek (Rp) *</label>
-                <input
-                  type="number"
-                  required
-                  min={0}
-                  step={50000}
-                  value={totalValue}
-                  onChange={(e) => setTotalValue(Number(e.target.value))}
-                  placeholder="Contoh: 5000000"
-                  className="input font-semibold"
-                />
-                <p className="hint font-semibold text-[#6366F1]">{formatCurrencyIDR(safeTotalValue)}</p>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-sm font-bold text-slate-400 pointer-events-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={safeTotalValue > 0 ? safeTotalValue.toLocaleString("id-ID") : ""}
+                    onChange={(e) => handleCurrencyChange(e, setTotalValue)}
+                    placeholder="Contoh: 5.000.000"
+                    className="input pl-10 font-bold text-slate-900"
+                  />
+                </div>
+                <p className="hint font-semibold text-[#6366F1]">
+                  {safeTotalValue > 0 ? formatCurrencyIDR(safeTotalValue) : "Tentukan nominal total pekerjaan"}
+                </p>
               </div>
 
               <div>
@@ -1057,23 +1096,22 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                       </div>
                     ) : (
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-500">Rp</span>
+                        <div className="relative flex items-center">
+                          <span className="absolute left-3.5 text-sm font-bold text-slate-400 pointer-events-none">Rp</span>
                           <input
-                            type="number"
-                            min={0}
-                            max={safeTotalValue}
-                            step={50000}
-                            value={customDpAmount}
+                            type="text"
+                            inputMode="numeric"
+                            value={customDpAmount > 0 ? customDpAmount.toLocaleString("id-ID") : ""}
                             onChange={(e) => {
-                              const val = Math.max(0, Number(e.target.value) || 0);
+                              const raw = e.target.value.replace(/\D/g, "");
+                              const val = raw ? Math.min(safeTotalValue, parseInt(raw, 10)) : 0;
                               setCustomDpAmount(val);
                               if (safeTotalValue > 0) {
                                 setCustomDpPercent(Math.min(100, Math.round((val / safeTotalValue) * 100)));
                               }
                             }}
-                            placeholder="Contoh: 1500000"
-                            className="input font-semibold"
+                            placeholder="Contoh: 1.500.000"
+                            className="input pl-10 font-bold"
                           />
                         </div>
                         <p className="text-xs text-slate-500 mt-1.5">
@@ -1169,34 +1207,69 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="label">Jatah Revisi Gratis</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="label mb-0">Jatah Revisi Gratis</label>
+                  <span className="text-[11px] text-slate-500 font-medium">Bisa mulai dari 0</span>
+                </div>
+
+                {/* Preset Tombol Cepat */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                  {[0, 1, 2, 3, 5].map((val) => {
+                    const isSelected = revisionCount === val;
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setRevisionCount(val)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                          isSelected
+                            ? "bg-[#6366F1] text-white shadow-2xs"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        {val === 0 ? "0x (Tanpa Revisi)" : `${val}x`}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="flex items-center gap-3">
                   <input
                     type="number"
-                    min={1}
-                    max={10}
+                    min={0}
+                    max={20}
                     value={revisionCount}
-                    onChange={(e) => setRevisionCount(Number(e.target.value))}
-                    placeholder="Contoh: 3"
-                    className="input w-24 font-semibold"
+                    onChange={(e) => setRevisionCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                    placeholder="0"
+                    className="input w-24 font-bold text-center"
                   />
-                  <span className="text-sm text-slate-600">kali putaran revisi</span>
+                  <span className="text-sm font-semibold text-slate-700">kali putaran revisi</span>
                 </div>
-                <p className="hint">Standar umum: 2 atau 3 kali putaran revisi minor.</p>
+                <p className="hint">
+                  {revisionCount === 0
+                    ? "Tanpa revisi gratis. Seluruh perubahan klausul/luaran disepakati lewat tarif tambahan atau Addendum."
+                    : `Standar umum: ${revisionCount} kali putaran penyesuaian minor tanpa biaya tambahan.`}
+                </p>
               </div>
 
               <div>
                 <label className="label">Tarif Revisi Tambahan (Rp/Revisi)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={50000}
-                  value={extraRevisionRate}
-                  onChange={(e) => setExtraRevisionRate(Number(e.target.value))}
-                  placeholder="Contoh: 300000"
-                  className="input font-semibold"
-                />
-                <p className="hint">Biaya per revisi jika jatah gratis di atas telah habis.</p>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-sm font-bold text-slate-400 pointer-events-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={extraRevisionRate > 0 ? extraRevisionRate.toLocaleString("id-ID") : ""}
+                    onChange={(e) => handleCurrencyChange(e, setExtraRevisionRate)}
+                    placeholder="Contoh: 300.000"
+                    className="input pl-10 font-bold"
+                  />
+                </div>
+                <p className="hint">
+                  {extraRevisionRate > 0
+                    ? `Biaya Rp${extraRevisionRate.toLocaleString("id-ID")}/revisi jika jatah di atas telah habis.`
+                    : "Gratis atau disepakati terpisah via Addendum."}
+                </p>
               </div>
             </div>
 
@@ -1216,7 +1289,9 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                 <ClipboardList className="w-4 h-4 text-blue-700" /> Prinsip Hukum Batas Revisi Sepakatin
               </p>
               <p>
-                Revisi selama masih dalam jatah (<strong>{revisionCount}x</strong>) dicatat langsung tanpa biaya tambahan.
+                {revisionCount === 0
+                  ? "Proyek ini tidak memiliki jatah revisi gratis (0x). Setiap permintaan penyesuaian disepakati dengan biaya terpisah."
+                  : `Revisi selama masih dalam jatah (${revisionCount}x) dicatat langsung tanpa biaya tambahan.`}
               </p>
               <p className="text-blue-800">
                 Jika terjadi permintaan di luar jatah atau ada penambahan deliverables, Anda dapat menerbitkan <strong>Dokumen Addendum</strong> dengan tarif tambahan Rp{(extraRevisionRate || 0).toLocaleString("id-ID")}/revisi.
@@ -1397,7 +1472,7 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                       <p>{freelancerEmail || user.email} {freelancerPhone ? `• ${freelancerPhone}` : ""}</p>
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">Klien (Pemberi Kerja):</p>
+                      <p className="font-bold text-slate-900">Reviewer / Klien:</p>
                       <p>{clientName || "(Nama klien belum diisi)"} {clientCompany ? `(${clientCompany})` : ""}</p>
                       <p>{clientEmail || "(Email belum diisi)"} {clientPhone ? `• ${clientPhone}` : ""}</p>
                     </div>
@@ -1484,7 +1559,10 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                       <p><strong>Batas Pelunasan:</strong> Maksimal {effectiveDueDays} hari kerja setelah serah terima</p>
                     </div>
                     <div>
-                      <p><strong>Jatah Revisi Gratis:</strong> {revisionCount} kali putaran</p>
+                      <p>
+                        <strong>Jatah Revisi Gratis:</strong>{" "}
+                        {revisionCount === 0 ? "0 kali (Tanpa revisi gratis)" : `${revisionCount} kali putaran`}
+                      </p>
                       <p><strong>Tarif Revisi Tambahan:</strong> {formatCurrencyIDR(extraRevisionRate || 0)} / revisi</p>
                     </div>
                   </div>
@@ -1550,11 +1628,11 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                 type="button"
                 onClick={(e) => handleSubmit(e, false)}
                 disabled={isSubmitting || blocked}
-                className="btn btn-ghost text-xs text-slate-500 hover:text-slate-800 hidden sm:flex items-center gap-1.5"
+                className="btn border border-slate-300 bg-white hover:bg-slate-50 text-slate-900 font-semibold text-xs px-3.5 py-2 rounded-lg shadow-2xs flex items-center gap-2 transition-all"
                 title="Simpan draf sekarang tanpa harus sampai tahap akhir"
               >
-                <Save className="w-3.5 h-3.5" />
-                Simpan Draf Sekarang
+                <Save className="w-3.5 h-3.5 text-slate-700" />
+                <span>Simpan Draf Sekarang</span>
               </button>
             )}
           </div>
@@ -1574,10 +1652,10 @@ function NewAgreementForm({ user }: { user: SessionUser }) {
                 <button
                   type="submit"
                   disabled={isSubmitting || blocked}
-                  className="btn btn-secondary flex-1 sm:flex-none"
+                  className="btn border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 font-bold px-4 py-2.5 rounded-lg shadow-2xs flex-1 sm:flex-none flex items-center justify-center gap-2"
                 >
-                  <Save className="w-4 h-4" />
-                  {isSubmitting ? "Menyimpan..." : "Simpan sebagai Draf"}
+                  <Save className="w-4 h-4 text-slate-700" />
+                  <span>{isSubmitting ? "Menyimpan..." : "Simpan sebagai Draf"}</span>
                 </button>
                 <button
                   type="button"

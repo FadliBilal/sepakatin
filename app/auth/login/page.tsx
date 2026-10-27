@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   Mail,
 } from "lucide-react";
 import { isAdmin, login, useSession } from "@/lib/auth";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 function nextPath(isAdminUser = false): string {
   if (typeof window === "undefined") return isAdminUser ? "/admin" : "/dashboard";
@@ -27,6 +28,8 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const { user, ready } = useSession();
 
   useEffect(() => {
@@ -38,14 +41,31 @@ export default function LoginPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      const result = await login(identifier, password);
+      if (turnstileToken && turnstileToken !== "turnstile_unconfigured_bypass") {
+        const verifyRes = await fetch("/api/auth/verify-turnstile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: turnstileToken, action: "login" }),
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok || !verifyData.success) {
+          setError(verifyData.error || "Verifikasi keamanan Turnstile gagal. Silakan coba lagi.");
+          turnstileRef.current?.reset();
+          setTurnstileToken("");
+          return;
+        }
+      }
+
+      const result = await login(identifier, password, turnstileToken);
       if (result.error) {
         setError(result.error);
+        turnstileRef.current?.reset();
         return;
       }
       router.push(nextPath(isAdmin(result.user || null)));
     } catch {
       setError("Tidak bisa terhubung ke server. Periksa koneksi internet Anda lalu coba lagi.");
+      turnstileRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -136,6 +156,14 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+
+            <TurnstileWidget
+              ref={turnstileRef}
+              action="login"
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken("")}
+              onError={() => setTurnstileToken("")}
+            />
 
             <button
               type="submit"

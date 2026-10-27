@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,6 +15,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { register } from "@/lib/auth";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,9 +53,30 @@ export default function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await register({ fullName, email, password });
+      if (turnstileToken && turnstileToken !== "turnstile_unconfigured_bypass") {
+        const verifyRes = await fetch("/api/auth/verify-turnstile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: turnstileToken, action: "register" }),
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok || !verifyData.success) {
+          setError(verifyData.error || "Verifikasi keamanan Turnstile gagal. Silakan coba lagi.");
+          turnstileRef.current?.reset();
+          setTurnstileToken("");
+          return;
+        }
+      }
+
+      const result = await register({
+        fullName,
+        email,
+        password,
+        captchaToken: turnstileToken,
+      });
       if (result.error) {
         setError(result.error);
+        turnstileRef.current?.reset();
         return;
       }
       if (result.needsConfirmation) {
@@ -62,6 +86,7 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch {
       setError("Tidak bisa terhubung ke server. Periksa koneksi internet Anda lalu coba lagi.");
+      turnstileRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -247,6 +272,14 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
+
+            <TurnstileWidget
+              ref={turnstileRef}
+              action="register"
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken("")}
+              onError={() => setTurnstileToken("")}
+            />
 
             <button
               type="submit"

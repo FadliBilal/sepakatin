@@ -17,10 +17,14 @@ export async function runSecurityAndAuditTests() {
     projectName: "Pengembangan Keamanan Sistem",
     freelancer: { name: "Budi Security", email: "budi@sec.id" },
     client: { name: "PT Aman Sentosa", email: "klien@amansentosa.id" },
-    scope: { description: "Penetration Testing & Hardening", deliverables: ["Laporan Audit", "Patch Keamanan"] },
-    payment: { totalValue: 12000000, dpPercent: 30 },
-    revision: { count: 2 },
+    scope: { description: "Penetration Testing & Hardening", deliverables: ["Laporan Audit", "Patch Keamanan"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 12000000, dpPercent: 30, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-10-31" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-10-31",
   };
 
   // 9.1: Token TTL Expiration (14 Hari)

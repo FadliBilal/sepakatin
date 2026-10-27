@@ -65,14 +65,16 @@ export function ChangeRequestsTab({
               <span className="text-2xl font-extrabold text-slate-900">
                 {changeRequests.length} / {revisionContent.count}
               </span>
-              <span className="text-sm text-slate-600">revisi diajukan</span>
+              <span className="text-sm text-slate-600">
+                {revisionContent.count === 0 ? "revisi diajukan (tanpa kuota gratis)" : "revisi diajukan"}
+              </span>
             </div>
           </div>
           <div>
             {!isOverLimit ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Dalam Jatah Kesepakatan
+                {revisionContent.count === 0 ? "Revisi Berbayar / Addendum" : "Dalam Jatah Kesepakatan"}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
@@ -86,9 +88,12 @@ export function ChangeRequestsTab({
         <div className="text-xs leading-relaxed p-3.5 rounded-xl bg-white border border-slate-200 space-y-1">
           {!isOverLimit ? (
             <p className="text-slate-600">
-              <strong className="text-slate-900">Ketentuan:</strong> Revisi yang masih dalam jatah{" "}
-              <strong>{revisionContent.count} kali</strong> cukup dicatat dan diselesaikan oleh freelancer{" "}
-              <em>tanpa perlu menerbitkan dokumen baru bermeterai</em>.
+              <strong className="text-slate-900">Ketentuan:</strong>{" "}
+              {revisionContent.count === 0 ? (
+                <>Kesepakatan ini <strong>tidak menyediakan kuota revisi gratis (0 kali)</strong>. Setiap permintaan revisi disepakati lewat tarif tambahan atau Addendum resmi.</>
+              ) : (
+                <>Revisi yang masih dalam jatah <strong>{revisionContent.count} kali</strong> cukup dicatat dan diselesaikan oleh freelancer <em>tanpa perlu menerbitkan dokumen baru bermeterai</em>.</>
+              )}
             </p>
           ) : (
             <div className="space-y-1 text-amber-900">

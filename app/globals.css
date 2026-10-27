@@ -23,9 +23,7 @@ body {
   color: #ffffff;
 }
 
-/* ==========================================================================
-   Genesis Design System — Komponen Tampilan Terpadu
-   ========================================================================== */
+/* Design system component utilities */
 @layer components {
   .container-page {
     @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
@@ -115,9 +113,7 @@ body {
   }
 }
 
-/* ==========================================================================
-   Animasi Marquee
-   ========================================================================== */
+/* Marquee animation */
 @keyframes marquee {
   0% {
     transform: translateX(0%);
@@ -137,9 +133,7 @@ body {
   animation-play-state: paused;
 }
 
-/* ==========================================================================
-   Aturan Cetak & Simpan PDF Presisi Tinggi (Standar ISO 216 - A4 Portrait)
-   ========================================================================== */
+/* Print & PDF styling (A4 portrait) */
 .a4-page {
   width: 794px;
   min-width: 794px;

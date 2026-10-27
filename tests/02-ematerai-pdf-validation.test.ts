@@ -10,10 +10,14 @@ export async function runEmateraiTests() {
     projectName: "Desain UI/UX Mobile App",
     freelancer: { name: "Rian Pratama", email: "rian@ui.id" },
     client: { name: "PT Kreasi Digital", email: "klien@kreasidigital.id" },
-    scope: { description: "Desain 20 screens", deliverables: ["Figma Design File", "Design System Kit"] },
-    payment: { totalValue: 8000000, dpPercent: 50 },
-    revision: { count: 2 },
+    scope: { description: "Desain 20 screens", deliverables: ["Figma Design File", "Design System Kit"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 8000000, dpPercent: 50, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-10-31" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-10-31",
   };
 
   const agreement = await buildNewAgreement({

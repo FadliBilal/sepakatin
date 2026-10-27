@@ -12,6 +12,7 @@ export async function runTest13() {
   console.log("\n🚀 [FITUR 13] UNIT TEST: Siklus Hidup Alur Kerja, Mulai Pengerjaan, Penolakan & Addendum");
 
   const sampleContent: ContractContentJSON = {
+    contractId: "SPK-2026-FLOW1",
     projectName: "Pengembangan Web App E-Commerce",
     freelancer: {
       name: "Fadli Bilal",
@@ -29,10 +30,12 @@ export async function runTest13() {
       description: "Pembuatan aplikasi e-commerce dari tahap perancangan sampai deployment.",
       deliverables: ["Desain UI/UX", "Backend API", "Frontend Web"],
       exclusions: ["Biaya hosting & domain"],
+      acceptanceCriteria: ["Semua fitur berjalan lancar"],
     },
     payment: {
       totalValue: 12000000,
       currency: "IDR",
+      paymentMethod: "Transfer Bank BCA",
       dpPercent: 50,
       milestones: [
         { title: "DP 50%", amount: 6000000 },
@@ -42,6 +45,7 @@ export async function runTest13() {
     },
     revision: {
       count: 2,
+      terms: "2x revisi minor",
       extraRevisionRate: 500000,
     },
     timeline: {
@@ -54,7 +58,10 @@ export async function runTest13() {
     termination: {
       cancellationCondition: "Pembatalan sepihak wajib membayar pekerjaan yang sudah selesai.",
       noticePeriodDays: 7,
+      outstandingPaymentTerms: "Kompensasi pekerjaan selesai secara pro-rata.",
     },
+    validFrom: "2026-11-01",
+    validUntil: "2026-12-01",
   };
 
   // Skenario 1: Mulai Pengerjaan (AGREED -> ACTIVE)
@@ -167,10 +174,12 @@ export async function runTest13() {
         description: "Pekerjaan tambahan addendum untuk integrasi payment gateway.",
         deliverables: ["Modul QRIS Dinamis", "Webhook Handler"],
         exclusions: ["Biaya pendaftaran merchant gateway"],
+        acceptanceCriteria: ["Modul QRIS aktif dan webhook teruji"],
       },
       payment: {
         totalValue: 3500000,
         currency: "IDR",
+        paymentMethod: "Transfer Bank BCA",
         dpPercent: 100,
         milestones: [{ title: "Pembayaran Penuh 100%", amount: 3500000 }],
         finalPaymentDueDays: 3,
@@ -182,6 +191,7 @@ export async function runTest13() {
       contractId: "SPK-2026-ADDENDUM-01",
       ownerId: "user-1",
       plan: "pro",
+      sendDirectly: false,
       parentAgreementId,
       parentContractId,
     });

@@ -156,28 +156,21 @@ export default function HomePage() {
 
   return (
     <div className="w-full bg-[#F8FAFC] text-slate-900 selection:bg-blue-600 selection:text-white">
-      {/* =========================================================================
-          HERO SECTION: WARNA ORANYE & BIRU LOGO DENGAN TAMPILAN MODERN
-          ========================================================================= */}
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
-        {/* Ambient Glow Latar Belakang */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10"
+          className="pointer-events-none absolute -top-24 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl -z-10"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-12 right-1/4 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl -z-10"
+          className="pointer-events-none absolute top-8 right-1/4 w-[500px] h-[500px] bg-orange-500/15 rounded-full blur-3xl -z-10"
         />
-
 
         <div className="container-page pt-10 sm:pt-14 pb-4 sm:pb-6 max-w-5xl mx-auto text-center flex flex-col items-center">
-          {/* Eyebrow Text (Bukan Bubble) */}
           <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-orange-600 mb-3">
             Surat Perjanjian Kerja Praktis untuk Freelancer & Klien
           </p>
 
-          {/* Heading Utama: Semi-Inggris & General */}
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.16] mb-4 max-w-4xl">
             Clear Agreement, Great Collaboration.{" "}
             <span className="text-orange-600">
@@ -185,17 +178,14 @@ export default function HomePage() {
             </span>
           </h1>
 
-          {/* Subheading Ringkas & General */}
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6 max-w-2xl mx-auto">
-            Susun rincian hasil kerja, kuota revisi, dan jadwal pelunasan dalam hitungan menit. Ditandatangani secara digital oleh kedua pihak sebagai bukti kerja sama resmi yang sah dan mengikat.
+            Kunci rincian kerja, jatah revisi, dan tanggal pelunasan sebelum proyek dimulai. Cukup kirim satu tautan resmi, klien tanda tangan instan dari ponsel tanpa wajib daftar akun.
           </p>
 
-          {/* CTA Buttons */}
           <div className="w-full flex justify-center mb-6">
             <HomeHeroCta />
           </div>
 
-          {/* Trust Micro-Signals */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-600">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -212,19 +202,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Lengkungan Gradasi Oranye Melingkar Estetik & Mulus di Atas Marquee */}
+        {/* Busur lengkung dan gradasi oranye */}
         <div
           aria-hidden="true"
           className="relative w-full overflow-hidden pointer-events-none flex justify-center -mb-px z-0"
         >
           <svg
-            viewBox="0 0 1440 200"
+            viewBox="0 0 1440 220"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-auto min-w-[1200px] max-w-[2200px] -mt-12 sm:-mt-18 md:-mt-22"
+            className="w-full h-auto min-w-[1100px] max-w-[2000px] -mt-10 sm:-mt-16 md:-mt-20"
           >
             <defs>
-              {/* Radial Glow Halus & Mulus Bebas Efek Kotak/Patah */}
               <radialGradient
                 id="heroOrangeAestheticGlow"
                 cx="50%"
@@ -239,33 +228,46 @@ export default function HomePage() {
                 <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
               </radialGradient>
 
-              {/* Garis Busur Horizon Mulus Memudar Natural di Ujung Kiri dan Kanan */}
               <linearGradient id="heroOrangeAestheticStroke" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#F97316" stopOpacity="0" />
-                <stop offset="25%" stopColor="#FB923C" stopOpacity="0.35" />
-                <stop offset="50%" stopColor="#EA580C" stopOpacity="0.8" />
-                <stop offset="75%" stopColor="#FB923C" stopOpacity="0.35" />
+                <stop offset="15%" stopColor="#FB923C" stopOpacity="0.4" />
+                <stop offset="50%" stopColor="#EA580C" stopOpacity="0.95" />
+                <stop offset="85%" stopColor="#FB923C" stopOpacity="0.4" />
                 <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
               </linearGradient>
 
-              <filter id="heroAestheticBlur" x="-20%" y="-40%" width="140%" height="180%">
-                <feGaussianBlur stdDeviation="28" />
+              <filter id="heroAestheticBlur" x="-30%" y="-50%" width="160%" height="200%">
+                <feGaussianBlur stdDeviation="30" />
+              </filter>
+
+              <filter id="heroArcBloom" x="-20%" y="-100%" width="140%" height="300%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
               </filter>
             </defs>
 
-            {/* Kubah Cahaya Oranye Ambien Lebar */}
             <ellipse
               cx="720"
-              cy="200"
-              rx="750"
-              ry="160"
+              cy="220"
+              rx="760"
+              ry="170"
               fill="url(#heroOrangeAestheticGlow)"
               filter="url(#heroAestheticBlur)"
             />
 
-            {/* Garis Horizon Melingkar Tipis & Halus (Bukan Kotak) */}
             <path
-              d="M -150,200 Q 720,25 1590,200"
+              d="M -160,220 Q 720,20 1600,220"
+              stroke="url(#heroOrangeAestheticStroke)"
+              strokeWidth="2.5"
+              opacity="0.5"
+              fill="none"
+              filter="url(#heroArcBloom)"
+            />
+            <path
+              d="M -160,220 Q 720,20 1600,220"
               stroke="url(#heroOrangeAestheticStroke)"
               strokeWidth="1.5"
               fill="none"
@@ -273,16 +275,25 @@ export default function HomePage() {
           </svg>
         </div>
 
-        {/* Marquee Pengguna & Proyek Skala Kecil */}
-        <div className="w-full overflow-hidden py-3.5 bg-slate-50 border-y border-slate-200 relative z-10">
+        {/* Marquee target pengguna */}
+        <div className="w-full overflow-hidden py-3.5 bg-slate-50/70 border-y border-slate-200/80 relative z-10">
+          <div
+            aria-hidden="true"
+            className="absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-white via-white/80 to-transparent z-20 pointer-events-none"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-white via-white/80 to-transparent z-20 pointer-events-none"
+          />
+
           <div className="relative w-full overflow-hidden flex items-center">
-            <div className="animate-marquee flex items-center gap-6 whitespace-nowrap">
+            <div className="animate-marquee flex items-center gap-7 whitespace-nowrap">
               {[...targetAudiences, ...targetAudiences, ...targetAudiences, ...targetAudiences].map((item, idx) => (
-                <div key={idx} className="inline-flex items-center gap-6">
-                  <span className="text-xs sm:text-sm font-semibold text-slate-700 tracking-normal">
+                <div key={idx} className="inline-flex items-center gap-7">
+                  <span className="text-xs sm:text-sm font-medium text-slate-600 tracking-wide hover:text-slate-900 transition-colors">
                     {item}
                   </span>
-                  <span className="text-orange-500 select-none text-xs">•</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 select-none flex-shrink-0" />
                 </div>
               ))}
             </div>
@@ -290,46 +301,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          DUKUNGAN EKOSISTEM & 4 KEUNGGULAN UTAMA
-          ========================================================================= */}
-      <section className="border-b border-slate-200 bg-white py-12">
+      {/* Ekosistem & keunggulan */}
+      <section className="border-b border-slate-200 bg-white py-12 sm:py-14">
         <div className="container-page">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5 text-center lg:text-left">
-              <span className="text-xs font-bold uppercase tracking-wider text-orange-600">Kolaborasi Resmi</span>
-              <h2 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+            <div className="lg:col-span-7 text-center lg:text-left">
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
+                Kolaborasi Resmi
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight mt-1">
                 Didukung oleh Ekosistem Inovasi Digital
               </h2>
-              <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed max-w-xl mx-auto lg:mx-0">
                 Sepakatin lahir dari program inkubasi inovasi digital nasional untuk menciptakan ekosistem kerja lepas yang lebih aman dan terpercaya.
               </p>
             </div>
 
-            <div className="lg:col-span-7 flex flex-wrap items-center justify-center lg:justify-end gap-4">
-              <div className="flex items-center justify-center px-5 py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:border-orange-300 transition-colors">
+            <div className="lg:col-span-5 flex flex-wrap items-center justify-center lg:justify-end gap-3 sm:gap-4">
+              <div className="flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-all duration-200">
                 <Image
                   src="/garuda-spark.png"
                   alt="Garuda Spark Innovation Hub by KOMDIGI"
-                  width={180}
-                  height={50}
-                  className="h-10 sm:h-11 w-auto object-contain max-w-[200px] select-none"
+                  width={170}
+                  height={44}
+                  className="h-8 sm:h-9 w-auto object-contain max-w-[190px] select-none"
                 />
               </div>
 
-              <div className="flex items-center gap-3.5 px-5 py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:border-blue-300 transition-colors">
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-all duration-200">
                 <Image
                   src="/ngalup.png"
                   alt="Ngalup.co Collaborative Hub"
-                  width={56}
-                  height={56}
-                  className="w-10 h-10 object-contain rounded-full select-none"
+                  width={48}
+                  height={48}
+                  className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-full select-none"
                 />
                 <div className="text-left">
-                  <span className="block text-sm font-bold text-slate-900 tracking-tight">
+                  <span className="block text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
                     Ngalup.co
                   </span>
-                  <span className="block text-xs font-medium text-slate-500">
+                  <span className="block text-[11px] font-medium text-slate-500">
                     Collaborative Hub
                   </span>
                 </div>
@@ -338,34 +349,59 @@ export default function HomePage() {
           </div>
 
           {/* 4 Pilar Metrik Ramah Pengguna */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 pt-10 border-t border-slate-200">
-            <div className="p-4 rounded-xl bg-orange-50/50 border border-orange-100 text-center">
-              <p className="text-2xl sm:text-3xl font-extrabold font-display text-orange-600">100%</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Sah Mengikat</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Sesuai hukum perdata Indonesia</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-8 sm:mt-10 pt-8 sm:pt-10 border-t border-slate-100">
+            <div className="group p-4 sm:p-5 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all duration-200 text-center sm:text-left">
+              <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">
+                100%
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1.5">
+                Sah Mengikat
+              </p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+                Sesuai hukum perdata Indonesia
+              </p>
             </div>
-            <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 text-center">
-              <p className="text-2xl sm:text-3xl font-extrabold font-display text-blue-600">Bebas</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Revisi Liar</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Jatah revisi dipatok sejak awal</p>
+
+            <div className="group p-4 sm:p-5 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all duration-200 text-center sm:text-left">
+              <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">
+                Bebas
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1.5">
+                Revisi Liar
+              </p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+                Jatah revisi dipatok sejak awal
+              </p>
             </div>
-            <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 text-center">
-              <p className="text-2xl sm:text-3xl font-extrabold font-display text-emerald-600">Tepat</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Waktu Bayar</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Jadwal DP & pelunasan tercatat pasti</p>
+
+            <div className="group p-4 sm:p-5 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all duration-200 text-center sm:text-left">
+              <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">
+                Tepat
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1.5">
+                Waktu Bayar
+              </p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+                Jadwal DP & pelunasan tercatat pasti
+              </p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
-              <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-800">Anti-Ubah</p>
-              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1">Terkunci Resmi</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Tidak bisa diedit sepihak</p>
+
+            <div className="group p-4 sm:p-5 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all duration-200 text-center sm:text-left">
+              <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">
+                Anti-Ubah
+              </p>
+              <p className="text-xs sm:text-sm font-bold text-slate-800 mt-1.5">
+                Terkunci Resmi
+              </p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+                Tidak bisa diedit sepihak
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* =========================================================================
-          CEK KEASLIAN DOKUMEN SECTION
-          ========================================================================= */}
+      {/* Cek keaslian */}
       <section className="border-b border-slate-200 bg-gradient-to-r from-orange-50/20 via-white to-blue-50/20">
         <div className="container-page py-9 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-3.5 max-w-xl">
@@ -387,9 +423,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          KOMPARASI: CARA KONVENSIONAL VS STANDAR SEPAKATIN
-          ========================================================================= */}
+      {/* Perbandingan solusi */}
       <section className="border-b border-slate-200 bg-white py-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -458,9 +492,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          FITUR UTAMA: 6 KARTU RINGKAS & GENERAL
-          ========================================================================= */}
+      {/* Fitur utama */}
       <section id="fitur" className="border-b border-slate-200 bg-[#F8FAFC] py-16 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -504,9 +536,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          CARA KERJA (3 LANGKAH MUDAH)
-          ========================================================================= */}
+      {/* Cara kerja */}
       <section id="cara-kerja" className="border-b border-slate-200 bg-white py-16 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -545,9 +575,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          DAFTAR HARGA & PAKET
-          ========================================================================= */}
+      {/* Pilihan paket */}
       <section id="harga" className="border-b border-slate-200 bg-[#F8FAFC] py-16 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -564,9 +592,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          FAQ (PERTANYAAN UMUM)
-          ========================================================================= */}
+      {/* Tanya jawab */}
       <section id="faq" className="border-b border-slate-200 bg-white py-16 scroll-mt-16">
         <div className="container-page max-w-3xl mx-auto">
           <div className="text-center mb-10">
@@ -595,9 +621,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-          FINAL CTA BANNER: KOMBINASI ORANYE & BIRU
-          ========================================================================= */}
+      {/* Banner penutup */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white py-16 sm:py-20">
         {/* Glow Orb Oranye & Biru */}
         <div

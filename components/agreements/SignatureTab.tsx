@@ -35,21 +35,15 @@ export interface SignatureTabProps {
   isEditingSignature: boolean;
   setIsEditingSignature: (val: boolean) => void;
   isSavingSignature: boolean;
-  isApproving: boolean;
   copiedLink: boolean;
   copiedWaText: boolean;
   onSaveFreelancerSignature: (dataUrl: string) => Promise<void>;
   onSendToClient: () => void;
-  onApproveClick: () => void;
   onCopyReviewUrl: () => void;
   onCopyWhatsAppMessage: () => void;
   onSwitchToMeteraiTab: () => void;
 }
 
-/**
- * Tab Tanda Tangan: Mengelola tanda tangan digital pihak freelancer dan klien,
- * verifikasi keabsahan pasal 1320 KUHPerdata & UU ITE, serta audit forensik persetujuan.
- */
 export function SignatureTab({
   agreement,
   content,
@@ -66,12 +60,10 @@ export function SignatureTab({
   isEditingSignature,
   setIsEditingSignature,
   isSavingSignature,
-  isApproving,
   copiedLink,
   copiedWaText,
   onSaveFreelancerSignature,
   onSendToClient,
-  onApproveClick,
   onCopyReviewUrl,
   onCopyWhatsAppMessage,
   onSwitchToMeteraiTab,
@@ -265,14 +257,9 @@ export function SignatureTab({
                   Kirim ke Klien Sekarang
                 </button>
               ) : (
-                <button
-                  onClick={onApproveClick}
-                  disabled={isApproving}
-                  className="btn btn-primary btn-sm w-full"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  {isApproving ? "Menyimpan..." : "Setujui Kesepakatan Sekarang"}
-                </button>
+                <p className="text-slate-500 italic">
+                  Goreskan dan simpan tanda tangan Anda di atas untuk menyetujui dokumen secara otomatis.
+                </p>
               )}
             </div>
           </div>
@@ -281,8 +268,8 @@ export function SignatureTab({
           <div className="p-5 rounded-lg border border-[#E8E8EC] bg-white space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">Pihak Kedua</span>
-                <h4 className="font-display text-sm font-bold text-[#0A0A0A]">Tanda Tangan Klien</h4>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">Pihak Kedua (Reviewer)</span>
+                <h4 className="font-display text-sm font-bold text-[#0A0A0A]">Tinjauan &amp; Tanda Tangan Klien</h4>
               </div>
               {isClientSigned ? (
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">

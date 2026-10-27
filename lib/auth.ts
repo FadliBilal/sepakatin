@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { isSupabaseConfigured, supabase } from "./supabase";
 import { DEMO_ACCOUNTS } from "./demo-accounts";
 import type { AccountUsage } from "./plans";
+import { appUrl } from "./app-url";
 
 export { DEMO_ACCOUNTS };
 
@@ -55,14 +56,7 @@ function readRegisteredUsers(): LocalAccount[] {
   }
 }
 
-/**
- * Status admin datang dari server (/api/me). Browser tidak lagi menyimpan daftar
- * email admin — dulu daftar itu ikut terbundel ke JavaScript publik lewat
- * NEXT_PUBLIC_ADMIN_EMAILS, sehingga penyerang tahu persis akun mana yang harus dibobol.
- *
- * Ini hanya untuk tampilan menu. Otorisasi sebenarnya selalu diperiksa ulang
- * di server pada setiap permintaan ke /api/admin.
- */
+// Status admin dari server (/api/me) untuk kontrol visibilitas menu.
 export function isAdmin(user: SessionUser | null): boolean {
   return Boolean(user?.isAdmin);
 }
@@ -88,13 +82,7 @@ export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | 
   emit();
 }
 
-/**
- * Kata sandi akun contoh untuk mode lokal. Diambil dari .env.local pengembang,
- * tidak pernah ditulis di dalam kode — apa pun yang ada di kode ikut terbundel
- * ke JavaScript publik dan otomatis bocor dari situs yang sudah tayang.
- *
- * Kosong (bawaan di produksi) = akun contoh tidak bisa dipakai masuk.
- */
+// Password akun demo lokal dari environment variable.
 const LOCAL_DEMO_PASSWORD = (process.env.NEXT_PUBLIC_LOCAL_DEMO_PASSWORD || "Admin12345!").trim();
 
 export function localAccounts(): LocalAccount[] {
@@ -263,7 +251,7 @@ function resolveIdentifier(identifier: string): string {
 }
 
 /** Masuk memakai email (atau username akun demo). */
-export async function login(identifier: string, password: string): Promise<AuthResult> {
+export async function login(identifier: string, password: string, captchaToken?: string): Promise<AuthResult> {
   const email = resolveIdentifier(identifier);
 
   if (supabase) {
@@ -280,7 +268,11 @@ export async function login(identifier: string, password: string): Promise<AuthR
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: captchaToken ? { captchaToken } : undefined,
+      });
       if (!error) {
         await refreshRemote();
         return remoteUser ? { user: remoteUser } : { error: "Gagal memuat profil akun. Coba lagi." };
@@ -302,18 +294,20 @@ export async function login(identifier: string, password: string): Promise<AuthR
   return { user: session };
 }
 
-export async function register(data: { fullName: string; email: string; password: string }): Promise<AuthResult> {
+export async function register(data: { fullName: string; email: string; password: string; captchaToken?: string }): Promise<AuthResult> {
   const email = data.email.trim().toLowerCase();
   const fullName = data.fullName.trim();
 
   if (supabase) {
     try {
+      const redirectBase = appUrl() || (typeof window !== "undefined" ? window.location.origin : "");
       const { data: result, error } = await supabase.auth.signUp({
         email,
         password: data.password,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${redirectBase}/auth/callback?next=/dashboard`,
+          captchaToken: data.captchaToken,
         },
       });
       if (error) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { applyOwnerAction, applyClientAction, buildNewAgreement } from "../lib/agreement-logic";
-import type { ContractContentJSON, RequestContext } from "../lib/types";
+import { applyOwnerAction, applyClientAction, buildNewAgreement, type RequestContext } from "../lib/agreement-logic";
+import type { ContractContentJSON } from "../lib/types";
 
 export async function runDigitalSignatureTests() {
   console.log("\n✍️ [FITUR 4] UNIT TEST: Tanda Tangan Digital & Jejak Forensik Audit UU ITE");
@@ -10,10 +10,14 @@ export async function runDigitalSignatureTests() {
     projectName: "Pembuatan Video Animasi 3D",
     freelancer: { name: "Farhan Maulana", email: "farhan@anim.id" },
     client: { name: "Studio Kreatif", email: "director@studiokreatif.id" },
-    scope: { description: "Animasi iklan 30 detik", deliverables: ["Video MP4 4K", "Project Files"] },
-    payment: { totalValue: 20000000, dpPercent: 50 },
-    revision: { count: 2 },
+    scope: { description: "Animasi iklan 30 detik", deliverables: ["Video MP4 4K", "Project Files"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 20000000, dpPercent: 50, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-10-25" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-10-25",
   };
 
   let agreement = await buildNewAgreement({

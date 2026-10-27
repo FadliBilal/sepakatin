@@ -15,10 +15,14 @@ export async function runRevisionFlowTests() {
     projectName: "Pengembangan Aplikasi Kasir POS",
     freelancer: { name: "Ahmad Dani", email: "ahmad@pos.id" },
     client: { name: "Resto Enak", email: "owner@restoenak.com" },
-    scope: { description: "Sistem POS Tablet", deliverables: ["Modul Kasir", "Laporan Penjualan"] },
-    payment: { totalValue: 12000000, dpPercent: 40 },
-    revision: { count: 2 },
+    scope: { description: "Sistem POS Tablet", deliverables: ["Modul Kasir", "Laporan Penjualan"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 12000000, dpPercent: 40, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-10-31" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-10-31",
   };
 
   let agreement = await buildNewAgreement({
@@ -63,6 +67,7 @@ export async function runRevisionFlowTests() {
     content: {
       ...baseContent,
       scope: {
+        ...baseContent.scope,
         description: "Sistem POS Tablet + Bluetooth Thermal Printer",
         deliverables: ["Modul Kasir", "Laporan Penjualan", "Integrasi Printer Bluetooth"],
       },
@@ -112,10 +117,15 @@ export async function runRevisionFlowTests() {
     content: {
       ...baseContent,
       scope: {
+        ...baseContent.scope,
         description: "Amandemen: Penambahan Modul Integrasi Katering",
         deliverables: [...baseContent.scope.deliverables, "Modul Katering"],
       },
-      payment: { totalValue: 15000000, dpPercent: 30 },
+      payment: {
+        ...baseContent.payment,
+        totalValue: 15000000,
+        dpPercent: 30,
+      },
     },
   });
   assert.equal(proAgreement.currentVersionNumber, 2);

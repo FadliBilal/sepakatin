@@ -11,6 +11,7 @@ import { runUiWatermarkAndGuideTests } from "./10-ui-watermark-ematerai-guide.te
 import { runPaymentsNotificationsQrTests } from "./11-payments-notifications-qrcode.test";
 import { runProductionReliabilityAndSecurityTests } from "./12-production-reliability-and-security.test";
 import { runTest13 } from "./13-audit-flow-lifecycle-and-addendum.test";
+import { runTurnstileSecurityTests } from "./14-cloudflare-turnstile-security.test";
 
 async function main() {
   const startTime = Date.now();
@@ -35,6 +36,7 @@ async function main() {
     { name: "Fitur 11: Pembayaran Mayar, Notifikasi Transaksional & QR Code Verifikasi", fn: runPaymentsNotificationsQrTests },
     { name: "Fitur 12: Keandalan Mutasi, Idempotensi, Verifikasi Webhook & Keamanan Berkas", fn: runProductionReliabilityAndSecurityTests },
     { name: "Fitur 13: Siklus Hidup Alur Kerja, Mulai Pengerjaan, Penolakan & Addendum", fn: runTest13 },
+    { name: "Fitur 14: Keamanan Cloudflare Turnstile & Anti-Bot Protection", fn: runTurnstileSecurityTests },
   ];
 
   let passedSuites = 0;

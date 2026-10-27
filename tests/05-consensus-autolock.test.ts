@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { applyOwnerAction, applyClientAction, buildNewAgreement, AgreementError } from "../lib/agreement-logic";
-import type { ContractContentJSON, RequestContext } from "../lib/types";
+import { applyOwnerAction, applyClientAction, buildNewAgreement, AgreementError, type RequestContext } from "../lib/agreement-logic";
+import type { ContractContentJSON } from "../lib/types";
 
 export async function runConsensusAutoLockTests() {
   console.log("\n🔒 [FITUR 5] UNIT TEST: Konsensus Persetujuan & Penguncian Dokumen Otomatis");
@@ -10,10 +10,14 @@ export async function runConsensusAutoLockTests() {
     projectName: "Pengembangan Modul AI Chatbot",
     freelancer: { name: "Dimas Aditya", email: "dimas@ai.id" },
     client: { name: "PT Solusi Cerdas", email: "tech@solusicerdas.id" },
-    scope: { description: "Integrasi LLM Assistant", deliverables: ["API Endpoint Chatbot", "Dokumentasi API"] },
-    payment: { totalValue: 25000000, dpPercent: 30 },
-    revision: { count: 2 },
+    scope: { description: "Integrasi LLM Assistant", deliverables: ["API Endpoint Chatbot", "Dokumentasi API"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 25000000, dpPercent: 30, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-11-01" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-11-01",
   };
 
   let agreement = await buildNewAgreement({

@@ -405,12 +405,12 @@ export default function ClientReviewPage() {
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <div className="card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="kicker">Undangan meninjau kesepakatan</p>
+          <p className="kicker">Peninjauan Kesepakatan (Reviewer)</p>
           <h2 className="font-display text-lg font-bold text-[#0A0A0A] mt-0.5">
-            {content.freelancer.name} mengajak Anda menyetujui kesepakatan kerja
+            {content.freelancer.name} mengundang Anda meninjau kesepakatan kerja
           </h2>
           <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Baca isinya dulu. Jika sudah sesuai, setujui di bagian bawah. Gratis, tanpa perlu daftar akun.
+            Sebagai reviewer, periksa rincian luaran kerja dan jadwal. Jika sudah sesuai, berikan tanda tangan dan persetujuan di bagian bawah.
           </p>
         </div>
         <Link
@@ -426,7 +426,7 @@ export default function ClientReviewPage() {
       {/* Penanda tahap — supaya klien tahu posisinya dalam proses */}
       <ol className="grid grid-cols-3 gap-2" aria-label="Tahap proses kesepakatan">
         {[
-          { label: "1. Baca Dokumen", done: true },
+          { label: "1. Tinjau Dokumen", done: true },
           { label: "2. Setujui & Tanda Tangan", done: Boolean(clientApproval) },
           { label: "3. Sah & Mengikat", done: Boolean(clientApproval && isDocumentLocked) },
         ].map((stage, idx, arr) => {

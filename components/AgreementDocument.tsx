@@ -58,7 +58,7 @@ export function AgreementDocument({ content, versionNumber, status, children }: 
             {content.freelancer.phone && row("WhatsApp", content.freelancer.phone)}
           </div>
           <div className="doc-box space-y-1.5">
-            <p className="text-xs font-semibold text-slate-500 mb-1">Pihak kedua (Klien)</p>
+            <p className="text-xs font-semibold text-slate-500 mb-1">Pihak kedua (Reviewer / Klien)</p>
             {row("Nama", content.client.name)}
             {row("Email", content.client.email)}
             {row("Perusahaan", content.client.company || "-")}
@@ -129,7 +129,12 @@ export function AgreementDocument({ content, versionNumber, status, children }: 
         <h3 className="doc-heading">Pasal 4 · Revisi & jadwal</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
           <div className="space-y-1.5">
-            <p className="text-slate-700">Jatah revisi gratis: <strong className="text-slate-900">{content.revision.count} kali</strong></p>
+            <p className="text-slate-700">
+              Jatah revisi gratis:{" "}
+              <strong className="text-slate-900">
+                {content.revision.count === 0 ? "0 kali (Tanpa revisi gratis)" : `${content.revision.count} kali`}
+              </strong>
+            </p>
             <p className="text-slate-500 leading-relaxed">{content.revision.terms}</p>
             {content.revision.extraRevisionRate ? (
               <p className="text-slate-500">

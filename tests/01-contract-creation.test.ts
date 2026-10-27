@@ -23,15 +23,18 @@ export async function runContractCreationTests() {
     scope: {
       description: "Membuat platform toko online berbasis Next.js dan PostgreSQL",
       deliverables: ["Halaman Beranda & Katalog", "Sistem Keranjang & Checkout", "Integrasi Payment Gateway"],
-      outOfScope: ["Migrasi data manual dari sistem lama", "Penyediaan materi foto produk"],
+      exclusions: ["Migrasi data manual dari sistem lama", "Penyediaan materi foto produk"],
+      acceptanceCriteria: ["Fitur berjalan lancar di web dan mobile"],
     },
     payment: {
       totalValue: 15000000,
+      currency: "IDR",
+      paymentMethod: "Transfer Bank BCA",
       dpPercent: 30,
       finalPaymentDueDays: 7,
       milestones: [
-        { title: "Uang Muka (DP)", percentage: 30, amount: 4500000, dueDays: 3 },
-        { title: "Pelunasan Akhir", percentage: 70, amount: 10500000, dueDays: 7 },
+        { title: "Uang Muka (DP)", amount: 4500000 },
+        { title: "Pelunasan Akhir", amount: 10500000 },
       ],
     },
     revision: {

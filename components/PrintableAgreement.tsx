@@ -369,7 +369,7 @@ export function PrintableAgreement({
 
               <div className="border-l-2 border-slate-300 pl-3.5 space-y-1">
                 <span className="font-bold text-[10px] text-slate-900 block mb-1 uppercase tracking-wider">
-                  Pihak Kedua (Klien)
+                  Pihak Kedua (Reviewer / Klien)
                 </span>
                 <p><span className="text-slate-500">Nama:</span> <strong className="text-slate-950">{content.client.name}</strong></p>
                 <p><span className="text-slate-500">Email:</span> {content.client.email}</p>
@@ -464,7 +464,10 @@ export function PrintableAgreement({
             </h2>
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-1 text-slate-700">
-                <p><strong>Jatah revisi gratis:</strong> {content.revision.count} kali</p>
+                <p>
+                  <strong>Jatah revisi gratis:</strong>{" "}
+                  {content.revision.count === 0 ? "0 kali (Tanpa revisi gratis)" : `${content.revision.count} kali`}
+                </p>
                 <p className="text-slate-600 leading-relaxed">{content.revision.terms}</p>
                 {content.revision.extraRevisionRate ? (
                   <p className="text-slate-600">

@@ -11,10 +11,14 @@ export async function runHashVerificationTests() {
     projectName: "Pembuatan Video Profil Korporat",
     freelancer: { name: "Irfan Pratama", email: "irfan@media.id", phone: "0812345678" },
     client: { name: "PT Nusantara Sejahtera", email: "corp@nusantara.id", phone: "089999999" },
-    scope: { description: "Video berdurasi 3 menit", deliverables: ["Master Video 4K"] },
-    payment: { totalValue: 18000000, dpPercent: 50 },
-    revision: { count: 2 },
+    scope: { description: "Video berdurasi 3 menit", deliverables: ["Master Video 4K"], exclusions: [], acceptanceCriteria: [] },
+    payment: { totalValue: 18000000, dpPercent: 50, currency: "IDR", paymentMethod: "Transfer Bank", finalPaymentDueDays: 7 },
+    revision: { count: 2, terms: "2x revisi minor" },
     timeline: { startDate: "2026-10-01", deadline: "2026-10-20" },
+    ip: { ownershipClause: "Hak cipta beralih setelah pelunasan." },
+    termination: { cancellationCondition: "Pembatalan wajib kompensasi.", noticePeriodDays: 7, outstandingPaymentTerms: "Pro-rata." },
+    validFrom: "2026-10-01",
+    validUntil: "2026-10-20",
   };
 
   const sanitizedContent = sanitizeContent(originalContent, "SPK-2026-HSH01");

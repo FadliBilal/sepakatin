@@ -697,11 +697,19 @@ function AgreementDetail() {
     try {
       const updated = await submitVisualSignature(agreement.id, "freelancer", content.freelancer.name, sigDataUrl);
       if (updated) {
-        setAgreement({ ...updated });
+        // Otomatis catat persetujuan resmi freelancer secara sat-set
+        let finalAgreement = updated;
+        try {
+          const approved = await approveVersion(agreement.id, "freelancer");
+          if (approved) finalAgreement = approved;
+        } catch {
+          // Abaikan jika sudah disetujui sebelumnya
+        }
+        setAgreement({ ...finalAgreement });
         setIsEditingSignature(false);
         showAlert({
-          title: "Tanda Tangan Tersimpan",
-          description: "Tanda tangan Anda sudah menempel pada kedua salinan dokumen.",
+          title: "Tanda Tangan & Persetujuan Sah",
+          description: "Tanda tangan dan persetujuan resmi Anda telah menempel pada dokumen kesepakatan.",
           type: "success",
         });
       }
@@ -1072,12 +1080,10 @@ function AgreementDetail() {
           isEditingSignature={isEditingSignature}
           setIsEditingSignature={setIsEditingSignature}
           isSavingSignature={isSavingSignature}
-          isApproving={isApproving}
           copiedLink={copiedLink}
           copiedWaText={copiedWaText}
           onSaveFreelancerSignature={handleSaveFreelancerSignature}
           onSendToClient={handleSendToClient}
-          onApproveClick={handleApproveClick}
           onCopyReviewUrl={copyReviewUrl}
           onCopyWhatsAppMessage={copyWhatsAppMessage}
           onSwitchToMeteraiTab={() => setActiveTab("meterai")}
