@@ -21,11 +21,12 @@ declare global {
           "expired-callback"?: () => void;
           theme?: "light" | "dark" | "auto";
           size?: "normal" | "compact" | "flexible";
+          appearance?: "always" | "execute" | "interaction-only";
           action?: string;
         }
       ) => string;
-      reset: (widgetId: string) => void;
-      remove: (widgetId: string) => void;
+      reset: (widgetId?: string) => void;
+      remove: (widgetId?: string) => void;
     };
   }
 }
@@ -42,7 +43,7 @@ export interface TurnstileWidgetProps {
   className?: string;
 }
 
-const CLOUDFLARE_TEST_SITEKEY = "1x00000000000000000000AA";
+const DEFAULT_SITEKEY = "0x4AAAAAAFn1F5tQmxGmcHpR";
 
 export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidgetProps>(
   function TurnstileWidget({ onVerify, onError, onExpire, action, className }, ref) {
@@ -51,8 +52,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
     const [renderError, setRenderError] = useState<string | null>(null);
 
     const siteKey =
-      process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() ||
-      (process.env.NODE_ENV === "development" ? CLOUDFLARE_TEST_SITEKEY : "");
+      process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY?.trim() || DEFAULT_SITEKEY;
 
     const handleVerify = useCallback(
       (token: string) => {
@@ -77,26 +77,27 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
 
     useImperativeHandle(ref, () => ({
       reset: () => {
-        if (widgetIdRef.current && window.turnstile) {
+        if (window.turnstile) {
           try {
-            window.turnstile.reset(widgetIdRef.current);
+            if (widgetIdRef.current) {
+              window.turnstile.reset(widgetIdRef.current);
+            } else {
+              window.turnstile.reset();
+            }
           } catch {}
         }
       },
     }));
 
     useEffect(() => {
-      if (!siteKey) {
-        handleVerify("turnstile_unconfigured_bypass");
-        return;
-      }
-
       let intervalId: ReturnType<typeof setInterval> | null = null;
       let isCancelled = false;
 
       const initTurnstile = () => {
         if (isCancelled) return true;
-        if (!containerRef.current || !window.turnstile) return false;
+        if (!containerRef.current || !window.turnstile || typeof window.turnstile.render !== "function") {
+          return false;
+        }
 
         if (widgetIdRef.current) {
           try {
@@ -106,6 +107,9 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
         }
 
         try {
+          if (containerRef.current) {
+            containerRef.current.innerHTML = "";
+          }
           const id = window.turnstile.render(containerRef.current, {
             sitekey: siteKey,
             callback: handleVerify,
@@ -113,6 +117,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
             "expired-callback": handleExpire,
             theme: "light",
             size: "normal",
+            appearance: "always",
             action: action || "auth",
           });
           widgetIdRef.current = id;
@@ -123,10 +128,8 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
         }
       };
 
-      // 1. Coba render langsung jika library sudah terpasang
       if (initTurnstile()) return;
 
-      // 2. Pastikan script tag ada di DOM
       const SCRIPT_ID = "cf-turnstile-script";
       if (!document.getElementById(SCRIPT_ID)) {
         const script = document.createElement("script");
@@ -137,13 +140,13 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
         document.head.appendChild(script);
       }
 
-      // 3. Polling sampai window.turnstile siap
-      intervalId = setInterval(() => {
-        if (initTurnstile() && intervalId) {
-          clearInterval(intervalId);
+      const timer = setInterval(() => {
+        if (initTurnstile()) {
+          clearInterval(timer);
           intervalId = null;
         }
-      }, 80);
+      }, 50);
+      intervalId = timer;
 
       const timeoutId = setTimeout(() => {
         if (intervalId) {
@@ -165,17 +168,16 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
       };
     }, [siteKey, handleVerify, handleError, handleExpire, action]);
 
-    if (!siteKey) {
-      return null;
-    }
-
     return (
       <div className={`w-full flex flex-col items-center justify-center py-2 ${className || ""}`}>
-        <div ref={containerRef} className="min-h-[65px] flex items-center justify-center" />
+        <div
+          ref={containerRef}
+          className="min-h-[65px] min-w-[300px] flex items-center justify-center"
+        />
         {renderError && (
-          <p className="text-[11px] text-rose-600 mt-1">
+          <p className="text-[11px] text-rose-600 mt-1 text-center">
             {renderError.includes("400010") || renderError.includes("domain")
-              ? "Domain ini (localhost) belum didaftarkan di Cloudflare Turnstile dashboard."
+              ? "Domain ini belum diizinkan di Cloudflare Turnstile dashboard."
               : "Verifikasi Cloudflare Turnstile mengalami kendala."}
           </p>
         )}

@@ -7,6 +7,8 @@ export interface TurnstileVerificationResult {
   action?: string;
 }
 
+const DEFAULT_SECRET_KEY = "0x4AAAAAAFn1FyRRRnsKEGBZAaZ8bZ9erB0";
+
 export async function verifyTurnstileToken(
   token: string,
   req?: Request,
@@ -15,7 +17,7 @@ export async function verifyTurnstileToken(
   const secretKey = (
     process.env.TURNSTILE_SECRET ||
     process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY ||
-    ""
+    (process.env.NODE_ENV === "production" ? DEFAULT_SECRET_KEY : "")
   ).trim();
 
   if (!secretKey) {
