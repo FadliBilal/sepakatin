@@ -33,107 +33,107 @@ const DEMO_CONTRACT_ID = "SPK-2026-00124";
 
 export default function HomePage() {
   const marqueeItems = [
-    { icon: "✍️", text: "Tanda Tangan Tanpa Buat Akun" },
-    { icon: "🔒", text: "Batas Revisi Disepakati di Awal" },
-    { icon: "💰", text: "Jadwal DP & Pelunasan Pasti" },
-    { icon: "⚖️", text: "Sah Mengikat Hukum Indonesia" },
-    { icon: "📄", text: "Surat PDF Rapi Ber-QR Code" },
-    { icon: "🛡️", text: "Anti-Edit Sepihak Setelah Sepakat" },
-    { icon: "⏱️", text: "Selesai Dibuat dalam 3 Menit" },
-    { icon: "🤝", text: "Cocok untuk Semua Pekerja Lepas & Klien" },
+    { icon: "✍️", text: "Tanda Tangan Digital Sah Tanpa Registrasi Akun" },
+    { icon: "🔒", text: "Kuota Revisi Terikat Transparan di Awal" },
+    { icon: "💳", text: "Kepastian Jadwal Uang Muka & Pelunasan" },
+    { icon: "⚖️", text: "Berkekuatan Hukum KUHPerdata & UU ITE" },
+    { icon: "📄", text: "Format PDF Resmi dengan Kode QR Publik" },
+    { icon: "🛡️", text: "Penguncian Dokumen Otomatis Bebas Manipulasi" },
+    { icon: "⏱️", text: "Pembuatan Dokumen Praktis dalam 3 Menit" },
+    { icon: "🤝", text: "Standar Kerja Sama Profesional Klien & Mitra" },
   ];
 
   const oldWays = [
     {
-      title: "Rincian Tugas Tercecer",
-      desc: "Kesepakatan tersebar di chat WA tanpa surat resmi, rawan salah paham saat proyek berjalan.",
+      title: "Ruang Lingkup Tercecer",
+      desc: "Rincian tugas tersebar di berbagai chat tanpa dokumen resmi, memicu perselisihan saat proyek berjalan.",
     },
     {
-      title: "Revisi Bertambah Tanpa Batas",
-      desc: "Jatah revisi tidak dibatasi di awal, pekerjaan terus bertambah tanpa bayaran tambahan.",
+      title: "Revisi Tanpa Batas",
+      desc: "Ketiadaan batas revisi tertulis membuat pekerjaan bertambah di luar kompensasi yang disepakati.",
     },
     {
-      title: "Jadwal Bayar Tidak Pasti",
-      desc: "Uang muka (DP) dan tanggal pelunasan sering molor karena tidak ada batas waktu tegas.",
+      title: "Ketidakpastian Jadwal Bayar",
+      desc: "Uang muka dan tanggal pelunasan kerap tertunda akibat ketiadaan tanggal jatuh tempo yang tegas.",
     },
     {
-      title: "Dokumen Rentan Diubah",
-      desc: "Tanpa tanda tangan resmi dan pengunci, kesepakatan mudah dibantah jika timbul masalah.",
+      title: "Dokumen Rentan Disengketakan",
+      desc: "Tanpa tanda tangan sah dan segel pengunci resmi, kesepakatan mudah dibantah saat timbul masalah.",
     },
   ];
 
   const newWays = [
     {
-      title: "Tugas Terinci Rapi",
-      desc: "Daftar hasil kerja dan batasan proyek tertulis jelas dalam satu tautan resmi.",
+      title: "Ruang Lingkup Kerja Terstruktur",
+      desc: "Daftar hasil kerja (deliverables) dan batasan tanggung jawab tercantum jelas dalam satu tautan resmi.",
     },
     {
-      title: "Batas Revisi Pasti",
-      desc: "Jatah revisi disepakati di depan. Permintaan baru dicatat lewat dokumen tambahan (Addendum).",
+      title: "Batas Revisi & Addendum Resmi",
+      desc: "Jatah revisi disepakati sejak awal. Permintaan pekerjaan baru diproses melalui dokumen tambahan bertarif.",
     },
     {
-      title: "Jadwal Pembayaran Disepakati",
-      desc: "Besaran DP dan tanggal pelunasan disetujui bersama sebelum pekerjaan dimulai.",
+      title: "Transparansi Jadwal Pembayaran",
+      desc: "Besaran uang muka (DP) dan termin pelunasan memiliki tanggal jatuh tempo yang disetujui bersama.",
     },
     {
-      title: "Tanda Tangan Sah & Terkunci",
-      desc: "Kedua pihak tanda tangan langsung dari HP. Surat terkunci otomatis dengan bukti QR Code.",
+      title: "Tanda Tangan Sah & Terkunci Permanen",
+      desc: "Kedua pihak menandatangani langsung secara digital. Dokumen terkunci otomatis dengan kode QR resmi.",
     },
   ];
 
   const productSuite = [
     {
       id: "spk",
-      name: "Surat Perjanjian (SPK)",
-      badge: "Kontrak Praktis",
+      name: "Surat Perjanjian Kerja (SPK)",
+      badge: "Kontrak Digital",
       icon: FileText,
-      desc: "Tulis rincian apa yang dikerjakan, jatah revisi, dan total biaya lewat formulir sederhana tanpa pusing menyusun pasal hukum.",
-      linkText: "Mulai Buat Surat Perjanjian",
+      desc: "Susun dokumen kesepakatan profesional lengkap dengan luaran kerja, batas revisi, dan termin pembayaran melalui formulir terpandu.",
+      linkText: "Mulai Buat Dokumen SPK",
       href: "/agreements/new",
     },
     {
       id: "sign",
       name: "Tanda Tangan Digital",
-      badge: "Tanpa Daftar Akun",
+      badge: "Kemudahan Akses",
       icon: PenLine,
-      desc: "Klien cukup buka tautan resmi lewat HP atau laptop lalu langsung tanda tangan dalam hitungan detik.",
-      linkText: "Pelajari Cara Tanda Tangan",
+      desc: "Tanda tangani dokumen langsung dari smartphone atau komputer. Klien memberikan persetujuan tanpa kewajiban registrasi akun.",
+      linkText: "Pelajari Alur Penandatanganan",
       href: "#cara-kerja",
     },
     {
       id: "scopelock",
-      name: "Kunci Batas Revisi",
-      badge: "Cegah Kerja Gratisan",
+      name: "Manajemen Batas Revisi",
+      badge: "Proteksi Lingkup Kerja",
       icon: ShieldAlert,
-      desc: "Lindungi waktu Anda dari revisi tanpa akhir. Jika klien minta fitur baru, terbitkan dokumen tambahan (Addendum) bertarif.",
+      desc: "Kendalikan batas pengerjaan secara transparan. Bila timbul kebutuhan baru, terbitkan Dokumen Tambahan (Addendum) resmi secara instan.",
       linkText: "Pelajari Dokumen Tambahan",
       href: "#faq",
     },
     {
       id: "payschedule",
-      name: "Jadwal DP & Pelunasan",
-      badge: "Arus Kas Aman",
+      name: "Penjadwalan Pembayaran",
+      badge: "Kepastian Finansial",
       icon: CreditCard,
-      desc: "Atur uang muka di awal sebelum mulai kerja dan batas pelunasan sebelum serah terima berkas final.",
-      linkText: "Lihat Contoh Skema Pembayaran",
+      desc: "Kelola pembagian uang muka (DP) dan batas pelunasan akhir dengan tanggal jatuh tempo yang disepakati kedua belah pihak.",
+      linkText: "Lihat Skema Pembayaran",
       href: "#harga",
     },
     {
       id: "verify",
-      name: "Cek Keaslian QR Code",
-      badge: "Anti-Pemalsuan",
+      name: "Verifikasi Keaslian QR Code",
+      badge: "Integritas Dokumen",
       icon: QrCode,
-      desc: "Setiap surat memiliki kode QR resmi. Pindai kapan saja untuk memastikan dokumen asli dan tidak diedit sepihak.",
-      linkText: "Coba Cek Dokumen",
+      desc: "Setiap dokumen dilengkapi kode QR publik untuk memvalidasi keaslian naskah serta memastikan dokumen tidak diubah sepihak.",
+      linkText: "Cek Keaslian Dokumen",
       href: "/verify",
     },
     {
       id: "meterai",
-      name: "Panduan e-Meterai",
-      badge: "Resmi Peruri",
+      name: "Kepatuhan e-Meterai",
+      badge: "Standar Regulasi",
       icon: Stamp,
-      desc: "Panduan lengkap penggunaan meterai elektronik resmi untuk nilai kontrak di atas 5 juta rupiah sesuai aturan pemerintah.",
-      linkText: "Lihat Panduan Meterai",
+      desc: "Panduan terintegrasi pembubuhan meterai elektronik resmi Peruri untuk nilai kontrak di atas Rp5.000.000 sesuai regulasi bea meterai.",
+      linkText: "Pelajari Regulasi e-Meterai",
       href: "#faq",
     },
   ];
@@ -141,66 +141,66 @@ export default function HomePage() {
   const workflowSteps = [
     {
       step: "01",
-      title: "Tulis Kesepakatan",
-      subtitle: "3 Menit",
+      title: "Rumuskan Kesepakatan",
+      subtitle: "Proses Cepat 3 Menit",
       icon: FileSignature,
-      desc: "Isi nama proyek, apa saja yang dikerjakan, total biaya, DP, dan batas jatah revisi gratis.",
+      desc: "Tentukan rincian luaran kerja, nominal biaya, persentase uang muka (DP), dan kuota revisi gratis yang disepakati.",
     },
     {
       step: "02",
-      title: "Kirim Link ke Klien",
-      subtitle: "Buka di HP",
+      title: "Kirim Tautan Resmi ke Klien",
+      subtitle: "Akses Instan dari Ponsel",
       icon: Send,
-      desc: "Kirim link ke klien lewat WhatsApp atau email. Klien membaca dan tanda tangan langsung tanpa ribet bikin akun.",
+      desc: "Bagikan tautan resmi ke klien melalui WhatsApp atau email. Klien meninjau dan menandatangani langsung tanpa hambatan akun.",
     },
     {
       step: "03",
-      title: "Sah & Terkunci Otomatis",
-      subtitle: "Kerja Tenang",
+      title: "Terkunci & Sah Mengikat",
+      subtitle: "Kerja Sama Aman",
       icon: Lock,
-      desc: "Dokumen resmi ber-QR Code terkunci permanen. Kedua pihak memegang salinan sah, siap mulai kerja dengan aman.",
+      desc: "Dokumen resmi ber-QR Code terkunci permanen. Kedua pihak mengantongi salinan sah dan proyek siap dimulai dengan tenang.",
     },
   ];
 
   const enterpriseCapabilities = [
     {
       icon: Scale,
-      title: "Sah Sesuai Hukum Indonesia",
-      desc: "Memenuhi syarat sah kesepakatan menurut Pasal 1320 KUHPerdata dan berkekuatan hukum resmi di bawah UU ITE.",
+      title: "Kekuatan Hukum Sah Indonesia",
+      desc: "Memenuhi keabsahan perjanjian perdata sesuai Pasal 1320 KUHPerdata dan diakui sebagai alat bukti elektronik sah berlandaskan UU ITE.",
       points: [
-        "Kesepakatan resmi kedua belah pihak",
-        "Rincian hasil kerja yang jelas dan tegas",
-        "Dokumen sah mengikat di Indonesia",
+        "Asas konsensus kesepakatan kedua belah pihak",
+        "Rincian luaran kerja yang jelas dan terukur",
+        "Kekuatan hukum mengikat para pihak di Indonesia",
       ],
     },
     {
       icon: Fingerprint,
-      title: "Bukti Waktu & Jam Resmi",
-      desc: "Setiap tanda tangan merekam bukti waktu dan tanggal yang akurat untuk mencegah bantahan di kemudian hari.",
+      title: "Pencatatan Audit Waktu Resmi",
+      desc: "Setiap penandatanganan mencatat tanggal, jam, dan jejak persetujuan secara presisi untuk menjamin akuntabilitas pembuktian.",
       points: [
-        "Cap tanggal dan waktu penandatanganan",
-        "Jejak riwayat persetujuan tercatat rapi",
-        "Bukti pembuktian kuat jika timbul masalah",
+        "Cap tanggal dan waktu penandatanganan resmi",
+        "Riwayat persetujuan dokumen transparan",
+        "Bukti pembuktian kuat untuk mencegah sengketa",
       ],
     },
     {
       icon: ShieldCheck,
-      title: "Anti-Edit Sepihak",
-      desc: "Begitu disetujui bersama, isi surat perjanjian langsung terkunci otomatis dan tidak bisa dimanipulasi.",
+      title: "Penguncian Dokumen Otomatis",
+      desc: "Begitu kedua belah pihak membubuhkan tanda tangan, isi surat perjanjian terkunci permanen untuk mencegah perubahan sepihak.",
       points: [
-        "Segel pengunci dokumen otomatis",
-        "Perubahan isi surat langsung terdeteksi",
-        "Verifikasi keaslian mandiri lewat QR Code",
+        "Segel dokumen otomatis pasca-penandatanganan",
+        "Perlindungan menyeluruh terhadap manipulasi naskah",
+        "Pembuktian keaslian mandiri melalui kode QR",
       ],
     },
     {
       icon: Clock,
-      title: "Data Pribadi Terlindungi",
-      desc: "Informasi sensitif dan nomor rekening Anda disimpan dengan aman dan tidak dipublikasikan ke sembarang orang.",
+      title: "Perlindungan Kerahasiaan Data",
+      desc: "Informasi sensitif dan nomor rekening disimpan dengan standar keamanan tinggi dan tidak dipublikasikan ke pihak luar.",
       points: [
-        "Nomor rekening privat tetap terlindungi",
-        "Pemeriksaan keaslian publik aman & rahasia",
-        "Sesuai prinsip perlindungan data pribadi",
+        "Data nomor rekening privat tetap terlindungi",
+        "Pemeriksaan keaslian publik aman dan rahasia",
+        "Kepatuhan terhadap prinsip privasi data pribadi",
       ],
     },
   ];
@@ -208,47 +208,47 @@ export default function HomePage() {
   const customerStories = [
     {
       quote:
-        "Dulu proyek web saya sering molor karena klien terus minta nambah halaman gratis. Sejak pakai Sepakatin, jatah revisi terkunci jelas di depan. Begitu ada tugas tambahan, tinggal terbitkan Addendum. Pembayaran jadi tertib.",
+        "Sebelum menggunakan Sepakatin, proyek sering mengalami scope creep karena penambahan fitur yang tidak terkendali. Dengan dokumen yang mengunci batasan revisi sejak awal, klien memahami batas pekerjaan dan jadwal pembayaran termin menjadi jauh lebih tertib.",
       author: "Aditya Pratama",
-      role: "Web Developer Freelance",
-      meta: "Malang",
+      role: "Lead Web Developer",
+      meta: "Studio Digital Mandiri",
     },
     {
       quote:
-        "Klien saya suka karena simpel banget. Mereka tidak perlu ribet daftar akun baru, cukup buka link dari WhatsApp lewat HP, baca poin-poinnya, lalu tanda tangan langsung. Lima menit selesai.",
+        "Klien korporat maupun UMKM sangat menyukai kemudahan Sepakatin. Mereka tidak perlu melalui birokrasi registrasi akun, cukup membuka tautan resmi dari ponsel dan menandatangani dokumen dalam beberapa menit.",
       author: "Rania Wardani",
-      role: "Desainer Grafis & Branding",
-      meta: "Bandung",
+      role: "Brand & Visual Designer",
+      meta: "Praktisi Desain Grafis",
     },
     {
       quote:
-        "Di pekerjaan video komersial, revisi adegan itu makan banyak waktu dan biaya. Dengan Sepakatin, batas revisi dan jadwal pelunasan tercatat pasti sebelum saya kirim berkas hasil akhir.",
+        "Di industri produksi video, penyesuaian adegan pascaproduksi memerlukan biaya operasional nyata. Sepakatin memberi kami perlindungan hukum yang jelas untuk menetapkan batasan revisi dan jadwal pelunasan sebelum berkas akhir diserahkan.",
       author: "Farhan Mahendra",
-      role: "Videografer Lepas",
-      meta: "Jakarta",
+      role: "Commercial Videographer",
+      meta: "Produksi Konten Kreatif",
     },
   ];
 
   const faqs = [
     {
-      q: "Apakah surat perjanjian di Sepakatin sah secara hukum?",
-      a: "Ya, sah dan mengikat. Surat perjanjian di Sepakatin memiliki kekuatan hukum resmi sesuai Pasal 1320 Kitab Undang-Undang Hukum Perdata (KUHPerdata) dan Undang-Undang ITE, sama sahnya seperti perjanjian kerja fisik.",
+      q: "Apakah surat perjanjian kerja di Sepakatin sah secara hukum di Indonesia?",
+      a: "Ya, sah dan berkekuatan hukum mengikat. Berdasarkan Pasal 1320 Kitab Undang-Undang Hukum Perdata (KUHPerdata) dan Undang-Undang ITE, kesepakatan tertulis yang disetujui bersama secara elektronik diakui secara sah sebagai alat bukti hukum yang mengikat kedua belah pihak.",
     },
     {
-      q: "Apakah klien saya wajib membuat akun untuk tanda tangan?",
-      a: "Tidak perlu sama sekali. Klien cukup membuka tautan resmi yang Anda kirimkan lewat browser di HP atau laptop, membaca rincian tugas, lalu langsung tanda tangan dalam hitungan detik.",
+      q: "Apakah klien wajib membuat akun untuk menandatangani dokumen?",
+      a: "Tidak perlu. Klien dapat langsung membuka tautan resmi yang Anda kirimkan melalui peramban ponsel maupun komputer, meninjau seluruh poin kesepakatan, dan membubuhkan tanda tangan digital secara instan.",
     },
     {
-      q: "Bagaimana jika klien meminta tambahan revisi di luar kesepakatan?",
-      a: "Jika jatah revisi gratis sudah habis atau klien meminta pekerjaan baru di luar ruang lingkup awal, Anda bisa menerbitkan Dokumen Tambahan (Addendum) resmi bertarif yang otomatis tertaut ke dokumen awal.",
+      q: "Bagaimana mekanisme penanganan revisi yang melebihi kesepakatan awal?",
+      a: "Jika kuota revisi gratis telah habis atau terdapat permintaan pekerjaan baru di luar ruang lingkup yang disepakati, Anda dapat menerbitkan Dokumen Tambahan (Addendum) resmi bertarif yang tertaut langsung ke kontrak induk.",
     },
     {
-      q: "Kapan dokumen memerlukan meterai resmi (e-Meterai)?",
-      a: "Untuk sebagian besar proyek lepas harian, tanda tangan digital kedua belah pihak sudah mengikat sah. Namun jika nilai proyek di atas 5 juta rupiah, aturan perpajakan pemerintah menyarankan pembubuhan e-Meterai resmi Peruri yang panduannya sudah kami siapkan di Sepakatin.",
+      q: "Kapan dokumen perjanjian membutuhkan pembubuhan e-Meterai resmi?",
+      a: "Untuk sebagian besar pekerjaan lepas harian, tanda tangan digital kedua pihak sudah memiliki kekuatan hukum yang sah. Namun, sesuai Undang-Undang No. 10 Tahun 2020 tentang Bea Meterai, dokumen kerja sama dengan nilai transaksi di atas Rp5.000.000 disarankan dibubuhi e-Meterai resmi Peruri yang panduannya telah tersedia di dalam platform.",
     },
     {
-      q: "Apakah Sepakatin bisa digunakan secara gratis?",
-      a: "Ya. Anda bisa langsung membuat dan mengelola hingga 2 kesepakatan secara gratis. Jika butuh lebih banyak proyek, Anda bisa bayar pas per proyek seharga Rp19.000 atau paket Pro bulanan tanpa batas seharga Rp49.000.",
+      q: "Apakah platform Sepakatin dapat digunakan secara gratis?",
+      a: "Ya. Anda dapat membuat dan mengelola hingga 2 kesepakatan aktif secara cuma-cuma pada Paket Gratis. Untuk kebutuhan proyek lanjutan, Anda dapat memilih opsi bayar pas per proyek seharga Rp19.000 atau paket Pro bulanan tanpa batas seharga Rp49.000.",
     },
   ];
 
@@ -374,7 +374,7 @@ export default function HomePage() {
           </svg>
         </div>
 
-        {/* 2. Marquee Ringkas & Jelas (Mudah Dipahami Siapa Saja) */}
+        {/* 2. Marquee Profesional & Ringkas */}
         <div className="w-full overflow-hidden py-3 bg-slate-50 border-y border-slate-200/80 relative z-10">
           <div
             aria-hidden="true"
@@ -401,7 +401,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. Kolaborasi Resmi & 4 Poin Utama */}
+      {/* 3. Kolaborasi Resmi & 4 Pilar Metrik */}
       <section className="border-b border-slate-200 bg-white py-12 sm:py-14">
         <div className="container-page">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
@@ -500,7 +500,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Solusi Lengkap Sepakatin (Bahasa Ringkas & Mudah Dipahami Non-IT) */}
+      {/* 4. Solusi Lengkap Sepakatin (SaaS Profesional & Bahasa Lugas) */}
       <section id="produk" className="border-b border-slate-200 bg-[#F8FAFC] py-14 sm:py-16 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -508,10 +508,10 @@ export default function HomePage() {
               Solusi Sepakatin
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Semua Perlindungan Proyek dalam Satu Tempat
+              Perlindungan Kerja Sama Proyek dalam Satu Ekosistem
             </h2>
             <p className="text-sm text-slate-600 mt-2">
-              Fitur sederhana dan praktis untuk melindungi hasil kerja dan hak pembayaran Anda.
+              Platform terpadu untuk memastikan hasil kerja dihargai dan kepastian pembayaran terjamin.
             </p>
           </div>
 
@@ -557,18 +557,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Cara Kerja (3 Langkah Sangat Mudah) */}
+      {/* 5. Alur Praktis (3 Langkah Sederhana) */}
       <section id="cara-kerja" className="border-b border-slate-200 bg-white py-14 sm:py-16 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs uppercase tracking-wider font-bold text-orange-600">
-              Alur Praktis
+              Alur Kerja Sama
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
               3 Langkah Mudah Menuju Kesepakatan Sah
             </h2>
             <p className="text-sm text-slate-600 mt-2">
-              Tidak perlu repot membuat surat panjang. Cukup 3 langkah dari ponsel atau laptop Anda.
+              Tanpa prosedur rumit. Susun, bagikan, dan tanda tangani dokumen kesepakatan secara instan.
             </p>
           </div>
 
@@ -607,18 +607,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. Standar Keamanan & Legalitas (Bahasa Umum & Menenangkan) */}
+      {/* 6. Standar Keamanan & Legalitas Enterprise */}
       <section className="border-b border-slate-200 bg-[#F8FAFC] py-14 sm:py-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
-              Keamanan & Kekuatan Hukum
+              Standar Legalitas & Keamanan
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Kesepakatan Sah dan Terlindungi
+              Landasan Hukum Sah dan Akuntabel
             </h2>
             <p className="text-sm text-slate-600 mt-2">
-              Surat perjanjian Anda berkekuatan hukum resmi, aman dari kecurangan, dan melindungi hak kedua pihak.
+              Memberikan perlindungan hukum perdata yang mengikat dan memitigasi risiko sengketa proyek.
             </p>
           </div>
 
@@ -657,57 +657,57 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. Nilai Manfaat Utama (Layout Variatif, Ringkas & Padat) */}
+      {/* 7. Nilai Manfaat Utama (Layout Variatif, Lugas & Profesional) */}
       <section className="border-b border-slate-200 bg-white py-14 sm:py-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs uppercase tracking-wider font-bold text-orange-600">
-              Nilai Utama
+              Manfaat Utama
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Kerja Lebih Nyaman, Hak Anda Terjaga
+              Kepastian Kerja Sama Tanpa Friksi
             </h2>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-5">
-            {/* Sorotan Utama: Bebas Revisi Liar */}
+            {/* Sorotan Utama: Pengendalian Ruang Lingkup */}
             <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-6 sm:p-7">
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
-                Perlindungan Utama
+                Proteksi Ruang Lingkup
               </span>
               <h3 className="text-lg sm:text-xl font-bold font-display text-slate-900 mt-1 mb-2">
-                Hentikan Kebiasaan Revisi Terus-menerus Tanpa Bayaran Tambahan
+                Cegah Pembengkakan Tugas dan Revisi Tanpa Kompensasi
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
-                Sering kali proyek molor karena klien terus meminta revisi baru tanpa tambahan biaya. Di Sepakatin, jatah revisi gratis sudah ditentukan sejak awal. Jika ada permintaan di luar kesepakatan, Anda punya dasar resmi untuk membuat surat tambahan (Addendum) bertarif sehingga waktu Anda tetap dihargai.
+                Tantangan terbesar dalam pekerjaan proyek adalah ruang lingkup yang terus meluas tanpa batas dan tanpa penyesuaian biaya. Sepakatin memastikan batasan pekerjaan dan jatah revisi disepakati sejak hari pertama. Jika klien mengajukan kebutuhan baru di tengah proyek, Anda memiliki landasan profesional untuk menerbitkan Dokumen Tambahan (Addendum) secara tertib dan transparan.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-blue-100">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Jatah revisi tertulis pasti</span>
+                  <span>Batasan revisi tertulis pasti</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Addendum untuk tugas baru</span>
+                  <span>Addendum resmi untuk tugas tambahan</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>Dokumen terkunci resmi</span>
+                  <span>Naskah terkunci otomatis</span>
                 </div>
               </div>
             </div>
 
-            {/* 2 Kolom Ringkas */}
+            {/* 2 Kolom Komplementer */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6">
                 <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center mb-3">
                   <CreditCard className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-bold font-display text-slate-900 mb-1.5">
-                  Uang Muka & Pelunasan Terjadwal
+                  Kepastian Finansial & Arus Kas
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Mulai bekerja setelah uang muka (DP) masuk, dan serahkan hasil akhir setelah pelunasan diselesaikan dengan tanggal jatuh tempo yang disepakati bersama.
+                  Amankan jadwal uang muka sebelum pengerjaan dimulai, serta tetapkan batas pelunasan sebelum serah terima berkas master final dengan tanggal jatuh tempo yang tegas.
                 </p>
               </div>
 
@@ -716,10 +716,10 @@ export default function HomePage() {
                   <Handshake className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-bold font-display text-slate-900 mb-1.5">
-                  Klien Nyaman Tanpa Ribet
+                  Kolaborasi Profesional Tanpa Friksi
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Tampilan surat enak dibaca di layar HP. Klien tidak dibebani kewajiban membuat akun baru dan bisa langsung tanda tangan dalam hitungan detik.
+                  Format surat ringkas dan nyaman dibaca di layar ponsel. Klien dapat langsung memberikan persetujuan tanpa dibebani proses pendaftaran akun yang memakan waktu.
                 </p>
               </div>
             </div>
@@ -735,7 +735,7 @@ export default function HomePage() {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Cek Dokumen Publik</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Verifikasi Dokumen Publik</span>
               <h3 className="card-title text-base sm:text-lg font-display text-slate-900 mt-0.5">
                 Cek Keaslian Surat Perjanjian
               </h3>
@@ -753,12 +753,12 @@ export default function HomePage() {
       <section className="border-b border-slate-200 bg-white py-14 sm:py-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">Perbandingan</span>
+            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">Perbandingan Solusi</span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Selesaikan Masalah yang Kerap Terjadi
+              Tinggalkan Pola Kerja Berisiko
             </h2>
             <p className="text-sm text-slate-600 mt-1.5">
-              Bandingkan kesepakatan chat biasa yang rawan konflik dengan perlindungan rapi di Sepakatin.
+              Bandingkan kesepakatan chat tidak terstruktur dengan standar perlindungan profesional di Sepakatin.
             </p>
           </div>
 
@@ -768,7 +768,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center gap-2 text-rose-700 font-bold text-sm mb-3.5">
                   <XCircle className="w-4 h-4 text-rose-600" />
-                  Kesepakatan Chat Biasa
+                  Pola Kesepakatan Informal (Chat)
                 </div>
                 <ul className="space-y-2.5">
                   {oldWays.map((item, idx) => (
@@ -784,7 +784,7 @@ export default function HomePage() {
                 </ul>
               </div>
               <div className="mt-5 pt-3 border-t border-slate-200 text-xs font-semibold text-rose-700">
-                Masalah: Rawan salah paham, tugas meluas tanpa bayaran, dan pelunasan molor.
+                Risiko: Ketidakjelasan hak kerja, sengketa revisi tanpa akhir, dan risiko gagal bayar.
               </div>
             </div>
 
@@ -796,7 +796,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center gap-2 text-blue-700 font-bold text-sm mb-3.5">
                   <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                  Solusi Rapi di Sepakatin
+                  Standar Platform Terpadu
                 </div>
                 <ul className="space-y-2.5">
                   {newWays.map((item, idx) => (
@@ -811,25 +811,25 @@ export default function HomePage() {
               </div>
               <div className="mt-5 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-emerald-600" />
-                Hasil: Kerja sama transparan, batasan tugas aman, dan hak bayaran pasti.
+                Dampak: Kolaborasi transparan, kepastian ruang lingkup, dan perlindungan pembayaran sah.
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 10. Pengalaman Pengguna (Testimoni Otentik) */}
+      {/* 10. Pengalaman Pengguna (Testimoni Kredibel) */}
       <section className="border-b border-slate-200 bg-[#F8FAFC] py-14 sm:py-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
-              Cerita Pengguna
+              Kisah Pengguna
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Dipercaya Pekerja Lepas & Studio Kreatif
+              Dipercaya oleh Praktisi Profesional & Studio Kreatif
             </h2>
             <p className="text-sm text-slate-600 mt-1.5">
-              Pengalaman nyata menyelesaikan proyek tepat waktu dan aman bersama klien.
+              Pengalaman nyata meningkatkan ketertiban kerja sama dan kepastian pembayaran proyek.
             </p>
           </div>
 
@@ -861,10 +861,10 @@ export default function HomePage() {
               Pilihan Paket
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Mulai Gratis. Bayar Pas Sesuai Kebutuhan.
+              Mulai Gratis. Bayar Fleksibel Sesuai Kebutuhan.
             </h2>
             <p className="text-sm text-slate-600 mt-1.5">
-              Gunakan gratis untuk proyek pertama Anda. Upgrade kapan saja dengan pembayaran instan lewat QRIS. Klien Anda selalu gratis.
+              Gunakan kuota gratis untuk proyek pertama Anda. Upgrade kapan saja dengan pembayaran instan QRIS. Klien Anda selalu gratis.
             </p>
           </div>
 
@@ -877,13 +877,13 @@ export default function HomePage() {
         <div className="container-page max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
-              Tanya Jawab
+              Pusat Informasi & Regulasi
             </span>
             <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
               Pertanyaan yang Sering Diajukan
             </h2>
             <p className="text-sm text-slate-600 mt-1.5">
-              Klik pertanyaan di bawah untuk melihat penjelasan seputar keabsahan hukum, cara tanda tangan, dan revisi.
+              Penjelasan seputar kekuatan hukum, kemudahan tanda tangan klien, batas revisi, dan regulasi e-meterai.
             </p>
           </div>
 
@@ -909,11 +909,11 @@ export default function HomePage() {
           </span>
 
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-display tracking-tight text-white leading-tight mb-2.5">
-            Amankan Proyek & Pembayaran Anda Sekarang
+            Amankan Proyek & Hak Pembayaran Anda Hari Ini
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-7 max-w-md mx-auto">
-            Tinggalkan cara lama yang berisiko. Buat surat kesepakatan kerja pertama Anda secara gratis hari ini.
+            Tinggalkan cara kerja lama yang berisiko. Susun surat kesepakatan kerja resmi pertama Anda secara gratis.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -929,7 +929,7 @@ export default function HomePage() {
               className="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-slate-500 hover:border-slate-300 text-slate-100 font-semibold text-sm hover:bg-white/10 transition-all flex items-center justify-center gap-2"
             >
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Cek Keaslian Dokumen</span>
+              <span>Verifikasi Dokumen</span>
             </Link>
           </div>
         </div>
