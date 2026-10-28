@@ -12,7 +12,6 @@ import {
   Mail,
   MailCheck,
   Phone,
-  ShieldCheck,
   User,
   UserPlus,
 } from "lucide-react";
@@ -200,12 +199,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between">
-                <label className="label" htmlFor="phone">
-                  Nomor WhatsApp Aktif
-                </label>
-                <span className="text-[11px] text-[#8E8E93]">Untuk verifikasi kontrak</span>
-              </div>
+              <label className="label" htmlFor="phone">
+                Nomor WhatsApp
+              </label>
               <div className="relative">
                 <input
                   id="phone"
@@ -219,9 +215,6 @@ export default function RegisterPage() {
                 />
                 <Phone className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
-              <p className="text-[11px] text-[#6B6B6B] mt-1">
-                Wajib nomor aktif. 1 nomor hanya berlaku untuk 1 akun demi keamanan hukum.
-              </p>
             </div>
 
             <div>
@@ -322,13 +315,6 @@ export default function RegisterPage() {
               onExpire={handleTurnstileReset}
               onError={handleTurnstileReset}
             />
-
-            <div className="p-3 bg-[#FAFAFA] border border-[#E8E8EC] rounded-lg flex items-start gap-2.5 text-xs text-[#6B6B6B] leading-relaxed">
-              <ShieldCheck className="w-4 h-4 text-[#6366F1] shrink-0 mt-0.5" />
-              <span>
-                1 akun resmi terikat pada nomor WhatsApp Anda untuk integritas bukti hukum dan pencegahan penyalahgunaan kuota.
-              </span>
-            </div>
 
             <button
               type="submit"
