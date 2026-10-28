@@ -22,7 +22,7 @@ import { AccountUsage } from "@/lib/plans";
 import { StatusBadge } from "@/components/StatusBadge";
 import { RequireAuth } from "@/components/RequireAuth";
 import { formatCurrencyIDR, formatDateID } from "@/lib/crypto";
-import { SessionUser } from "@/lib/auth";
+import { refreshAccount, SessionUser } from "@/lib/auth";
 import { copyText } from "@/lib/clipboard";
 import { reviewUrlFor } from "@/lib/app-url";
 import { ModalDialog } from "@/components/ModalDialog";
@@ -47,6 +47,7 @@ function Dashboard({ user }: { user: SessionUser }) {
     if (!quiet) setIsLoading(true);
     else setIsRefreshing(true);
     try {
+      await refreshAccount();
       const [list, u] = await Promise.all([getAgreements(), getAccountUsage()]);
       setAgreements(list);
       setUsage(u);
@@ -97,7 +98,7 @@ function Dashboard({ user }: { user: SessionUser }) {
     { icon: Wallet, label: "Total nilai proyek", value: formatCurrencyIDR(totalValue), note: `${counted.length} proyek tercatat`, color: "text-blue-600 bg-blue-50" },
     { icon: CheckCircle2, label: "Sudah disepakati", value: String(agreedCount), note: "Disetujui kedua pihak", color: "text-emerald-600 bg-emerald-50" },
     { icon: Clock, label: "Menunggu tindakan", value: String(pendingCount), note: "Menunggu klien atau revisi", color: "text-amber-600 bg-amber-50" },
-    { icon: Zap, label: "Paket Anda", value: usage ? (isPro ? "Pro" : "Gratis") : "…", note: planNote, color: "text-blue-600 bg-blue-50" },
+    { icon: Zap, label: "Paket Anda", value: usage ? (isPro ? "Paket Pro" : "Paket Gratis") : "…", note: planNote, color: "text-[#6366F1] bg-indigo-50" },
   ];
 
   return (
@@ -118,6 +119,12 @@ function Dashboard({ user }: { user: SessionUser }) {
                   <Zap className="w-3 h-3 text-orange-600" />
                   {isPro ? "Paket Pro" : "Paket Gratis"}
                 </span>
+                {isPro && usage.planExpiresAt && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-emerald-600" />
+                    Aktif hingga {formatDateID(usage.planExpiresAt)}
+                  </span>
+                )}
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#F4F4F6] text-[#6B6B6B] border border-[#E8E8EC]">
                   {usage.credits} Kredit Proyek
                 </span>
@@ -127,23 +134,70 @@ function Dashboard({ user }: { user: SessionUser }) {
           <h1 className="page-title mt-1 font-display">Kesepakatan Saya</h1>
           <p className="text-sm text-[#6B6B6B] mt-1">Pantau semua proyek dan status persetujuannya di sini.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => loadData(true)}
             disabled={isRefreshing}
-            className="btn btn-secondary btn-sm"
-            title="Segarkan data profil & kesepakatan terbaru"
+            className="btn btn-secondary text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 px-3.5 py-2.5"
+            title="Segarkan data profil dan status kesepakatan terbaru"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
-            Segarkan
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#6366F1]" : ""}`} />
+            <span>{isRefreshing ? "Menyegarkan..." : "Segarkan"}</span>
           </button>
-          <Link href="/agreements/new" className="btn btn-primary">
+          <Link
+            href="/agreements/new"
+            className="btn btn-primary text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 px-4 py-2.5"
+          >
             <Plus className="w-4 h-4" />
             Buat Kesepakatan Baru
           </Link>
         </div>
       </div>
+
+      {isPro && usage && (
+        <div className="mt-6 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-white to-purple-50/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 text-[#6366F1] flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 fill-[#6366F1]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold font-display text-[#0A0A0A]">
+                  Langganan Paket Pro Aktif
+                </h3>
+                {usage.planExpiresAt ? (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Aktif hingga {formatDateID(usage.planExpiresAt)}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Akses Tanpa Batas
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#6B6B6B] mt-1 leading-relaxed">
+                {usage.planExpiresAt ? (
+                  <>
+                    Masa aktif akun Pro Anda berlaku sampai tanggal{" "}
+                    <strong className="text-[#0A0A0A] font-semibold">{formatDateID(usage.planExpiresAt)}</strong>.
+                    Seluruh fitur pembuatan kesepakatan, revisi bebas kuota, dan jejak audit sah siap digunakan.
+                  </>
+                ) : (
+                  "Akun Anda memiliki akses Pro penuh tanpa batasan kuota draf dan revisi."
+                )}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBuyPlanModal("pro_monthly")}
+            className="btn btn-secondary btn-sm text-xs shrink-0 self-start sm:self-auto border-indigo-200 text-[#6366F1] hover:bg-indigo-50"
+          >
+            Perpanjang Paket Pro
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
         {stats.map((s) => (
