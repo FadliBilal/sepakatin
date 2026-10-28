@@ -109,3 +109,49 @@ export function formatDateTimeID(dateStr?: string): string {
     return dateStr;
   }
 }
+
+/**
+ * Format Datetime lengkap dengan tanggal, bulan panjang, tahun, jam dan menit WIB
+ * Contoh: "27 November 2026 pukul 14:30 WIB"
+ */
+export function formatDateTimeLongID(dateStr?: string): string {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    const dateFormatted = new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(d);
+    const timeFormatted = new Intl.DateTimeFormat("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d).replace(".", ":");
+    return `${dateFormatted} pukul ${timeFormatted} WIB`;
+  } catch {
+    return dateStr;
+  }
+}
+
+/**
+ * Format Datetime ringkas dengan tanggal, jam dan menit WIB
+ * Contoh: "27 Nov 2026, 14:30 WIB"
+ */
+export function formatDateTimeShortID(dateStr?: string): string {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    const dateFormatted = new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(d);
+    const timeFormatted = new Intl.DateTimeFormat("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d).replace(".", ":");
+    return `${dateFormatted}, ${timeFormatted} WIB`;
+  } catch {
+    return dateStr;
+  }
+}

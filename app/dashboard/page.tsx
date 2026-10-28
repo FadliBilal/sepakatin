@@ -21,7 +21,7 @@ import { AgreementRecord } from "@/lib/types";
 import { AccountUsage } from "@/lib/plans";
 import { StatusBadge } from "@/components/StatusBadge";
 import { RequireAuth } from "@/components/RequireAuth";
-import { formatCurrencyIDR, formatDateID } from "@/lib/crypto";
+import { formatCurrencyIDR, formatDateID, formatDateTimeLongID, formatDateTimeShortID } from "@/lib/crypto";
 import { refreshAccount, SessionUser } from "@/lib/auth";
 import { copyText } from "@/lib/clipboard";
 import { reviewUrlFor } from "@/lib/app-url";
@@ -122,7 +122,7 @@ function Dashboard({ user }: { user: SessionUser }) {
                 {isPro && usage.planExpiresAt && (
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
                     <Clock className="w-3 h-3 text-emerald-600" />
-                    Aktif hingga {formatDateID(usage.planExpiresAt)}
+                    Aktif hingga {formatDateTimeShortID(usage.planExpiresAt)}
                   </span>
                 )}
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#F4F4F6] text-[#6B6B6B] border border-[#E8E8EC]">
@@ -168,7 +168,7 @@ function Dashboard({ user }: { user: SessionUser }) {
                 </h3>
                 {usage.planExpiresAt ? (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Aktif hingga {formatDateID(usage.planExpiresAt)}
+                    Aktif hingga {formatDateTimeShortID(usage.planExpiresAt)}
                   </span>
                 ) : (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -180,7 +180,7 @@ function Dashboard({ user }: { user: SessionUser }) {
                 {usage.planExpiresAt ? (
                   <>
                     Masa aktif akun Pro Anda berlaku sampai tanggal{" "}
-                    <strong className="text-[#0A0A0A] font-semibold">{formatDateID(usage.planExpiresAt)}</strong>.
+                    <strong className="text-[#0A0A0A] font-semibold">{formatDateTimeLongID(usage.planExpiresAt)}</strong>.
                     Seluruh fitur pembuatan kesepakatan, revisi bebas kuota, dan jejak audit sah siap digunakan.
                   </>
                 ) : (

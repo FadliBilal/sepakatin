@@ -21,6 +21,7 @@ import {
   errorMessage,
 } from "@/lib/store";
 import { AdminAuditLogItem, AgreementRecord, PaymentOrderRecord } from "@/lib/types";
+import { formatCurrencyIDR } from "@/lib/crypto";
 import { ModalDialog, ModalType } from "@/components/ModalDialog";
 import { AdminOverviewTab } from "@/components/admin/AdminOverviewTab";
 import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
@@ -114,16 +115,34 @@ export default function AdminPage() {
   }
 
   const handleApproveOrder = (orderId: string) => {
+    const order = paymentOrdersList.find((o) => o.orderId === orderId);
+    const amountStr = order ? formatCurrencyIDR(order.amount) : "";
+    const userName = order?.userName || (order?.metadata?.profile_name as string) || order?.userEmail || "pengguna";
+
     showConfirm({
       title: "Verifikasi Manual Pembayaran",
-      description: `Apakah Anda yakin ingin memverifikasi pesanan ${orderId}? Saldo kredit proyek atau paket Pro akan otomatis ditambahkan ke akun pengguna terkait.`,
+      description: (
+        <div className="space-y-2 text-xs">
+          <p>
+            Apakah Anda yakin ingin memverifikasi pesanan <strong>{orderId}</strong> atas nama <strong>{userName}</strong>?
+          </p>
+          {amountStr && (
+            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 font-medium">
+              Pastikan dana sebesar <strong>{amountStr}</strong> sudah benar-benar masuk ke mutasi rekening bank BCA / Mandiri Anda.
+            </div>
+          )}
+          <p className="text-slate-500">
+            Setelah disetujui, sistem akan otomatis mengaktifkan status Pro (30 hari) atau menambahkan kredit proyek ke akun pengguna secara instan.
+          </p>
+        </div>
+      ),
       type: "info",
-      confirmText: "Ya, Verifikasi",
+      confirmText: "Ya, Verifikasi & Aktifkan",
       onConfirm: async () => {
         setDialogState((prev) => ({ ...prev, isLoading: true }));
         try {
           await adminApprovePaymentOrder(orderId);
-          showNotification(`Pesanan ${orderId} berhasil diverifikasi dan diaktifkan.`);
+          showNotification(`Pesanan ${orderId} berhasil diverifikasi dan akun telah aktif.`);
           loadAdminData();
         } finally {
           closeDialog();
@@ -135,9 +154,18 @@ export default function AdminPage() {
   const handleRejectOrder = (orderId: string) => {
     showConfirm({
       title: "Batalkan / Tolak Pesanan",
-      description: `Apakah Anda yakin ingin membatalkan pesanan ${orderId}?`,
+      description: (
+        <div className="space-y-2 text-xs">
+          <p>
+            Apakah Anda yakin ingin menolak pesanan <strong>{orderId}</strong>?
+          </p>
+          <p className="text-slate-500">
+            Gunakan opsi ini jika tidak ada dana transfer yang masuk dalam batas waktu yang ditentukan.
+          </p>
+        </div>
+      ),
       type: "danger",
-      confirmText: "Ya, Tolak",
+      confirmText: "Ya, Tolak Pesanan",
       onConfirm: async () => {
         setDialogState((prev) => ({ ...prev, isLoading: true }));
         try {
