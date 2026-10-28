@@ -18,6 +18,7 @@ import {
 import { PaymentPackageType } from "@/lib/types";
 import { formatCurrencyIDR } from "@/lib/crypto";
 import { getAccessToken, isAdmin, useSession } from "@/lib/auth";
+import { addLocalPaymentOrder } from "@/lib/store";
 import {
   OFFICIAL_PAYMENT_ACCOUNTS,
   OFFICIAL_QRIS_INFO,
@@ -105,6 +106,28 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
           // Fallback lokal jika belum terhubung database cloud / mode uji coba
           const randomCode = Math.floor(100 + Math.random() * 899);
           const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+          addLocalPaymentOrder({
+            id: orderId,
+            orderId,
+            userId: user?.id || "local-user",
+            userEmail: user?.email || "user@example.com",
+            userName: user?.fullName || "Pengguna Sepakatin",
+            userPhone: user?.phone || "",
+            packageType,
+            amount: packagePrice + randomCode,
+            paymentMethod: "QRIS / Transfer Bank",
+            paymentGateway: "MANUAL_QRIS",
+            status: "PENDING",
+            metadata: {
+              profile_name: user?.fullName || "Pengguna Sepakatin",
+              user_phone: user?.phone || "",
+              base_amount: packagePrice,
+              unique_code: randomCode,
+              total_amount: packagePrice + randomCode,
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
           if (active) {
             setCheckoutData({
               orderId,
@@ -123,6 +146,28 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
         // Fallback anggun agar pengguna tetap bisa bertransaksi
         const randomCode = Math.floor(100 + Math.random() * 899);
         const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+        addLocalPaymentOrder({
+          id: orderId,
+          orderId,
+          userId: user?.id || "local-user",
+          userEmail: user?.email || "user@example.com",
+          userName: user?.fullName || "Pengguna Sepakatin",
+          userPhone: user?.phone || "",
+          packageType,
+          amount: packagePrice + randomCode,
+          paymentMethod: "QRIS / Transfer Bank",
+          paymentGateway: "MANUAL_QRIS",
+          status: "PENDING",
+          metadata: {
+            profile_name: user?.fullName || "Pengguna Sepakatin",
+            user_phone: user?.phone || "",
+            base_amount: packagePrice,
+            unique_code: randomCode,
+            total_amount: packagePrice + randomCode,
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
         if (active) {
           setCheckoutData({
             orderId,
@@ -142,7 +187,7 @@ export function PaymentModal({ isOpen, onClose, packageType, onSuccess }: Paymen
     return () => {
       active = false;
     };
-  }, [isOpen, packageType, packagePrice]);
+  }, [isOpen, packageType, packagePrice, user]);
 
   const handleCopy = (text: string, fieldId: string) => {
     navigator.clipboard.writeText(text);

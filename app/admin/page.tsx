@@ -263,6 +263,8 @@ export default function AdminPage() {
     );
   }
 
+  const pendingOrdersCount = paymentOrdersList.filter((o) => o.status === "PENDING").length;
+
   return (
     <div className="container-page py-10 space-y-8">
       {/* Toast Notification */}
@@ -340,9 +342,16 @@ export default function AdminPage() {
         </button>
         <button
           onClick={() => setActiveTab("orders")}
-          className={`tab ${activeTab === "orders" ? "tab-active" : "tab-idle"}`}
+          className={`tab ${activeTab === "orders" ? "tab-active" : "tab-idle"} flex items-center gap-1.5`}
         >
-          Transaksi Pembayaran ({paymentOrdersList.length})
+          <span>Transaksi Pembayaran</span>
+          {pendingOrdersCount > 0 ? (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+              {pendingOrdersCount} baru
+            </span>
+          ) : (
+            <span className="text-xs text-slate-400">({paymentOrdersList.length})</span>
+          )}
         </button>
         <button
           onClick={() => setActiveTab("audit")}

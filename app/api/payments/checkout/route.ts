@@ -22,6 +22,8 @@ export async function POST(req: Request) {
       payload: { packageType },
       execute: async () => {
         const amount = packageType === "credit_1" ? 19000 : 49000;
+        const uniqueCode = Math.floor(100 + Math.random() * 899);
+        const totalAmount = amount + uniqueCode;
         const orderId = `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
         const db = getAdmin();
 
@@ -31,11 +33,17 @@ export async function POST(req: Request) {
             user_id: profile.id,
             user_email: profile.email || user.email || "",
             package_type: packageType,
-            amount,
-            payment_method: "QRIS",
-            payment_gateway: "MAYAR",
+            amount: totalAmount,
+            payment_method: "QRIS / Transfer Bank",
+            payment_gateway: "MANUAL_QRIS",
             status: "PENDING",
-            metadata: { profile_name: profile.full_name },
+            metadata: {
+              profile_name: profile.full_name,
+              user_phone: profile.phone || "",
+              base_amount: amount,
+              unique_code: uniqueCode,
+              total_amount: totalAmount,
+            },
           });
         } catch (err) {
           if (process.env.NODE_ENV !== "production") {
@@ -67,7 +75,6 @@ export async function POST(req: Request) {
           }
         }
 
-        const uniqueCode = Math.floor(100 + Math.random() * 899);
         return {
           status: 200,
           body: {
@@ -75,7 +82,7 @@ export async function POST(req: Request) {
             packageType,
             amount,
             uniqueCode,
-            totalAmount: amount + uniqueCode,
+            totalAmount,
             paymentUrl: paymentResult.paymentUrl,
             qrCodeUrl: paymentResult.qrCodeUrl,
             gatewayTransactionId: paymentResult.gatewayTransactionId,

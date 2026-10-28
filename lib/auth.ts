@@ -17,6 +17,7 @@ export interface SessionUser {
   fullName: string;
   role: string;
   phone: string;
+  proExpiresAt?: string;
   /**
    * Ditentukan server lewat /api/me untuk kontrol visibilitas menu di antarmuka.
    * Seluruh endpoint admin tetap memverifikasi ulang hak akses di server.
@@ -28,6 +29,7 @@ interface LocalAccount extends SessionUser {
   password: string;
   plan: "gratis" | "pro";
   credits: number;
+  proExpiresAt?: string;
 }
 
 export interface AuthResult {
@@ -78,7 +80,7 @@ export function isAdmin(user: SessionUser | null): boolean {
   return Boolean(user?.isAdmin);
 }
 
-export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | "pro"; credits?: number }): void {
+export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | "pro"; credits?: number; proExpiresAt?: string }): void {
   try {
     const raw = localStorage.getItem("sepakatin_plan_overrides_v2");
     const overrides = raw ? JSON.parse(raw) : {};
@@ -92,6 +94,7 @@ export function updateLocalAccount(userId: string, updates: { plan?: "gratis" | 
     if (idx !== -1) {
       if (updates.plan) users[idx].plan = updates.plan;
       if (typeof updates.credits === "number") users[idx].credits = updates.credits;
+      if (updates.proExpiresAt) users[idx].proExpiresAt = updates.proExpiresAt;
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
     }
   } catch {}

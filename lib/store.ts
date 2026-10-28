@@ -771,18 +771,47 @@ export async function adminGetAuditLogs(): Promise<AdminAuditLogItem[]> {
   return [];
 }
 
+const PAYMENT_ORDERS_KEY = "sepakatin_payment_orders_v1";
+
+export function readLocalPaymentOrders(): PaymentOrderRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(PAYMENT_ORDERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalPaymentOrders(orders: PaymentOrderRecord[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(PAYMENT_ORDERS_KEY, JSON.stringify(orders));
+  } catch {
+    // ignore
+  }
+}
+
+export function addLocalPaymentOrder(order: PaymentOrderRecord): void {
+  const existing = readLocalPaymentOrders();
+  const filtered = existing.filter((o) => o.orderId !== order.orderId);
+  saveLocalPaymentOrders([order, ...filtered]);
+}
+
 export async function adminGetAllPaymentOrders(): Promise<PaymentOrderRecord[]> {
   if (isSupabaseConfigured) {
     try {
       const res = await api<{ paymentOrders: PaymentOrderRecord[] }>("/api/admin");
-      return res.paymentOrders || [];
+      if (res.paymentOrders && res.paymentOrders.length > 0) {
+        return res.paymentOrders;
+      }
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
         console.warn("Gagal memuat pesanan pembayaran admin:", err);
       }
     }
   }
-  return [];
+  return readLocalPaymentOrders();
 }
 
 export async function adminApprovePaymentOrder(orderId: string): Promise<void> {
@@ -791,7 +820,24 @@ export async function adminApprovePaymentOrder(orderId: string): Promise<void> {
       method: "PATCH",
       body: JSON.stringify({ action: "approveOrder", orderId }),
     });
-    return;
+  }
+
+  const orders = readLocalPaymentOrders();
+  const target = orders.find((o) => o.orderId === orderId);
+  if (target) {
+    target.status = "PAID";
+    target.paidAt = new Date().toISOString();
+    target.updatedAt = new Date().toISOString();
+    saveLocalPaymentOrders(orders);
+
+    if (target.packageType === "pro_monthly") {
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      updateLocalAccount(target.userId, { plan: "pro", proExpiresAt: expiresAt });
+    } else {
+      const currentCredits = localAccounts().find((a) => a.id === target.userId)?.credits ?? 0;
+      updateLocalAccount(target.userId, { credits: currentCredits + 1 });
+    }
+    refreshAccount();
   }
 }
 
@@ -801,7 +847,14 @@ export async function adminRejectPaymentOrder(orderId: string): Promise<void> {
       method: "PATCH",
       body: JSON.stringify({ action: "rejectOrder", orderId }),
     });
-    return;
+  }
+
+  const orders = readLocalPaymentOrders();
+  const target = orders.find((o) => o.orderId === orderId);
+  if (target) {
+    target.status = "FAILED";
+    target.updatedAt = new Date().toISOString();
+    saveLocalPaymentOrders(orders);
   }
 }
 

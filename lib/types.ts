@@ -286,6 +286,8 @@ export interface PaymentOrderRecord {
   orderId: string;
   userId: string;
   userEmail: string;
+  userName?: string;
+  userPhone?: string;
   packageType: PaymentPackageType;
   amount: number;
   paymentMethod: string;

@@ -154,19 +154,29 @@ export async function GET(req: Request) {
       status: string;
       paid_at?: string;
       created_at: string;
-    }) => ({
-      id: o.id,
-      orderId: o.order_id,
-      userId: o.user_id,
-      userEmail: o.user_email,
-      packageType: o.package_type,
-      amount: o.amount,
-      paymentMethod: o.payment_method,
-      paymentGateway: o.payment_gateway,
-      status: o.status,
-      paidAt: o.paid_at,
-      createdAt: o.created_at,
-    }));
+      metadata?: Record<string, unknown>;
+    }) => {
+      const userProfile = profiles.find(
+        (p) => p.id === o.user_id || (p.email && p.email.toLowerCase() === o.user_email?.toLowerCase())
+      );
+      const meta = (o.metadata || {}) as Record<string, unknown>;
+      return {
+        id: o.id,
+        orderId: o.order_id,
+        userId: o.user_id,
+        userEmail: o.user_email,
+        userName: userProfile?.full_name || (typeof meta.profile_name === "string" ? meta.profile_name : "") || o.user_email,
+        userPhone: userProfile?.phone || (typeof meta.user_phone === "string" ? meta.user_phone : "") || "",
+        packageType: o.package_type,
+        amount: o.amount,
+        paymentMethod: o.payment_method,
+        paymentGateway: o.payment_gateway,
+        status: o.status,
+        paidAt: o.paid_at,
+        metadata: o.metadata,
+        createdAt: o.created_at,
+      };
+    });
 
     return ok({ stats, users, agreements, auditLogs, paymentOrders });
   });
