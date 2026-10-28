@@ -162,7 +162,6 @@ function Dashboard({ user }: { user: SessionUser }) {
               <p className="text-xs text-[#6B6B6B] mt-1 leading-relaxed">
                 Masa aktif akun Pro Anda berlaku sampai tanggal{" "}
                 <strong className="text-[#0A0A0A] font-semibold">{formatDateTimeLongID(proExpiryDate)}</strong>.
-                Seluruh fitur pembuatan kesepakatan, revisi bebas kuota, dan jejak audit sah siap digunakan.
               </p>
             </div>
           </div>
