@@ -11,16 +11,19 @@ import {
   Lock,
   Mail,
   MailCheck,
+  Phone,
+  ShieldCheck,
   User,
   UserPlus,
 } from "lucide-react";
-import { register } from "@/lib/auth";
+import { isValidIndonesianPhone, register } from "@/lib/auth";
 import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,6 +46,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!isValidIndonesianPhone(phone)) {
+      setError("Nomor WhatsApp tidak valid. Masukkan nomor seluler aktif di Indonesia (contoh: 081234567890).");
+      return;
+    }
 
     if (password.length < 6) {
       setError("Kata sandi harus terdiri dari minimal 6 karakter.");
@@ -79,6 +87,7 @@ export default function RegisterPage() {
       const result = await register({
         fullName,
         email,
+        phone,
         password,
         captchaToken: turnstileToken,
       });
@@ -191,6 +200,31 @@ export default function RegisterPage() {
             </div>
 
             <div>
+              <div className="flex items-center justify-between">
+                <label className="label" htmlFor="phone">
+                  Nomor WhatsApp Aktif
+                </label>
+                <span className="text-[11px] text-[#8E8E93]">Untuk verifikasi kontrak</span>
+              </div>
+              <div className="relative">
+                <input
+                  id="phone"
+                  type="tel"
+                  required
+                  autoComplete="tel"
+                  placeholder="Contoh: 081234567890"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="input pl-10"
+                />
+                <Phone className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              <p className="text-[11px] text-[#6B6B6B] mt-1">
+                Wajib nomor aktif. 1 nomor hanya berlaku untuk 1 akun demi keamanan hukum.
+              </p>
+            </div>
+
+            <div>
               <label className="label" htmlFor="password">
                 Kata Sandi
               </label>
@@ -288,6 +322,13 @@ export default function RegisterPage() {
               onExpire={handleTurnstileReset}
               onError={handleTurnstileReset}
             />
+
+            <div className="p-3 bg-[#FAFAFA] border border-[#E8E8EC] rounded-lg flex items-start gap-2.5 text-xs text-[#6B6B6B] leading-relaxed">
+              <ShieldCheck className="w-4 h-4 text-[#6366F1] shrink-0 mt-0.5" />
+              <span>
+                1 akun resmi terikat pada nomor WhatsApp Anda untuk integritas bukti hukum dan pencegahan penyalahgunaan kuota.
+              </span>
+            </div>
 
             <button
               type="submit"

@@ -65,12 +65,15 @@ export async function POST(req: Request) {
           }
         }
 
+        const uniqueCode = Math.floor(100 + Math.random() * 899);
         return {
           status: 200,
           body: {
             orderId,
             packageType,
             amount,
+            uniqueCode,
+            totalAmount: amount + uniqueCode,
             paymentUrl: paymentResult.paymentUrl,
             qrCodeUrl: paymentResult.qrCodeUrl,
             gatewayTransactionId: paymentResult.gatewayTransactionId,

@@ -38,6 +38,24 @@ export interface AuthResult {
   needsConfirmation?: boolean;
 }
 
+export function normalizePhone(raw: string): string {
+  let cleaned = (raw || "").trim().replace(/[^\d+]/g, "");
+  if (cleaned.startsWith("+62")) {
+    cleaned = cleaned.slice(3);
+  } else if (cleaned.startsWith("62")) {
+    cleaned = cleaned.slice(2);
+  } else if (cleaned.startsWith("0")) {
+    cleaned = cleaned.slice(1);
+  }
+  cleaned = cleaned.replace(/\D/g, "");
+  return cleaned ? `+62${cleaned}` : "";
+}
+
+export function isValidIndonesianPhone(raw: string): boolean {
+  const norm = normalizePhone(raw);
+  return /^\+628[1-9][0-9]{7,11}$/.test(norm);
+}
+
 const USERS_KEY = "sepakatin_users_v2";
 const SESSION_KEY = "sepakatin_session_v2";
 const AUTH_EVENT = "sepakatin-auth-change";
@@ -187,7 +205,7 @@ async function refreshRemote(): Promise<void> {
         email: session.user.email ?? "",
         fullName: (session.user.user_metadata?.full_name as string) || (session.user.email ?? "").split("@")[0],
         role: "Freelancer",
-        phone: "",
+        phone: (session.user.user_metadata?.phone as string) || "",
       };
       try {
         const res = await fetch("/api/me", { headers: { Authorization: `Bearer ${session.access_token}` } });
@@ -294,9 +312,29 @@ export async function login(identifier: string, password: string, captchaToken?:
   return { user: session };
 }
 
-export async function register(data: { fullName: string; email: string; password: string; captchaToken?: string }): Promise<AuthResult> {
+export async function register(data: {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  captchaToken?: string;
+}): Promise<AuthResult> {
   const email = data.email.trim().toLowerCase();
   const fullName = data.fullName.trim();
+  const phone = normalizePhone(data.phone);
+
+  if (!data.phone || !isValidIndonesianPhone(data.phone)) {
+    return {
+      error: "Nomor WhatsApp tidak valid. Masukkan nomor seluler aktif di Indonesia (contoh: 081234567890).",
+    };
+  }
+
+  // Cek duplikasi nomor WhatsApp di akun terdaftar (mencegah eksploitasi multi-akun)
+  if (localAccounts().some((a) => normalizePhone(a.phone) === phone)) {
+    return {
+      error: "Nomor WhatsApp ini sudah terdaftar di Sepakatin. Setiap nomor hanya berhak atas 1 akun dengan kuota resmi. Silakan masuk.",
+    };
+  }
 
   if (supabase) {
     try {
@@ -305,7 +343,10 @@ export async function register(data: { fullName: string; email: string; password
         email,
         password: data.password,
         options: {
-          data: { full_name: fullName },
+          data: {
+            full_name: fullName,
+            phone: phone,
+          },
           emailRedirectTo: `${redirectBase}/auth/callback?next=/dashboard`,
           captchaToken: data.captchaToken,
         },
@@ -341,7 +382,7 @@ export async function register(data: { fullName: string; email: string; password
     password: data.password,
     fullName,
     role: "Freelancer",
-    phone: "",
+    phone,
     plan: "gratis",
     credits: 0,
   };

@@ -89,15 +89,23 @@ export function isAdminEmail(email: string | null | undefined): boolean {
 
 export async function getProfile(user: User): Promise<ProfileRow> {
   const db = getAdmin();
+  const metaPhone = (user.user_metadata?.phone as string) || "";
   const { data, error } = await db.from("profiles").select("*").eq("id", user.id).maybeSingle();
   if (error) throw error;
-  if (data) return data as ProfileRow;
+  if (data) {
+    if (!data.phone && metaPhone) {
+      await db.from("profiles").update({ phone: metaPhone }).eq("id", user.id);
+      data.phone = metaPhone;
+    }
+    return data as ProfileRow;
+  }
 
   // Jaga-jaga jika trigger profil belum terpasang saat akun dibuat
   const fresh = {
     id: user.id,
     email: user.email ?? "",
     full_name: (user.user_metadata?.full_name as string) || (user.email ?? "").split("@")[0],
+    phone: metaPhone,
   };
   const { data: created, error: insertError } = await db.from("profiles").upsert(fresh).select("*").single();
   if (insertError) throw insertError;
