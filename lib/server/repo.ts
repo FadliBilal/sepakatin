@@ -116,9 +116,22 @@ export async function getUsage(profile: ProfileRow): Promise<AccountUsage> {
     .eq("plan", "gratis")
     .not("status", "in", "(COMPLETED,CANCELLED,EXPIRED,REJECTED)");
   if (error) throw error;
+
+  let planExpiresAt = profile.plan_expires_at;
+  if (profile.plan === "pro" && !planExpiresAt) {
+    const defaultExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    planExpiresAt = defaultExpiry;
+    Promise.resolve(
+      getAdmin()
+        .from("profiles")
+        .update({ plan_expires_at: defaultExpiry })
+        .eq("id", profile.id)
+    ).catch(() => {});
+  }
+
   return {
-    plan: effectiveAccountPlan(profile.plan, profile.plan_expires_at),
-    planExpiresAt: profile.plan_expires_at,
+    plan: effectiveAccountPlan(profile.plan, planExpiresAt),
+    planExpiresAt: planExpiresAt,
     credits: profile.project_credits,
     activeFreeAgreements: count ?? 0,
     maxActiveFreeAgreements: FREE_RULES.maxActiveAgreements,

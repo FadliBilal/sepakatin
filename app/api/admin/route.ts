@@ -195,7 +195,18 @@ export async function PATCH(req: Request) {
     }>(req);
 
     if (body.action === "updatePlan" && body.userId && body.plan) {
-      const { error } = await db.from("profiles").update({ plan: body.plan, updated_at: new Date().toISOString() }).eq("id", body.userId);
+      const expiresAt =
+        body.plan === "pro"
+          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          : null;
+      const { error } = await db
+        .from("profiles")
+        .update({
+          plan: body.plan,
+          plan_expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", body.userId);
       if (error) throw error;
 
       await logAdminAction({

@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   Clock,
   Zap,
-  RefreshCw,
 } from "lucide-react";
 import { errorMessage, getAccountUsage, getAgreements } from "@/lib/store";
 import { AgreementRecord } from "@/lib/types";
@@ -39,13 +38,11 @@ function Dashboard({ user }: { user: SessionUser }) {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [copyFailedUrl, setCopyFailedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [buyPlanModal, setBuyPlanModal] = useState<PaymentPackageType | null>(null);
 
-  async function loadData(quiet = false) {
-    if (!quiet) setIsLoading(true);
-    else setIsRefreshing(true);
+  async function loadData() {
+    setIsLoading(true);
     try {
       await refreshAccount();
       const [list, u] = await Promise.all([getAgreements(), getAccountUsage()]);
@@ -55,7 +52,6 @@ function Dashboard({ user }: { user: SessionUser }) {
       setLoadError(errorMessage(err));
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   }
 
@@ -85,13 +81,15 @@ function Dashboard({ user }: { user: SessionUser }) {
   const firstName = (user.fullName || user.email).split(" ")[0];
 
   const isPro = usage?.plan === "pro";
+  const proExpiryDate =
+    usage?.planExpiresAt ||
+    user.proExpiresAt ||
+    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   const freeLimitReached = !!usage && !isPro && usage.activeFreeAgreements >= usage.maxActiveFreeAgreements;
   const planNote = !usage
     ? "Memuat..."
     : isPro
-    ? usage.planExpiresAt
-      ? `Aktif sampai ${formatDateID(usage.planExpiresAt)} · ${usage.credits} kredit proyek`
-      : `Akses tanpa batas · Tersedia ${usage.credits} kredit proyek`
+    ? `Aktif sampai ${formatDateTimeShortID(proExpiryDate)} · ${usage.credits} kredit proyek`
     : `${usage.activeFreeAgreements}/${usage.maxActiveFreeAgreements} kesepakatan aktif · ${usage.credits} kredit proyek`;
 
   const stats = [
@@ -119,10 +117,10 @@ function Dashboard({ user }: { user: SessionUser }) {
                   <Zap className="w-3 h-3 text-orange-600" />
                   {isPro ? "Paket Pro" : "Paket Gratis"}
                 </span>
-                {isPro && usage.planExpiresAt && (
+                {isPro && (
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
                     <Clock className="w-3 h-3 text-emerald-600" />
-                    Aktif hingga {formatDateTimeShortID(usage.planExpiresAt)}
+                    Aktif hingga {formatDateTimeShortID(proExpiryDate)}
                   </span>
                 )}
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#F4F4F6] text-[#6B6B6B] border border-[#E8E8EC]">
@@ -135,16 +133,6 @@ function Dashboard({ user }: { user: SessionUser }) {
           <p className="text-sm text-[#6B6B6B] mt-1">Pantau semua proyek dan status persetujuannya di sini.</p>
         </div>
         <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => loadData(true)}
-            disabled={isRefreshing}
-            className="btn btn-secondary text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 px-3.5 py-2.5"
-            title="Segarkan data profil dan status kesepakatan terbaru"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#6366F1]" : ""}`} />
-            <span>{isRefreshing ? "Menyegarkan..." : "Segarkan"}</span>
-          </button>
           <Link
             href="/agreements/new"
             className="btn btn-primary text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 px-4 py-2.5"
@@ -166,26 +154,15 @@ function Dashboard({ user }: { user: SessionUser }) {
                 <h3 className="text-sm font-bold font-display text-[#0A0A0A]">
                   Langganan Paket Pro Aktif
                 </h3>
-                {usage.planExpiresAt ? (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Aktif hingga {formatDateTimeShortID(usage.planExpiresAt)}
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Akses Tanpa Batas
-                  </span>
-                )}
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-emerald-700" />
+                  Aktif hingga {formatDateTimeShortID(proExpiryDate)}
+                </span>
               </div>
               <p className="text-xs text-[#6B6B6B] mt-1 leading-relaxed">
-                {usage.planExpiresAt ? (
-                  <>
-                    Masa aktif akun Pro Anda berlaku sampai tanggal{" "}
-                    <strong className="text-[#0A0A0A] font-semibold">{formatDateTimeLongID(usage.planExpiresAt)}</strong>.
-                    Seluruh fitur pembuatan kesepakatan, revisi bebas kuota, dan jejak audit sah siap digunakan.
-                  </>
-                ) : (
-                  "Akun Anda memiliki akses Pro penuh tanpa batasan kuota draf dan revisi."
-                )}
+                Masa aktif akun Pro Anda berlaku sampai tanggal{" "}
+                <strong className="text-[#0A0A0A] font-semibold">{formatDateTimeLongID(proExpiryDate)}</strong>.
+                Seluruh fitur pembuatan kesepakatan, revisi bebas kuota, dan jejak audit sah siap digunakan.
               </p>
             </div>
           </div>

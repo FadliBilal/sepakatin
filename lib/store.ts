@@ -116,9 +116,15 @@ function requireLocalUser() {
 
 function localUsage(userId: string, list: AgreementRecord[]): AccountUsage {
   const account = localAccounts().find((a) => a.id === userId);
+  let planExpiresAt = account?.proExpiresAt || null;
+  if (account?.plan === "pro" && !planExpiresAt) {
+    const defaultExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    planExpiresAt = defaultExpiry;
+    updateLocalAccount(userId, { proExpiresAt: defaultExpiry });
+  }
   return {
     plan: account?.plan ?? "gratis",
-    planExpiresAt: null,
+    planExpiresAt,
     credits: localCredits(userId),
     activeFreeAgreements: list.filter((a) => a.ownerId === userId && a.plan === "gratis" && isActiveStatus(a.status)).length,
     maxActiveFreeAgreements: FREE_RULES.maxActiveAgreements,
