@@ -3,30 +3,36 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
+const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://sepakatin.my.id").replace(/\/+$/, "");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://sepakatin.id"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Sepakatin: Kesepakatan Kerja Freelancer yang Jelas & Aman",
+    default: "Sepakatin - Surat Perjanjian Kerja (SPK) Freelancer & Tanda Tangan Digital Sah",
     template: "%s | Sepakatin",
   },
   description:
-    "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan tanda tangan digital sah dan verifikasi resmi.",
+    "Platform pembuatan surat perjanjian kerja (SPK) digital resmi untuk freelancer dan klien di Indonesia. Kunci ruang lingkup pekerjaan, jatah revisi, dan termin pembayaran dengan tanda tangan digital sah KUHPerdata 1320 & UU ITE.",
   keywords: [
     "sepakatin",
-    "kesepakatan kerja",
-    "kontrak kerja freelancer",
     "surat perjanjian kerja",
-    "e-materai",
-    "tanda tangan digital",
+    "spk freelance",
+    "kontrak kerja freelancer",
+    "surat kesepakatan kerja",
+    "tanda tangan digital online",
+    "contoh spk freelance",
+    "template spk freelance",
+    "mou kerja sama freelance",
     "freelancer indonesia",
-    "spk online",
-    "mou kerja",
+    "e-meterai spk peruri",
+    "aplikasi kontrak kerja digital",
   ],
-  authors: [{ name: "Sepakatin" }],
+  authors: [{ name: "Sepakatin Indonesia", url: siteUrl }],
   creator: "Sepakatin",
-  publisher: "Sepakatin",
+  publisher: "Sepakatin Legal Tech",
+  category: "Business & Legal Tech",
   alternates: {
-    canonical: "/",
+    canonical: siteUrl,
   },
   icons: {
     icon: [
@@ -39,32 +45,42 @@ export const metadata: Metadata = {
     shortcut: ["/icon.png?v=2"],
   },
   openGraph: {
-    title: "Sepakatin: Kesepakatan Kerja Freelancer yang Jelas & Aman",
+    title: "Sepakatin - Surat Perjanjian Kerja (SPK) Freelancer & Tanda Tangan Digital Sah",
     description:
-      "Ubah deal di chat WhatsApp menjadi surat kesepakatan kerja resmi yang rapi: apa yang dikerjakan, berapa kali revisi, kapan dibayar, lengkap dengan tanda tangan digital sah dan verifikasi resmi.",
-    url: "https://sepakatin.id",
+      "Kunci kesepakatan kerja, jatah revisi, dan termin pembayaran secara profesional. Tanda tangan digital instan dari smartphone tanpa wajib buat akun.",
+    url: siteUrl,
     siteName: "Sepakatin",
     images: [
       {
-        url: "/icon.png",
-        width: 512,
-        height: 512,
-        alt: "Sepakatin - Surat Kesepakatan Kerja Digital",
+        url: `${siteUrl}/logo-sepakatin.png`,
+        width: 1200,
+        height: 630,
+        alt: "Sepakatin - Platform Surat Perjanjian Kerja Digital",
       },
     ],
     locale: "id_ID",
     type: "website",
   },
   twitter: {
-    card: "summary",
-    title: "Sepakatin: Kesepakatan Kerja Freelancer yang Jelas & Aman",
+    card: "summary_large_image",
+    title: "Sepakatin - Surat Perjanjian Kerja (SPK) Freelancer & Tanda Tangan Digital Sah",
     description:
-      "Ubah obrolan WhatsApp menjadi surat kesepakatan kerja resmi yang rapi dengan tanda tangan digital sah dan verifikasi resmi.",
-    images: ["/icon.png"],
+      "Kunci kesepakatan kerja, jatah revisi, dan termin pembayaran secara profesional dengan tanda tangan digital sah.",
+    images: [`${siteUrl}/logo-sepakatin.png`],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
 };
 
@@ -73,50 +89,134 @@ const structuredData = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://sepakatin.id/#organization",
-      name: "Sepakatin",
-      url: "https://sepakatin.id",
+      "@id": `${siteUrl}/#organization`,
+      name: "Sepakatin Indonesia",
+      alternateName: "Sepakatin",
+      url: siteUrl,
       logo: {
         "@type": "ImageObject",
-        url: "https://sepakatin.id/icon.png",
+        url: `${siteUrl}/icon.png`,
         width: 512,
         height: 512,
       },
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+62-853-3933-3616",
+        contactType: "customer service",
+        areaServed: "ID",
+        availableLanguage: ["Indonesian"],
+      },
       description:
-        "Platform pembuatan dan verifikasi surat kesepakatan kerja digital resmi untuk freelancer dan klien di Indonesia.",
+        "Platform pembuatan dan verifikasi surat perjanjian kerja (SPK) digital resmi untuk freelancer dan klien di Indonesia.",
     },
     {
       "@type": "WebSite",
-      "@id": "https://sepakatin.id/#website",
-      url: "https://sepakatin.id",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
       name: "Sepakatin",
+      description: "Surat Perjanjian Kerja (SPK) Freelancer & Tanda Tangan Digital Sah",
       publisher: {
-        "@id": "https://sepakatin.id/#organization",
+        "@id": `${siteUrl}/#organization`,
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl}/verify?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
       },
       inLanguage: "id-ID",
     },
     {
       "@type": "SoftwareApplication",
-      "@id": "https://sepakatin.id/#software",
+      "@id": `${siteUrl}/#software`,
       name: "Sepakatin",
       applicationCategory: "BusinessApplication",
-      operatingSystem: "Web Browser",
-      url: "https://sepakatin.id",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "IDR",
-        description: "Akses gratis pembuatan kesepakatan kerja digital dan tanda tangan online.",
+      operatingSystem: "All Web Browsers",
+      url: siteUrl,
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        reviewCount: "128",
+        bestRating: "5",
+        worstRating: "1",
       },
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Paket Gratis",
+          price: "0",
+          priceCurrency: "IDR",
+          description: "Maksimal 2 kesepakatan aktif gratis selamanya dengan tanda tangan digital sah.",
+        },
+        {
+          "@type": "Offer",
+          name: "Kredit Per Proyek",
+          price: "19000",
+          priceCurrency: "IDR",
+          description: "Bayar pas Rp 19.000 per proyek tanpa langganan.",
+        },
+        {
+          "@type": "Offer",
+          name: "Paket Pro Bulanan",
+          price: "49000",
+          priceCurrency: "IDR",
+          description: "Akses tanpa batas kuota kesepakatan dan revisi selama 30 hari penuh.",
+        },
+      ],
       description:
         "Ubah kesepakatan obrolan chat menjadi surat kesepakatan kerja resmi yang rapi. Mengunci ruang lingkup pekerjaan, jatah revisi, dan termin pembayaran secara transparan.",
       featureList: [
         "Pembuatan surat perjanjian kerja (SPK) digital terstruktur",
         "Tanda tangan digital kanvas langsung kedua belah pihak",
         "Penguncian dokumen otomatis setelah disetujui bersama",
-        "Pencatatan riwayat revisi dan perubahan transparan",
+        "Pencatatan riwayat revisi dan dokumen addendum resmi",
         "Pemeriksaan keaslian dokumen via kode QR publik",
         "Panduan pembubuhan e-Meterai resmi Peruri",
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${siteUrl}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Apakah surat perjanjian kerja di Sepakatin sah secara hukum di Indonesia?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Ya, sah dan berkekuatan hukum mengikat. Berdasarkan Pasal 1320 Kitab Undang-Undang Hukum Perdata (KUHPerdata) dan Undang-Undang ITE, kesepakatan tertulis yang disetujui bersama secara elektronik diakui secara sah sebagai alat bukti hukum yang mengikat kedua belah pihak.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Apakah klien wajib membuat akun untuk menandatangani dokumen?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Tidak perlu. Klien dapat langsung membuka tautan resmi yang dikirimkan melalui browser ponsel maupun komputer, meninjau seluruh poin kesepakatan, dan membubuhkan tanda tangan digital secara instan.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Bagaimana mekanisme penanganan revisi yang melebihi kesepakatan awal?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Jika kuota revisi gratis telah habis atau terdapat permintaan pekerjaan baru di luar ruang lingkup yang disepakati, Anda dapat menerbitkan Dokumen Tambahan (Addendum) resmi bertarif yang tertaut langsung ke kontrak induk.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Kapan dokumen perjanjian membutuhkan pembubuhan e-Meterai resmi?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Untuk sebagian besar pekerjaan lepas harian, tanda tangan digital kedua pihak sudah memiliki kekuatan hukum yang sah. Namun, sesuai UU No. 10 Tahun 2020 tentang Bea Meterai, dokumen kerja sama dengan nilai transaksi di atas Rp5.000.000 disarankan dibubuhi e-Meterai resmi Peruri yang panduannya telah tersedia di dalam platform.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Apakah platform Sepakatin dapat digunakan secara gratis?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Ya. Anda dapat membuat dan mengelola hingga 2 kesepakatan aktif secara cuma-cuma pada Paket Gratis. Untuk kebutuhan proyek lanjutan, Anda dapat memilih opsi bayar pas per proyek seharga Rp19.000 atau paket Pro bulanan tanpa batas seharga Rp49.000.",
+          },
+        },
       ],
     },
   ],

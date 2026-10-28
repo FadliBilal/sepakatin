@@ -1,32 +1,38 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sepakatin.id";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://sepakatin.my.id").replace(/\/+$/, "");
   const lastModified = new Date();
 
   return [
     {
       url: baseUrl,
       lastModified,
-      changeFrequency: "weekly",
+      changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/verify`,
       lastModified,
-      changeFrequency: "monthly",
-      priority: 0.8,
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
     {
-      url: `${baseUrl}/auth/login`,
+      url: `${baseUrl}/pricing`,
       lastModified,
-      changeFrequency: "yearly",
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/auth/register`,
       lastModified,
-      changeFrequency: "yearly",
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/auth/login`,
+      lastModified,
+      changeFrequency: "monthly",
       priority: 0.5,
     },
   ];
