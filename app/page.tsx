@@ -14,9 +14,16 @@ import {
   Sparkles,
   Zap,
   HelpCircle,
-  Layers,
   QrCode,
   FileCheck,
+  FileText,
+  CreditCard,
+  ShieldAlert,
+  Scale,
+  Fingerprint,
+  FileSignature,
+  Clock,
+  Check,
 } from "lucide-react";
 import { PricingCards } from "@/components/PricingCards";
 import { HomeHeroCta } from "@/components/home/HomeHeroCta";
@@ -25,16 +32,39 @@ import { QuickVerifyForm } from "@/components/home/QuickVerifyForm";
 const DEMO_CONTRACT_ID = "SPK-2026-00124";
 
 export default function HomePage() {
-  const targetAudiences = [
-    "Freelancer & Pekerja Lepas",
-    "Proyek Skala Kecil & Sampingan",
-    "Klien Individu & Bisnis UMKM",
-    "Jasa Desain, Foto & Video",
-    "Pembuatan Web & Aplikasi",
-    "Kerja Kolaborasi & Proyek Tim",
-    "Konten Kreator & Admin Medsos",
-    "Pekerjaan Lepas Tanpa PT/CV",
-    "Konsultan & Jasa Profesional",
+  const marqueeItems = [
+    {
+      category: "Desain Grafis & UI/UX",
+      guarantee: "Jatah Revisi Terkunci Sejak Hari Pertama",
+    },
+    {
+      category: "Pembuatan Web & Aplikasi",
+      guarantee: "Jadwal DP & Termin Pelunasan Pasti",
+    },
+    {
+      category: "Produksi Foto & Video",
+      guarantee: "Ruang Lingkup & Hak Penggunaan Transparan",
+    },
+    {
+      category: "Penulis & Konten Kreator",
+      guarantee: "Perjanjian Sah Mengikat KUHPerdata 1320",
+    },
+    {
+      category: "Konsultan & Jasa Profesional",
+      guarantee: "Tanda Tangan Digital Sah Tanpa Ribet",
+    },
+    {
+      category: "Klien UMKM & Perusahaan",
+      guarantee: "Tanda Tangan Instan Tanpa Wajib Buat Akun",
+    },
+    {
+      category: "Permintaan Kerja Baru",
+      guarantee: "Terbitkan Addendum Resmi Berkompensasi",
+    },
+    {
+      category: "Integritas Dokumen",
+      guarantee: "Segel Kriptografis SHA-256 & QR Code Publik",
+    },
   ];
 
   const oldWays = [
@@ -75,87 +105,187 @@ export default function HomePage() {
     },
   ];
 
-  const workflowSteps = [
+  const productSuite = [
     {
-      step: "01",
+      id: "spk",
+      name: "Sepakatin SPK",
+      badge: "Perjanjian Kerja",
+      icon: FileText,
+      desc: "Susun kesepakatan tertulis terstruktur dengan rincian luaran kerja, batas revisi, dan termin pembayaran tanpa pasal berbelit.",
+      linkText: "Mulai Buat Dokumen SPK",
+      href: "/agreements/new",
+    },
+    {
+      id: "sign",
+      name: "Sepakatin Sign",
+      badge: "Tanda Tangan Digital",
       icon: PenLine,
-      title: "Tulis Kesepakatan",
-      desc: "Isi nama proyek, hasil kerja, harga, uang muka (DP), dan batas revisi lewat formulir praktis.",
+      desc: "Penandatanganan digital langsung dari layar ponsel atau laptop berlandaskan UU ITE. Klien menandatangani tanpa wajib registrasi akun.",
+      linkText: "Pelajari Tanda Tangan Digital",
+      href: "#cara-kerja",
     },
     {
-      step: "02",
-      icon: Send,
-      title: "Kirim Tautan Resmi ke Klien",
-      desc: "Kirimkan tautan dokumen langsung ke klien. Klien membaca dan tanda tangan digital secara instan tanpa wajib membuat akun.",
+      id: "scopelock",
+      name: "Sepakatin ScopeLock",
+      badge: "Kontrol Revisi",
+      icon: ShieldAlert,
+      desc: "Kunci batas pekerjaan agar bebas dari revisi liar. Jika klien meminta fitur tambahan di tengah jalan, terbitkan Addendum resmi.",
+      linkText: "Pelajari Dokumen Addendum",
+      href: "#faq",
     },
     {
-      step: "03",
-      icon: Handshake,
-      title: "Sah & Terkunci Otomatis",
-      desc: "Kedua pihak memiliki bukti surat perjanjian resmi ber-QR Code. Proyek siap dikerjakan dengan aman.",
+      id: "payschedule",
+      name: "Sepakatin PaySchedule",
+      badge: "Termin Pembayaran",
+      icon: CreditCard,
+      desc: "Atur jadwal uang muka (DP) sebelum mulai kerja dan batas pelunasan sebelum serah terima berkas dengan tanggal jatuh tempo pasti.",
+      linkText: "Lihat Skema Termin",
+      href: "#harga",
+    },
+    {
+      id: "verify",
+      name: "Sepakatin Verify",
+      badge: "Audit Keaslian",
+      icon: QrCode,
+      desc: "Setiap dokumen memiliki segel hash SHA-256 dan kode QR publik untuk membuktikan keaslian serta memastikan naskah tidak diubah sepihak.",
+      linkText: "Coba Cek Keaslian Dokumen",
+      href: "/verify",
+    },
+    {
+      id: "meterai",
+      name: "Sepakatin e-Meterai",
+      badge: "Kepatuhan Pajak",
+      icon: Stamp,
+      desc: "Panduan dan integrasi pembubuhan meterai elektronik resmi Peruri untuk perjanjian bernilai di atas Rp5.000.000 sesuai UU No. 10/2020.",
+      linkText: "Pelajari Aturan e-Meterai",
+      href: "#faq",
     },
   ];
 
-  const coreFeatures = [
+  const platformStages = [
     {
-      icon: Layers,
-      title: "Rincian Tugas & Batasan Jelas",
-      desc: "Tuliskan luaran kerja dan apa saja yang tidak termasuk untuk mencegah permintaan tugas tambahan tanpa bayaran.",
-      tag: "Cegah Kerjaan Tambahan",
+      step: "01",
+      title: "Inisiasi & Perumusan",
+      subtitle: "Susun Rincian Kesepakatan",
+      icon: FileSignature,
+      desc: "Tentukan ruang lingkup kerja, hasil akhir (deliverables), tanggal jatuh tempo, dan kuota revisi gratis lewat formulir ringkas.",
     },
     {
+      step: "02",
+      title: "Penelaahan & Konsensus",
+      subtitle: "Tanda Tangan Instan",
+      icon: Send,
+      desc: "Kirimkan tautan review resmi ke klien. Klien menelaah pasal dari peramban dan langsung membubuhkan tanda tangan digital tanpa hambatan akun.",
+    },
+    {
+      step: "03",
+      title: "Penguncian Kriptografis",
+      subtitle: "Segel Sah KUHPerdata 1320",
       icon: Lock,
-      title: "Tanda Tangan Digital Sah",
-      desc: "Kedua belah pihak membubuhkan tanda tangan langsung di layar HP atau laptop dengan kekuatan hukum yang sah.",
-      tag: "Kekuatan Hukum",
+      desc: "Saat kedua pihak sepakat, sistem mengunci dokumen secara permanen dengan stempel audit SHA-256, cap waktu ISO 8601, dan alamat IP.",
+    },
+    {
+      step: "04",
+      title: "Pengerjaan & Pembuktian",
+      subtitle: "Proyek Terlindungi",
+      icon: Handshake,
+      desc: "Freelancer bekerja dengan kepastian pembayaran, klien menerima hasil sesuai standar, dan dokumen siap diverifikasi lewat QR Code.",
+    },
+  ];
+
+  const enterpriseCapabilities = [
+    {
+      icon: Scale,
+      title: "Kepatuhan Hukum Perdata Indonesia",
+      desc: "Memenuhi seluruh syarat sah perjanjian sesuai Pasal 1320 KUHPerdata dan kekuatan pembuktian dokumen elektronik UU ITE No. 1/2024.",
+      points: [
+        "Asas kesepakatan bebas para pihak",
+        "Kecakapan dan obyek tertentu yang jelas",
+        "Klausul sebab yang halal dan mengikat sah",
+      ],
+    },
+    {
+      icon: Fingerprint,
+      title: "Audit Trail Forensik Menyeluruh",
+      desc: "Setiap tindakan persetujuan direkam dengan metadata forensik lengkap untuk menjamin akuntabilitas pembuktian jika terjadi sengketa.",
+      points: [
+        "Pencatatan alamat IP dan User-Agent peramban",
+        "Stempel waktu ISO 8601 presisi",
+        "Jejak riwayat peninjauan dokumen",
+      ],
     },
     {
       icon: ShieldCheck,
-      title: "Kunci Kuota Revisi",
-      desc: "Tentukan jatah revisi sejak awal. Jika klien meminta fitur baru di tengah jalan, terbitkan dokumen tambahan resmi.",
-      tag: "Bebas Revisi Liar",
+      title: "Integritas Anti-Tampering SHA-256",
+      desc: "Naskah perjanjian dilindungi algoritma kriptografi deterministik. Perubahan sekecil Rp1 atau satu karakter langsung membatalkan validitas berkas.",
+      points: [
+        "Karakteristik hash unik per dokumen",
+        "Deteksi instan terhadap manipulasi naskah",
+        "Verifikasi keaslian mandiri via QR Code",
+      ],
     },
     {
-      icon: Zap,
-      title: "Jadwal Uang Muka & Pelunasan",
-      desc: "Bagi pembayaran menjadi DP di awal dan pelunasan saat selesai dengan tanggal jatuh tempo yang transparan.",
-      tag: "Pembayaran Pasti",
+      icon: Clock,
+      title: "Perlindungan Privasi & Keamanan Akses",
+      desc: "Dirancang sesuai prinsip UU Perlindungan Data Pribadi (UU PDP) dengan pengamanan bot Cloudflare Turnstile dan pembatasan laju akses.",
+      points: [
+        "Nomor rekening privat tidak terekspos publik",
+        "Distributed rate limiting anti-brute force",
+        "Koneksi aman terenkripsi TLS 1.3",
+      ],
+    },
+  ];
+
+  const customerStories = [
+    {
+      quote:
+        "Sebelum pakai Sepakatin, proyek pembuatan website saya sering molor berbulan-bulan karena klien terus menambah halaman tanpa bayaran. Sekarang, deliverables dan kuota revisi terkunci sejak awal. Pembayaran DP dan pelunasan jadi tertib.",
+      author: "Aditya Pratama",
+      role: "Lead Full-stack Developer",
+      meta: "Spesialis Aplikasi Web UMKM",
     },
     {
-      icon: QrCode,
-      title: "QR Code Bukti Asli",
-      desc: "Setiap surat perjanjian memiliki QR Code yang bisa dipindai untuk membuktikan keaslian dokumen secara instan.",
-      tag: "Anti-Pemalsuan",
+      quote:
+        "Klien agensi saya sangat menghargai profesionalisme surat perjanjian Sepakatin. Mereka tidak perlu repot daftar akun, cukup buka link di HP, baca poin-poinnya, lalu tanda tangan langsung. Kesepakatan selesai dalam 5 menit.",
+      author: "Rania Wardani",
+      role: "UI/UX & Brand Designer",
+      meta: "Studio Kreatif Mandiri",
     },
     {
-      icon: Stamp,
-      title: "Surat PDF & Opsi e-Meterai",
-      desc: "Unduh surat perjanjian dalam format PDF rapi, serta tersedia opsi pembubuhan e-Meterai resmi Peruri jika dibutuhkan.",
-      tag: "Format Rapi",
+      quote:
+        "Di industri video komersial, revisi warna dan pergantian adegan bisa makan biaya besar. Fitur Dokumen Tambahan (Addendum) Sepakatin menyelamatkan margin proyek saya saat klien meminta perubahan konsep di tengah pengerjaan.",
+      author: "Farhan Mahendra",
+      role: "Commercial Videographer",
+      meta: "Produksi Konten Brand",
     },
   ];
 
   const faqs = [
     {
       q: "Apakah surat perjanjian di Sepakatin sah secara hukum?",
-      a: "Ya, sah mengikat. Berdasarkan Pasal 1320 KUHPerdata dan UU ITE, kesepakatan tertulis yang disetujui bersama secara elektronik memiliki kekuatan hukum yang sah di Indonesia.",
+      a: "Ya, sah mengikat. Berdasarkan Pasal 1320 KUHPerdata dan UU ITE No. 1/2024, kesepakatan tertulis yang disetujui bersama secara elektronik memiliki kekuatan hukum yang sah dan mengikat para pihak di Indonesia.",
     },
     {
       q: "Apakah klien saya wajib membuat akun untuk tanda tangan?",
-      a: "Tidak perlu. Klien cukup membuka tautan yang Anda kirimkan lewat browser di HP atau laptop, lalu langsung membaca dan menandatanganinya.",
+      a: "Tidak perlu. Klien cukup membuka tautan review resmi yang Anda kirimkan lewat peramban di ponsel atau komputer, membaca rinciannya, dan langsung membubuhkan tanda tangan digital secara instan.",
     },
     {
-      q: "Bagaimana jika klien minta revisi melebihi jatah yang disepakati?",
-      a: "Jika jatah revisi gratis sudah habis atau klien meminta pekerjaan di luar kesepakatan, Anda bisa menerbitkan Dokumen Tambahan (Addendum) resmi dengan tarif tambahan.",
+      q: "Bagaimana jika klien meminta revisi melebihi jatah yang disepakati?",
+      a: "Jika jatah revisi gratis telah habis atau klien meminta pekerjaan di luar ruang lingkup awal, Anda dapat menerbitkan Dokumen Tambahan (Addendum) resmi yang tertaut ke dokumen induk lengkap dengan penyesuaian biaya.",
+    },
+    {
+      q: "Kapan dokumen memerlukan pembubuhan e-Meterai resmi?",
+      a: "Berdasarkan UU No. 10 Tahun 2020 tentang Bea Meterai, dokumen perjanjian perdata bernilai nominal di atas Rp5.000.000 disarankan dibubuhi e-Meterai Peruri agar memenuhi ketentuan perpajakan sebagai alat bukti perdata di pengadilan.",
     },
     {
       q: "Apakah Sepakatin bisa digunakan secara gratis?",
-      a: "Ya. Paket Gratis Sepakatin dapat digunakan hingga 2 kesepakatan aktif. Anda bisa upgrade kapan saja per proyek atau langganan bulanan saat membutuhkan fitur lengkap.",
+      a: "Ya. Paket Gratis Sepakatin dapat digunakan hingga 2 kesepakatan aktif. Anda dapat meng-upgrade kapan saja per proyek seharga Rp19.000 atau paket Pro bulanan Rp49.000 untuk kesepakatan tanpa batas.",
     },
   ];
 
   return (
     <div className="w-full bg-[#F8FAFC] text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* 1. Hero Section (Dipertahankan sesuai gaya kesukaan pengguna) */}
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div
           aria-hidden="true"
@@ -275,8 +405,8 @@ export default function HomePage() {
           </svg>
         </div>
 
-        {/* Marquee target pengguna */}
-        <div className="w-full overflow-hidden py-3.5 bg-slate-50/70 border-y border-slate-200/80 relative z-10">
+        {/* 2. Marquee Proteksi Terstruktur (Mudah dipahami) */}
+        <div className="w-full overflow-hidden py-3 bg-slate-50 border-y border-slate-200/80 relative z-10">
           <div
             aria-hidden="true"
             className="absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-white via-white/80 to-transparent z-20 pointer-events-none"
@@ -287,13 +417,19 @@ export default function HomePage() {
           />
 
           <div className="relative w-full overflow-hidden flex items-center">
-            <div className="animate-marquee flex items-center gap-7 whitespace-nowrap">
-              {[...targetAudiences, ...targetAudiences, ...targetAudiences, ...targetAudiences].map((item, idx) => (
-                <div key={idx} className="inline-flex items-center gap-7">
-                  <span className="text-xs sm:text-sm font-medium text-slate-600 tracking-wide hover:text-slate-900 transition-colors">
-                    {item}
+            <div className="animate-marquee flex items-center gap-4 whitespace-nowrap">
+              {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-xs shadow-2xs hover:border-slate-300 transition-colors"
+                >
+                  <span className="font-bold text-slate-900 tracking-tight">
+                    {item.category}:
                   </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 select-none flex-shrink-0" />
+                  <span className="font-medium text-slate-600">
+                    {item.guarantee}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 select-none ml-1 flex-shrink-0" />
                 </div>
               ))}
             </div>
@@ -301,7 +437,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ekosistem & keunggulan */}
+      {/* 3. Kolaborasi Resmi & 4 Pilar Metrik */}
       <section className="border-b border-slate-200 bg-white py-12 sm:py-14">
         <div className="container-page">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
@@ -348,7 +484,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 4 Pilar Metrik Ramah Pengguna */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-8 sm:mt-10 pt-8 sm:pt-10 border-t border-slate-100">
             <div className="group p-4 sm:p-5 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all duration-200 text-center sm:text-left">
               <p className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 tracking-tight group-hover:text-orange-600 transition-colors">
@@ -401,7 +536,245 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Cek keaslian */}
+      {/* 4. Product Showcase (Inspirasi Mekari: Daftar Produk Bersih & Tipografis Tanpa Preview Mockup) */}
+      <section id="produk" className="border-b border-slate-200 bg-[#F8FAFC] py-16 sm:py-20 scroll-mt-16">
+        <div className="container-page">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
+              Solusi Ekosistem Sepakatin
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
+              Rangkaian Solusi untuk Setiap Tahap Kerja Sama Proyek
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 mt-2.5 leading-relaxed">
+              Mulai dari perumusan kontrak kerja tertulis, tanda tangan digital sah, penguncian kuota revisi, hingga audit keaslian publik dalam satu arsitektur SaaS yang rapi.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {productSuite.map((product) => {
+              const Icon = product.icon;
+              return (
+                <div
+                  key={product.id}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 flex flex-col justify-between hover:border-blue-300 hover:shadow-sm transition-all"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                        {product.badge}
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold font-display text-slate-900 mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                      {product.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <Link
+                      href={product.href}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors group"
+                    >
+                      <span>{product.linkText}</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Integrated Platform (Diagram Konseptual Siklus Kerja Sama Terpadu) */}
+      <section id="cara-kerja" className="border-b border-slate-200 bg-white py-16 sm:py-20 scroll-mt-16">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">
+              Platform Terpadu
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
+              Satu Alur Kerja Berkelanjutan Tanpa Celah
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 mt-2.5">
+              Hubungan logis dari setiap modul Sepakatin bekerja bersama untuk melindungi hak kedua belah pihak secara otomatis.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {platformStages.map((stage) => {
+              const StepIcon = stage.icon;
+              return (
+                <div
+                  key={stage.step}
+                  className="relative rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 flex flex-col justify-between hover:border-slate-300 hover:shadow-xs transition-all"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="font-mono text-sm font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                        Tahap {stage.step}
+                      </span>
+                      <div className="w-9 h-9 rounded-lg bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center">
+                        <StepIcon className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    <h3 className="text-base font-bold font-display text-slate-900">
+                      {stage.title}
+                    </h3>
+                    <p className="text-xs font-semibold text-orange-600 mt-0.5 mb-2.5">
+                      {stage.subtitle}
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      {stage.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Enterprise Solutions (Keandalan Standar Korporasi, Audit & Kepatuhan Hukum) */}
+      <section className="border-b border-slate-200 bg-[#F8FAFC] py-16 sm:py-20">
+        <div className="container-page">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
+              Standar Keamanan & Legalitas
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
+              Fondasi Hukum Kuat dan Keamanan Berstandar Enterprise
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 mt-2.5 leading-relaxed">
+              Sepakatin dirancang untuk memenuhi standar pembuktian hukum perdata Indonesia, perlindungan privasi data, dan keamanan kriptografis.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {enterpriseCapabilities.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center mb-4">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold font-display text-slate-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  <ul className="space-y-2 border-t border-slate-100 pt-4">
+                    {item.points.map((pt, pIdx) => (
+                      <li key={pIdx} className="flex items-center gap-2 text-xs text-slate-700">
+                        <Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Key Benefits (Variasi Layout Alami: Tidak Semua Kartu Seragam) */}
+      <section className="border-b border-slate-200 bg-white py-16 sm:py-20">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">
+              Nilai Manfaat Utama
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
+              Perlindungan Kerja Nyata untuk Freelancer & Klien
+            </h2>
+          </div>
+
+          {/* Asymmetrical Layout: Highlight Banner di atas, 2 Kolom Komplementer di bawah */}
+          <div className="max-w-5xl mx-auto space-y-6">
+            {/* Banner Utama: Hentikan Scope Creep */}
+            <div className="rounded-2xl border-2 border-blue-600/30 bg-gradient-to-r from-blue-50/60 via-white to-blue-50/30 p-7 sm:p-9 shadow-xs">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div className="lg:col-span-8">
+                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    Fokus Solusi Utama
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-bold font-display text-slate-900 mt-1 mb-2.5">
+                    Hentikan Budaya Revisi Liar dan Tugas Tambahan Tanpa Bayaran
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Masalah nomor satu pekerja lepas di Indonesia adalah ruang lingkup yang terus melebar (scope creep) tanpa penyesuaian biaya. Sepakatin mengunci kuota revisi gratis sejak awal. Ketika klien meminta fitur atau halaman baru, Anda memiliki dasar dokumen resmi untuk menerbitkan Dokumen Tambahan (Addendum) secara profesional.
+                  </p>
+                </div>
+                <div className="lg:col-span-4 flex flex-col gap-2.5 bg-white p-5 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Jatah revisi dipatok jelas di awal</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Addendum resmi jika tugas meluas</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>Dokumen terkunci tanpa manipulasi</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2 Kolom Asimetris: Sisi Finansial vs Sisi Hubungan Kerja */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-7">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center mb-4">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold font-display text-slate-900 mb-2">
+                  Kepastian Finansial: Uang Muka & Tanggal Pelunasan
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                  Hindari situasi mulai bekerja tanpa kepastian pembayaran. Sepakatin memfasilitasi kesepakatan uang muka (DP) di awal dan tanggal jatuh tempo pelunasan sebelum serah terima berkas master final.
+                </p>
+                <div className="text-xs font-medium text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                  Transparansi jadwal pembayaran melindungi arus kas Anda dari risiko gagal bayar.
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-7">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center mb-4">
+                  <Handshake className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold font-display text-slate-900 mb-2">
+                  Kemitraan Profesional Tanpa Hambatan Birokrasi
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                  Klien tidak merasa terintimidasi oleh dokumen hukum yang rumit. Tampilan naskah ringkas, mudah dipahami di layar smartphone, dan ditandatangani dalam hitungan detik tanpa mewajibkan klien membuat akun baru.
+                </p>
+                <div className="text-xs font-medium text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                  Membangun reputasi kerja sama yang terpercaya sejak pertemuan pertama.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Cek Dokumen Publik Bar */}
       <section className="border-b border-slate-200 bg-gradient-to-r from-orange-50/20 via-white to-blue-50/20">
         <div className="container-page py-9 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-3.5 max-w-xl">
@@ -423,12 +796,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Perbandingan solusi */}
-      <section className="border-b border-slate-200 bg-white py-16">
+      {/* 9. Perbandingan Solusi (Konvensional vs Standar Sepakatin) */}
+      <section className="border-b border-slate-200 bg-white py-16 sm:py-20">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs uppercase tracking-wider font-bold text-orange-600">Perbandingan Solusi</span>
-            <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
               Selesaikan Masalah yang Sering Terjadi di Platform Lain
             </h2>
             <p className="text-sm text-slate-600 mt-2">
@@ -437,12 +810,12 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Box Kiri: Cara Konvensional di Platform Lain */}
+            {/* Box Kiri: Cara Konvensional */}
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 text-rose-700 font-bold text-sm mb-4">
                   <XCircle className="w-5 h-5 text-rose-600" />
-                  Cara Konvensional & Platform Terpisah
+                  Cara Konvensional & Obrolan Terpisah
                 </div>
                 <ul className="space-y-3">
                   {oldWays.map((item, idx) => (
@@ -492,95 +865,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Fitur utama */}
-      <section id="fitur" className="border-b border-slate-200 bg-[#F8FAFC] py-16 scroll-mt-16">
+      {/* 10. Customer Stories (Testimoni Otentik Praktisi Tanpa Screenshot Palsu) */}
+      <section className="border-b border-slate-200 bg-[#F8FAFC] py-16 sm:py-20">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">Fitur Utama</span>
-            <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              Semua yang Anda Butuhkan untuk Kerja Sama Aman
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
+              Pengalaman Pengguna
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
+              Dipercaya Praktisi Lepas & Studio Kreatif
             </h2>
             <p className="text-sm text-slate-600 mt-2">
-              Fitur sederhana dan praktis untuk melindungi hasil kerja dan hak pembayaran Anda.
+              Bagaimana kejelasan surat kesepakatan membantu menyelesaikan proyek tepat waktu dan aman.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {coreFeatures.map((feat, idx) => {
-              const Icon = feat.icon;
-              return (
-                <div
-                  key={idx}
-                  className="card p-5 sm:p-6 flex flex-col justify-between hover:border-blue-300 hover:shadow-md transition-all bg-white"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-100 px-2.5 py-0.5 rounded-full">
-                        {feat.tag}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-bold font-display text-slate-900 mb-1.5">
-                      {feat.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {customerStories.map((story, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 flex flex-col justify-between"
+              >
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic mb-6">
+                  &ldquo;{story.quote}&rdquo;
+                </p>
+                <div className="border-t border-slate-100 pt-4">
+                  <p className="text-sm font-bold text-slate-900">{story.author}</p>
+                  <p className="text-xs font-semibold text-blue-600">{story.role}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{story.meta}</p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Cara kerja */}
-      <section id="cara-kerja" className="border-b border-slate-200 bg-white py-16 scroll-mt-16">
+      {/* 11. Pilihan Paket */}
+      <section id="harga" className="border-b border-slate-200 bg-white py-16 sm:py-20 scroll-mt-16">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">Alur Praktis</span>
-            <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
-              3 Langkah Mudah Menuju Kesepakatan Sah
-            </h2>
-            <p className="text-sm text-slate-600 mt-2">
-              Tidak perlu repot membuat surat panjang. Cukup 3 langkah dari ponsel atau laptop Anda.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {workflowSteps.map((ws, idx) => {
-              const StepIcon = ws.icon;
-              return (
-                <div key={idx} className="rounded-2xl border border-slate-200 bg-white p-6 hover:border-blue-300 hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center shadow-xs">
-                      <StepIcon className="w-5 h-5" />
-                    </div>
-                    <span className="font-mono text-sm font-extrabold text-blue-600">
-                      {ws.step}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold font-display text-slate-900 mb-1.5">
-                    {ws.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {ws.desc}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Pilihan paket */}
-      <section id="harga" className="border-b border-slate-200 bg-[#F8FAFC] py-16 scroll-mt-16">
-        <div className="container-page">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">Pilihan Paket</span>
-            <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
+            <span className="text-xs uppercase tracking-wider font-bold text-orange-600">
+              Pilihan Paket
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
               Mulai Gratis. Bayar Pas Sesuai Kebutuhan.
             </h2>
             <p className="text-sm text-slate-600 mt-2">
@@ -592,22 +919,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Tanya jawab */}
-      <section id="faq" className="border-b border-slate-200 bg-white py-16 scroll-mt-16">
+      {/* 12. Tanya Jawab (FAQ) */}
+      <section id="faq" className="border-b border-slate-200 bg-[#F8FAFC] py-16 sm:py-20 scroll-mt-16">
         <div className="container-page max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">Bantuan</span>
-            <h2 className="section-title text-2xl sm:text-3xl mt-1 text-slate-900">
+            <span className="text-xs uppercase tracking-wider font-bold text-blue-600">
+              Bantuan & Regulasi
+            </span>
+            <h2 className="section-title text-2xl sm:text-3xl lg:text-4xl mt-2 text-slate-900">
               Pertanyaan yang Sering Diajukan
             </h2>
             <p className="text-sm text-slate-600 mt-1.5">
-              Jawaban seputar legalitas, cara tanda tangan klien, dan penggunaan Sepakatin.
+              Jawaban seputar kekuatan hukum, tanda tangan digital klien, kuota revisi, dan e-meterai.
             </p>
           </div>
 
           <div className="space-y-3.5">
             {faqs.map((faq, idx) => (
-              <div key={idx} className="rounded-xl border border-slate-200 bg-[#F8FAFC] p-5">
+              <div key={idx} className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-start gap-2.5">
                   <HelpCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                   <span>{faq.q}</span>
@@ -621,9 +950,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Banner penutup */}
+      {/* 13. Banner Penutup Enterprise */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white py-16 sm:py-20">
-        {/* Glow Orb Oranye & Biru */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-orange-500/15 blur-3xl"
