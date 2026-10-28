@@ -8,7 +8,7 @@ import { AlertTriangle, Home, RefreshCw, ShieldCheck } from "lucide-react";
  * Halaman saat terjadi kesalahan tak terduga.
  *
  * Tanpa berkas ini, Next.js menampilkan layar bawaan yang di produksi hanya
- * berbunyi "Application error: a client-side exception has occurred" — tidak
+ * berbunyi "Application error: a client-side exception has occurred" (tidak
  * menjelaskan apa pun dan membuat pengguna mengira dokumennya hilang.
  *
  * Isi pesan galat sengaja tidak ditampilkan karena bisa memuat detail teknis
@@ -23,7 +23,9 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[sepakatin] kesalahan tak tertangani:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[sepakatin] kesalahan tak tertangani:", error);
+    }
   }, [error]);
 
   return (

@@ -23,7 +23,7 @@ export function QRCodeViewer({ value, size = 120, className = "" }: QRCodeViewer
       },
     })
       .then((url) => setDataUrl(url))
-      .catch((err) => console.error("QR Code generation error:", err));
+      .catch(() => setDataUrl(""));
   }, [value, size]);
 
   if (!dataUrl) {

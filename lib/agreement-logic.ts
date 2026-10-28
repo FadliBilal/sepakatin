@@ -496,7 +496,7 @@ export async function applyOwnerAction(
       agr.currentVersionNumber = v.versionNumber;
       agr.validFrom = updated.validFrom;
       agr.validUntil = updated.validUntil;
-      // Tanda tangan & meterai lama milik isi versi sebelumnya — harus ditandatangani ulang
+      // Reset tanda tangan dan meterai versi sebelumnya agar ditandatangani ulang
       agr.signatures = [];
       agr.stampedDocuments = [];
       agr.ematerai = undefined;

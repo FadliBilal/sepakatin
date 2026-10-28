@@ -33,9 +33,11 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<{
 
   // Mock Mode jika belum ada API Key Resend
   if (!RESEND_API_KEY || RESEND_API_KEY.startsWith("mock_") || RESEND_API_KEY === "demo_key") {
-    console.log(
-      `[Resend MOCKED] To: ${params.to} | Subject: "${params.subject}" | Type: ${params.notificationType}`
-    );
+    if (process.env.NODE_ENV !== "production") {
+      console.log(
+        `[Resend MOCKED] To: ${params.to} | Subject: "${params.subject}" | Type: ${params.notificationType}`
+      );
+    }
 
     if (db) {
       try {
@@ -47,7 +49,9 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<{
           sent_at: new Date().toISOString(),
         });
       } catch (err) {
-        console.warn("Gagal menyimpan mock notifications_log:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Gagal menyimpan mock notifications_log:", err);
+        }
       }
     }
 
@@ -72,7 +76,9 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<{
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("Resend API returned error:", data);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Resend API returned error:", data);
+      }
       if (db) {
         await db.from("notifications_log").insert({
           recipient_email: params.to,
@@ -98,7 +104,9 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<{
 
     return { success: true, id: data.id };
   } catch (error) {
-    console.error("Gagal mengirim email via Resend:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal mengirim email via Resend:", error);
+    }
     if (db) {
       try {
         await db.from("notifications_log").insert({
@@ -117,10 +125,7 @@ export async function sendTransactionalEmail(params: SendEmailParams): Promise<{
   }
 }
 
-// -----------------------------------------------------------------------------
-// Pemicu Notifikasi Bisnis Spesifik
-// -----------------------------------------------------------------------------
-
+// Pemicu notifikasi email transaksi
 const recentViewNotifications = new Map<string, number>();
 const VIEW_NOTIFICATION_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 jam jeda
 

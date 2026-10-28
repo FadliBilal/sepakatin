@@ -1,4 +1,4 @@
-// Sepakatin — Generator Dokumen Contoh Resmi (PDF Vektor dengan e-Meterai & TTD)
+// Sepakatin - Generator Dokumen Contoh Resmi (PDF Vektor dengan e-Meterai & TTD)
 
 
 import { jsPDF } from "jspdf";
@@ -54,7 +54,7 @@ export function generateSampleStampedPdfDataUrl(
     doc.line(x, y + 5, 559, y + 5);
   }
 
-  // ========================== HALAMAN 1 ==========================
+  // Halaman 1
   // 1. Header: Logo Resmi Sepakatin (Kiri)
   doc.addImage(PDF_LOGO_SEPAKATIN_BASE64, "PNG", 36, 32, 115, 37.7);
 
@@ -124,7 +124,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.setLineWidth(1);
   doc.line(36, 135, 559, 135);
 
-  // ========================== PASAL 1 ==========================
+  // Pasal 1
   drawSectionHeader(36, 151, "Pasal 1 · Para Pihak");
 
   doc.setFont("helvetica", "normal");
@@ -183,7 +183,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.text("Perusahaan: PT Solusi Digital Nusantara", 311, partyCardY + 37);
   doc.text("Email: budi@solusidigital.id · WA: +62 811-9876-5432", 311, partyCardY + 48);
 
-  // ========================== PASAL 2 ==========================
+  // Pasal 2
   let y = 247;
   drawSectionHeader(36, y, "Pasal 2 · Pekerjaan yang Disepakati");
 
@@ -256,7 +256,7 @@ export function generateSampleStampedPdfDataUrl(
     dy2 += 13;
   });
 
-  // ========================== PASAL 3 ==========================
+  // Pasal 3
   y = 422;
   drawSectionHeader(36, y, "Pasal 3 · Harga & Tata Cara Pembayaran");
 
@@ -315,7 +315,7 @@ export function generateSampleStampedPdfDataUrl(
     y += 16;
   });
 
-  // ========================== PASAL 4 ==========================
+  // Pasal 4
   y += 14;
   drawSectionHeader(36, y, "Pasal 4 · Ketentuan Revisi & Jadwal");
 
@@ -352,7 +352,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.setTextColor(100, 116, 139);
   doc.text("Biaya revisi di luar kuota: Rp 400.000 per revisi tambahan.", 36, y);
 
-  // ========================== PASAL 5 ==========================
+  // Pasal 5
   y += 17;
   drawSectionHeader(36, y, "Pasal 5 · Hak Cipta & Pembatalan");
 
@@ -390,7 +390,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.text("Sepakatin · Dokumen Kontrak Digital Sah Dilindungi Kriptografi SHA-256", 36, 810);
   doc.text("Halaman 1 dari 2", 559, 810, { align: "right" });
 
-  // ========================== HALAMAN 2 ==========================
+  // Halaman 2
   doc.addPage();
 
   // Header Halaman 2: Logo Resmi Sepakatin (Compact)
@@ -429,7 +429,7 @@ export function generateSampleStampedPdfDataUrl(
     { align: "center" }
   );
 
-  // ========================== DUA KOTAK TANDA TANGAN ==========================
+  // Kolom tanda tangan
   y += 18;
   const sigBoxW = 256;
   const sigBoxH = 216;
@@ -469,10 +469,9 @@ export function generateSampleStampedPdfDataUrl(
   doc.setTextColor(30, 41, 59);
   doc.text("PIHAK KEDUA (KLIEN)", 313, y + 15);
 
-  // ========================== PENEMPATAN E-METERAI & TTD ==========================
-  // Aturan Bea Meterai:
-  // Salinan Freelancer: e-Meterai dibubuhkan pada kolom tanda tangan Klien (Pihak Kedua)
-  // Salinan Klien: e-Meterai dibubuhkan pada kolom tanda tangan Freelancer (Pihak Pertama)
+  // Penempatan e-meterai & tanda tangan
+  // Salinan Freelancer: e-Meterai pada kolom tanda tangan Klien
+  // Salinan Klien: e-Meterai pada kolom tanda tangan Freelancer
   const sigY = y + 36;
   const sigImgW = 104;
   const sigImgH = 36;
@@ -512,7 +511,7 @@ export function generateSampleStampedPdfDataUrl(
     doc.text("Tanda Tangan Digital Klien", 431, sigY + 54, { align: "center" });
   }
 
-  // ========================== IDENTITAS PENANDATANGAN ==========================
+  // Identitas penandatangan
   // Pihak Pertama (Freelancer)
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.6);
@@ -541,8 +540,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.setTextColor(100, 116, 139);
   doc.text("Pemberi Kerja · PT Solusi Digital Nusantara", 431, y + 128, { align: "center" });
 
-  // ========================== SUBPANEL WAKTU & VERIFIKASI (RAPIH & ELEGAN) ==========================
-  // Dirombak dari teks polos menjadi kartu verifikasi audit profesional dengan background lembut
+  // Panel verifikasi & audit trail
   const timePanelY = y + 140;
   const timePanelH = 64;
   const timePanelW = 236;
@@ -638,7 +636,7 @@ export function generateSampleStampedPdfDataUrl(
   doc.setTextColor(37, 99, 235);
   doc.text("Tervalidasi e-Meterai Peruri DJP RI", 321, timePanelY + 56);
 
-  // ========================== CATATAN YURIDIS ==========================
+  // Catatan yuridis
   y += sigBoxH + 14;
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
@@ -667,7 +665,7 @@ export function generateSampleStampedPdfDataUrl(
     );
   }
 
-  // ========================== SEGEL INTEGRITAS SHA-256 ==========================
+  // Segel integritas SHA-256
   y += 36;
   doc.setFillColor(240, 253, 244);
   doc.setDrawColor(16, 185, 129);

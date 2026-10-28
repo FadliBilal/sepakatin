@@ -101,7 +101,9 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
               onVerifyRef.current(token);
             },
             "error-callback": (err?: string) => {
-              console.warn("[Turnstile] Cloudflare challenge error:", err);
+              if (process.env.NODE_ENV !== "production") {
+                console.warn("[Turnstile] Cloudflare challenge error:", err);
+              }
               setRenderError(err || "Gagal memverifikasi Turnstile");
               onErrorRef.current?.(err);
             },
@@ -116,7 +118,9 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
           widgetIdRef.current = id;
           return true;
         } catch (err) {
-          console.warn("[Turnstile] Render exception:", err);
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("[Turnstile] Render exception:", err);
+          }
           return false;
         }
       };

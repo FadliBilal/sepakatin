@@ -1,13 +1,10 @@
-// Sepakatin — Akun contoh untuk mode lokal (tanpa Supabase) & dokumen contoh publik
+// Sepakatin - Akun contoh untuk mode lokal (tanpa Supabase) & dokumen contoh publik
 //
-// PENTING — JANGAN menambahkan akun administrator di sini.
-// Berkas ini ikut terbaca publik bila repositori dibuka, dan dipakai oleh
-// `npm run seed:demo`. Akun admin ditentukan lewat env `ADMIN_EMAILS` di server,
-// dan kata sandinya dibuat manual lewat dashboard Supabase.
+// PENTING: JANGAN menambahkan akun administrator di sini.
+// Berkas ini ikut terbaca bila repositori dibuka, dan dipakai oleh `npm run seed:demo`.
+// Akun admin ditentukan lewat env `ADMIN_EMAILS` di server.
 //
-// Berkas ini TIDAK memuat kata sandi. Isinya ikut terbundel ke JavaScript yang
-// dikirim ke browser, sehingga kata sandi apa pun di sini otomatis terbaca publik
-// dari situs yang sudah tayang — cukup dengan membuka DevTools.
+// Berkas ini TIDAK memuat kata sandi. Isinya ikut terbundel ke JavaScript browser.
 //
 // Untuk mode lokal, kata sandi diambil dari `NEXT_PUBLIC_LOCAL_DEMO_PASSWORD`
 // yang hanya diisi di berkas .env.local pengembang. Bila kosong, akun contoh

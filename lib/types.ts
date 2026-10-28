@@ -1,4 +1,4 @@
-// Sepakatin — TypeScript Core Type Definitions
+// Sepakatin - TypeScript Core Type Definitions
 
 export type AgreementStatus =
   | "DRAFT"

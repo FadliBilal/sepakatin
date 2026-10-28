@@ -55,8 +55,10 @@ export async function createMayarPayment(params: CreatePaymentParams): Promise<M
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.warn("Mayar API error, falling back to sandbox:", errText);
+      if (process.env.NODE_ENV !== "production") {
+        const errText = await response.text();
+        console.warn("Mayar API error, fallback ke sandbox:", errText);
+      }
       return {
         orderId: params.orderId,
         paymentUrl: `/dashboard?demo_pay=${params.orderId}`,
@@ -74,7 +76,9 @@ export async function createMayarPayment(params: CreatePaymentParams): Promise<M
       isSandbox: false,
     };
   } catch (error) {
-    console.error("Gagal menghubungi Mayar API:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal menghubungi Mayar API:", error);
+    }
     return {
       orderId: params.orderId,
       paymentUrl: `/dashboard?demo_pay=${params.orderId}`,

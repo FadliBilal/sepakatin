@@ -38,7 +38,7 @@ export function errorMessage(err: unknown): string {
   return err instanceof Error && err.message ? err.message : "Terjadi kesalahan. Coba lagi.";
 }
 
-// Mode Supabase — pemanggil API
+// Mode Supabase (pemanggil API server)
 async function api<T>(path: string, init: RequestInit = {}, withAuth = true): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (withAuth) {
@@ -52,7 +52,7 @@ async function api<T>(path: string, init: RequestInit = {}, withAuth = true): Pr
   return body as T;
 }
 
-// Mode lokal — penyimpanan di browser
+// Mode lokal (penyimpanan di browser)
 const LOCAL_KEY = "sepakatin_agreements_v2";
 const CREDITS_KEY = "sepakatin_credits_v2";
 
@@ -74,8 +74,8 @@ function writeLocal(list: AgreementRecord[]) {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
   } catch {
     throw new StoreError(
-      "Penyimpanan browser sudah penuh. Berkas PDF bermeterai biasanya terlalu besar untuk mode demo lokal — " +
-        "coba unggah berkas yang lebih kecil, hapus kesepakatan lama, atau hubungkan aplikasi ke Supabase."
+      "Penyimpanan browser sudah penuh. Berkas PDF bermeterai biasanya terlalu besar untuk mode demo lokal (coba " +
+        "unggah berkas yang lebih kecil, hapus kesepakatan lama, atau hubungkan aplikasi ke Supabase)."
     );
   }
   // Sinkronisasi lokal ke server agar bisa diuji coba lintas tab, Incognito, atau browser lain
@@ -625,7 +625,9 @@ export async function adminGetPlatformStats(): Promise<AdminPlatformStats> {
       const res = await api<{ stats: AdminPlatformStats }>("/api/admin");
       return res.stats;
     } catch (err) {
-      console.error("Failed to get cloud admin stats, falling back", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat platform stats cloud:", err);
+      }
     }
   }
   const users = localAccounts();
@@ -654,7 +656,9 @@ export async function adminGetAllUsers(): Promise<AdminUserView[]> {
       const res = await api<{ users: AdminUserView[] }>("/api/admin");
       return res.users;
     } catch (err) {
-      console.error("Failed to get cloud admin users, falling back", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat pengguna cloud:", err);
+      }
     }
   }
   const users = localAccounts();
@@ -724,7 +728,9 @@ export async function adminGetAllAgreements(): Promise<AgreementRecord[]> {
       const res = await api<{ agreements: AgreementRecord[] }>("/api/admin");
       return res.agreements;
     } catch (err) {
-      console.error("Failed to get cloud admin agreements, falling back", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat kesepakatan cloud:", err);
+      }
     }
   }
   return readLocal();
@@ -757,7 +763,9 @@ export async function adminGetAuditLogs(): Promise<AdminAuditLogItem[]> {
       const res = await api<{ auditLogs: AdminAuditLogItem[] }>("/api/admin");
       return res.auditLogs || [];
     } catch (err) {
-      console.error("Gagal memuat log audit admin:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat log audit admin:", err);
+      }
     }
   }
   return [];
@@ -769,7 +777,9 @@ export async function adminGetAllPaymentOrders(): Promise<PaymentOrderRecord[]> 
       const res = await api<{ paymentOrders: PaymentOrderRecord[] }>("/api/admin");
       return res.paymentOrders || [];
     } catch (err) {
-      console.error("Gagal memuat daftar pesanan pembayaran admin:", err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat pesanan pembayaran admin:", err);
+      }
     }
   }
   return [];

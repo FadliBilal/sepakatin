@@ -10,7 +10,7 @@ export const metadata = {
  * Halaman 404.
  *
  * Salah satu cara paling umum orang sampai ke sini adalah salah mengetik nomor
- * dokumen saat memindai QR pada surat perjanjian — karena itu jalan pintas ke
+ * dokumen saat memindai QR pada surat perjanjian (karena itu jalan pintas ke
  * halaman cek keaslian ditampilkan menonjol, bukan sekadar tombol "kembali".
  */
 export default function NotFound() {

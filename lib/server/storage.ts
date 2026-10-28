@@ -53,7 +53,9 @@ export async function uploadPdfToStorage(params: {
     });
 
   if (error) {
-    console.error("Supabase Storage Upload Error:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Supabase Storage Upload Error:", error);
+    }
     throw new AgreementError(
       `Gagal menyimpan berkas ke Supabase Storage: ${error.message}`,
       500,
@@ -76,7 +78,9 @@ export async function createSignedDownloadUrl(
     .createSignedUrl(cleanPath, expiresInSeconds);
 
   if (error || !data?.signedUrl) {
-    console.error("Supabase Storage Signed URL Error:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Supabase Storage Signed URL Error:", error);
+    }
     throw new AgreementError(
       "Gagal menerbitkan tautan unduh dokumen yang aman.",
       500,
@@ -94,7 +98,9 @@ export async function deletePdfFromStorage(storagePath: string): Promise<void> {
 
   const { error } = await admin.storage.from(STORAGE_BUCKET).remove([cleanPath]);
   if (error) {
-    console.warn("Gagal menghapus berkas dari Supabase Storage:", error.message);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal menghapus berkas dari Supabase Storage:", error.message);
+    }
   }
 }
 

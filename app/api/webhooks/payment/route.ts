@@ -96,7 +96,9 @@ export async function POST(req: Request) {
       status: settlement.status,
     });
   } catch (err) {
-    console.error("Error processing Mayar webhook:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal memproses Mayar webhook:", err);
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal error" },
       { status: 500 }

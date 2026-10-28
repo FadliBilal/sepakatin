@@ -38,7 +38,9 @@ export async function POST(req: Request) {
             metadata: { profile_name: profile.full_name },
           });
         } catch (err) {
-          console.warn("Gagal mencatat order:", err);
+          if (process.env.NODE_ENV !== "production") {
+            console.warn("Gagal mencatat order:", err);
+          }
         }
 
         const redirectUrl = `${appUrl()}/dashboard?payment_success=${orderId}`;

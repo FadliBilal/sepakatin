@@ -153,7 +153,7 @@ export function PrintableAgreement({
     (agreement.emateraiList?.find((m) => m.targetCopy === copyType || m.targetCopy === "both")) ??
     agreement.ematerai;
 
-  // Alamat ini tercetak sebagai QR pada dokumen bermeterai — harus domain tetap,
+  // Alamat verifikasi tercetak sebagai QR pada dokumen bermeterai (domain tetap)
   // bukan domain host yang bisa berubah saat pindah penyedia hosting.
   const verifyUrl = verifyUrlFor(agreement.contractId);
 

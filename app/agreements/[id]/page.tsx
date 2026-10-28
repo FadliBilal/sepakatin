@@ -111,6 +111,12 @@ function AgreementDetail() {
 
   const closeDialog = () => setDialogState((prev) => ({ ...prev, isOpen: false }));
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const showConfirm = ({
     title,
     description,
@@ -236,11 +242,7 @@ function AgreementDetail() {
       const updated = await sendAgreementToClient(agreement.id);
       if (updated) {
         setAgreement({ ...updated });
-        showAlert({
-          title: "Kesepakatan Berhasil Dikirim!",
-          description: "Tautan peninjauan klien kini telah aktif. Silakan bagikan tautan atau kirimkan via WhatsApp ke klien Anda.",
-          type: "success",
-        });
+        showToast("Tautan peninjauan klien kini aktif dan siap dibagikan.");
       }
     } catch (err) {
       showAlert({
@@ -267,13 +269,11 @@ function AgreementDetail() {
           const updated = await regenerateReviewToken(agreement.id);
           if (updated) {
             setAgreement({ ...updated });
-            showAlert({
-              title: "Tautan Berhasil Diterbitkan Ulang!",
-              description: "Tautan review baru telah aktif dengan masa berlaku 14 hari. Silakan salin dan bagikan ke klien.",
-              type: "success",
-            });
+            closeDialog();
+            showToast("Tautan review baru telah aktif dengan masa berlaku 14 hari.");
           }
         } catch (err) {
+          closeDialog();
           showAlert({
             title: "Gagal Menerbitkan Ulang Tautan",
             description: errorMessage(err),
@@ -347,11 +347,7 @@ function AgreementDetail() {
           if (updated) {
             setAgreement({ ...updated });
             closeDialog();
-            showAlert({
-              title: "Pekerjaan Dimulai!",
-              description: "Status proyek kini resmi Berjalan (ACTIVE).",
-              type: "success",
-            });
+            showToast("Pengerjaan proyek resmi dimulai (ACTIVE).");
           }
         } catch (err) {
           closeDialog();
@@ -378,11 +374,7 @@ function AgreementDetail() {
           if (updated) {
             setAgreement({ ...updated });
             closeDialog();
-            showAlert({
-              title: "Permintaan Ditolak",
-              description: "Permintaan perubahan berhasil ditandai ditolak.",
-              type: "info",
-            });
+            showToast("Permintaan perubahan telah ditolak.");
           }
         } catch (err) {
           closeDialog();
@@ -409,11 +401,7 @@ function AgreementDetail() {
           if (updated) {
             setAgreement({ ...updated });
             closeDialog();
-            showAlert({
-              title: "Proyek Selesai!",
-              description: "Proyek berhasil diselesaikan dan kuota aktif telah dibebaskan.",
-              type: "success",
-            });
+            showToast("Proyek berhasil diselesaikan dan kuota aktif telah dibebaskan.");
           }
         } catch (err) {
           closeDialog();
@@ -440,11 +428,7 @@ function AgreementDetail() {
           if (updated) {
             setAgreement({ ...updated });
             closeDialog();
-            showAlert({
-              title: "Kesepakatan Dibatalkan",
-              description: "Status kesepakatan berhasil diubah menjadi CANCELLED.",
-              type: "info",
-            });
+            showToast("Kesepakatan berhasil dibatalkan.");
           }
         } catch (err) {
           closeDialog();
@@ -560,17 +544,9 @@ function AgreementDetail() {
         setSelectedVersionNum(updated.currentVersionNumber);
         setShowNewVersionModal(false);
         if (isDraft) {
-          showAlert({
-            title: "Draf Diperbarui",
-            description: "Perubahan isi draf kesepakatan berhasil disimpan.",
-            type: "success",
-          });
+          showToast("Perubahan isi draf kesepakatan berhasil disimpan.");
         } else {
-          showAlert({
-            title: `Versi ${updated.currentVersionNumber} Dibuat`,
-            description: `Kesepakatan diperbarui ke versi ${updated.currentVersionNumber}. Tanda tangan kedua pihak direset dan klien perlu menyetujui ulang versi baru ini.`,
-            type: "info",
-          });
+          showToast(`Versi ${updated.currentVersionNumber} berhasil diterbitkan.`);
         }
       }
     } catch (err) {
@@ -618,14 +594,9 @@ function AgreementDetail() {
       if (updated) {
         setAgreement({ ...updated });
         const copyLabel = copyType === "freelancer_copy" ? "Salinan Freelancer" : "Salinan Klien";
-        showAlert({
-          title: "Berkas Berhasil Diunggah!",
-          description: `Berkas ${copyLabel} bermeterai resmi berhasil disimpan di sistem Sepakatin.`,
-          type: "success",
-        });
+        showToast(`Berkas ${copyLabel} bermeterai berhasil disimpan.`);
       }
     } catch (err) {
-      console.error("Gagal unggah dokumen bermeterai:", err);
       showAlert({
         title: "Gagal Mengunggah Berkas",
         description: err instanceof Error ? err.message : "Gagal mengunggah dokumen. Silakan coba lagi.",
@@ -651,14 +622,9 @@ function AgreementDetail() {
           const updated = await removeStampedDocument(agreement.id, copyType);
           if (updated) {
             setAgreement({ ...updated });
-            showAlert({
-              title: "Berkas Berhasil Dihapus",
-              description: `Berkas ${copyLabel} berhasil dihapus dari sistem.`,
-              type: "info",
-            });
+            showToast(`Berkas ${copyLabel} berhasil dihapus.`);
           }
         } catch (err) {
-          console.error("Gagal menghapus dokumen:", err);
           showAlert({
             title: "Gagal Menghapus Berkas",
             description: err instanceof Error ? err.message : "Gagal menghapus dokumen.",
@@ -707,11 +673,7 @@ function AgreementDetail() {
         }
         setAgreement({ ...finalAgreement });
         setIsEditingSignature(false);
-        showAlert({
-          title: "Tanda Tangan & Persetujuan Sah",
-          description: "Tanda tangan dan persetujuan resmi Anda telah menempel pada dokumen kesepakatan.",
-          type: "success",
-        });
+        showToast("Tanda tangan dan persetujuan resmi Anda berhasil disimpan.");
       }
     } catch (err) {
       showAlert({
@@ -1178,6 +1140,13 @@ function AgreementDetail() {
         newVersionError={newVersionError}
         onSubmit={handleCreateNewVersionSubmit}
       />
+
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0A0A0A] text-white text-xs px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          {toastMessage}
+        </div>
+      )}
 
       <ModalDialog onClose={closeDialog} {...dialogState} />
     </div>

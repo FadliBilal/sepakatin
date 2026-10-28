@@ -200,9 +200,7 @@ export default function ClientReviewPage() {
   const isDocumentLocked = ["AGREED", "ACTIVE", "COMPLETED", "CANCELLED", "EXPIRED", "REJECTED"].includes(
     agreement.status
   );
-  // Hanya Salinan Klien. Sebelumnya ada fallback ke berkas pertama yang ada,
-  // sehingga klien bisa melihat Salinan Freelancer — itu bukan haknya, dan
-  // unduhannya pun akan gagal karena server hanya melayani salinan klien.
+  // Hanya Salinan Klien. Server membatasi akses unduhan khusus untuk salinan milik klien.
   const clientStampedDoc = agreement.stampedDocuments?.find((d) => d.copyType === "client_copy");
   const materaiOnClientSide = Boolean(
     agreement.ematerai &&
@@ -239,8 +237,7 @@ export default function ClientReviewPage() {
         setAgreement({ ...updated });
         setIsEditingSignature(false);
       }
-    } catch (err) {
-      console.error("Error saving signature:", err);
+    } catch {
       showAlert({
         title: "Gagal Menyimpan",
         description: "Gagal menyimpan tanda tangan. Silakan coba lagi.",
@@ -262,12 +259,11 @@ export default function ClientReviewPage() {
       return;
     }
     if (!clientSignatureUrl) {
-      // Persetujuan tanpa goresan tanda tangan menghasilkan dokumen dengan kolom
-      // tanda tangan kosong — dan setelah terkunci, itu tidak bisa diperbaiki lagi.
+      // Kolom tanda tangan wajib terisi sebelum persetujuan dikunci
       showAlert({
         title: "Tanda Tangan Belum Diisi",
         description:
-          "Mohon bubuhkan tanda tangan Anda di kotak yang tersedia. Bisa digoreskan langsung, atau tekan “Isi otomatis dari nama” jika Anda kesulitan menggambar.",
+          "Mohon bubuhkan tanda tangan Anda di kotak yang tersedia. Anda dapat menggambar langsung atau memilih 'Isi otomatis dari nama'.",
         type: "warning",
       });
       return;
@@ -296,7 +292,6 @@ export default function ClientReviewPage() {
         });
       }
     } catch (err) {
-      console.error("Error approving:", err);
       showAlert({
         title: "Gagal Menyimpan Persetujuan",
         description: err instanceof Error && err.message ? err.message : "Terjadi kesalahan saat menyimpan persetujuan.",
@@ -336,7 +331,6 @@ export default function ClientReviewPage() {
         });
       }
     } catch (err) {
-      console.error("Error requesting change:", err);
       showAlert({
         title: "Gagal Mengirim Permintaan",
         description: err instanceof Error && err.message ? err.message : "Terjadi kesalahan saat mengirim permintaan perubahan.",
@@ -423,7 +417,7 @@ export default function ClientReviewPage() {
         </Link>
       </div>
 
-      {/* Penanda tahap — supaya klien tahu posisinya dalam proses */}
+      {/* Penanda tahap peninjauan */}
       <ol className="grid grid-cols-3 gap-2" aria-label="Tahap proses kesepakatan">
         {[
           { label: "1. Tinjau Dokumen", done: true },

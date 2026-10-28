@@ -1,4 +1,4 @@
-// Sepakatin — Data contoh untuk demo (dokumen SPK-2026-00124 dengan 5 Versi)
+// Sepakatin - Data contoh untuk demo (dokumen SPK-2026-00124 dengan 5 Versi)
 
 import {
   AgreementRecord,
@@ -29,7 +29,7 @@ const CLIENT_DATA = {
   address: "Jl. Sudirman Kav. 24, Jakarta Selatan",
 };
 
-// Versi 1: Draf Awal — Website Profil 5 Halaman Dasar
+// Versi 1: Draf Awal - Website Profil 5 Halaman Dasar
 export const DEMO_CONTRACT_V1: ContractContentJSON = {
   contractId: DEMO_CONTRACT_ID,
   projectName: "Website Profil Perusahaan PT Solusi Digital",
@@ -103,7 +103,7 @@ export const DEMO_CONTRACT_V1: ContractContentJSON = {
   specialNotes: "Komunikasi proyek dilakukan lewat grup WhatsApp dan email.",
 };
 
-// Versi 2: Tambahan Klien 1 — Modul CMS Berita & Artikel Mandiri (+Rp2.000.000)
+// Versi 2: Tambahan Klien 1 - Modul CMS Berita & Artikel Mandiri (+Rp2.000.000)
 export const DEMO_CONTRACT_V2: ContractContentJSON = {
   ...DEMO_CONTRACT_V1,
   projectName: "Website Profil Perusahaan & Portal Berita PT Solusi Digital",
@@ -161,7 +161,7 @@ export const DEMO_CONTRACT_V2: ContractContentJSON = {
   specialNotes: "Penyesuaian Versi 2: Penambahan modul CMS Berita & Artikel mandiri atas permintaan klien Budi Santoso.",
 };
 
-// Versi 3: Tambahan Klien 2 — Portal Karir & Webhook WhatsApp HRD (+Rp2.000.000)
+// Versi 3: Tambahan Klien 2 - Portal Karir & Webhook WhatsApp HRD (+Rp2.000.000)
 export const DEMO_CONTRACT_V3: ContractContentJSON = {
   ...DEMO_CONTRACT_V2,
   projectName: "Website Profil Perusahaan, Portal Berita & Karir PT Solusi Digital",
@@ -220,7 +220,7 @@ export const DEMO_CONTRACT_V3: ContractContentJSON = {
   specialNotes: "Penyesuaian Versi 3: Penambahan halaman lowongan kerja dan webhook WhatsApp HRD atas permintaan klien.",
 };
 
-// Versi 4: Tambahan Klien 3 — Fitur Multi-bahasa Bilingual ID/EN (+Rp1.800.000)
+// Versi 4: Tambahan Klien 3 - Fitur Multi-bahasa Bilingual ID/EN (+Rp1.800.000)
 export const DEMO_CONTRACT_V4: ContractContentJSON = {
   ...DEMO_CONTRACT_V3,
   projectName: "Website Profil Perusahaan Bilingual, Portal Berita & Karir PT Solusi Digital",
@@ -278,7 +278,7 @@ export const DEMO_CONTRACT_V4: ContractContentJSON = {
   specialNotes: "Penyesuaian Versi 4: Penambahan kapabilitas bilingual ID/EN untuk kebutuhan penjajakan investor luar negeri.",
 };
 
-// Versi 5: Tambahan Klien 4 & FINAL — GA4, Meta Pixel, SEO On-Page, Garansi 60 Hari (+Rp1.200.000)
+// Versi 5: Tambahan Klien 4 & FINAL - GA4, Meta Pixel, SEO On-Page, Garansi 60 Hari (+Rp1.200.000)
 export const DEMO_CONTRACT_V5: ContractContentJSON = {
   contractId: DEMO_CONTRACT_ID,
   projectName: "Website Profil Perusahaan Bilingual, Portal Berita, Karir & SEO PT Solusi Digital",

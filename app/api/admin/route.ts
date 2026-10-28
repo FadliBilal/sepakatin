@@ -39,7 +39,9 @@ async function logAdminAction(params: {
       user_agent: userAgent,
     });
   } catch (err) {
-    console.warn("Gagal mencatat jejak audit admin ke database:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal mencatat jejak audit admin ke database:", err);
+    }
   }
 }
 

@@ -41,7 +41,9 @@ export async function POST(req: Request, { params }: Params) {
         action.fileUrl = "";
         action.fileSize = buffer.length;
       } catch (err) {
-        console.warn("Gagal simpan ke storage:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Gagal simpan ke storage:", err);
+        }
       }
     }
 
@@ -53,7 +55,9 @@ export async function POST(req: Request, { params }: Params) {
           await deletePdfFromStorage(doc.storagePath);
         }
       } catch (err) {
-        console.warn("Gagal menghapus dokumen storage:", err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Gagal menghapus dokumen storage:", err);
+        }
       }
     }
 

@@ -19,7 +19,9 @@ function readDiskStore(): AgreementRecord[] {
       return JSON.parse(raw);
     }
   } catch (err) {
-    console.error("Gagal membaca .local-agreements.json:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal membaca .local-agreements.json:", err);
+    }
   }
   return [];
 }
@@ -28,7 +30,9 @@ function writeDiskStore(items: AgreementRecord[]): void {
   try {
     fs.writeFileSync(LOCAL_STORE_PATH, JSON.stringify(items, null, 2), "utf-8");
   } catch (err) {
-    console.error("Gagal menyimpan ke .local-agreements.json:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal menyimpan ke .local-agreements.json:", err);
+    }
   }
 }
 
@@ -106,7 +110,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, count: updated.length });
   } catch (err) {
-    console.error("Error in /api/local-agreements POST:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Gagal memproses /api/local-agreements POST:", err);
+    }
     return NextResponse.json({ error: "Gagal menyimpan data lokal", details: String(err) }, { status: 500 });
   }
 }

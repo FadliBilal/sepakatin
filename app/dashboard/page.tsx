@@ -66,8 +66,8 @@ function Dashboard({ user }: { user: SessionUser }) {
     const url = reviewUrlFor(token);
     const ok = await copyText(url);
     if (!ok) {
-      // Jangan pernah bilang "Tersalin!" kalau papan klip sebenarnya kosong —
-      // freelancer bisa mengira link sudah terkirim ke klien padahal belum.
+      // Pastikan tautan berhasil disalin ke clipboard
+      // Simpan fallback URL jika browser menolak clipboard otomatis
       setCopyFailedUrl(url);
       return;
     }

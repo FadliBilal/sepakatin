@@ -1,4 +1,4 @@
-// Sepakatin — Akun & sesi login (Supabase Auth / Mode lokal)
+// Sepakatin - Akun & sesi login (Supabase Auth / Mode lokal)
 
 "use client";
 
@@ -18,9 +18,8 @@ export interface SessionUser {
   role: string;
   phone: string;
   /**
-   * Ditentukan server lewat /api/me, bukan dihitung di browser.
-   * Hanya dipakai untuk menampilkan/menyembunyikan menu — semua endpoint admin
-   * tetap memeriksa ulang sendiri di server.
+   * Ditentukan server lewat /api/me untuk kontrol visibilitas menu di antarmuka.
+   * Seluruh endpoint admin tetap memverifikasi ulang hak akses di server.
    */
   isAdmin?: boolean;
 }
@@ -161,7 +160,7 @@ function saveLocalSession(user: SessionUser | null) {
     if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     else localStorage.removeItem(SESSION_KEY);
   } catch {
-    // Browser menolak penyimpanan — sesi hanya bertahan di halaman ini
+    // Browser menolak penyimpanan lokal (sesi hanya bertahan di halaman ini)
   }
   emit();
 }
@@ -237,7 +236,7 @@ function initRemote() {
   remoteInitStarted = true;
   refreshRemote();
   supabase.auth.onAuthStateChange((event) => {
-    // Jangan memanggil Supabase langsung di dalam callback ini (bisa macet) — tunda sebentar
+    // Tunda panggilan agar tidak memicu deadlock auth state
     if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
       setTimeout(() => refreshRemote(), 0);
     }

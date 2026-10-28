@@ -30,10 +30,7 @@ export interface ProfileRow {
   project_credits: number;
 }
 
-// ------------------------------------------------------------------------------
 // Helper respons API
-// ------------------------------------------------------------------------------
-
 export function ok(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } });
 }
@@ -45,7 +42,9 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
     if (err instanceof AgreementError) {
       return NextResponse.json({ error: err.message, code: err.code }, { status: err.status });
     }
-    console.error("[api] unexpected error", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[api] unexpected error", err);
+    }
     return NextResponse.json({ error: "Terjadi kesalahan di server. Coba lagi sebentar lagi." }, { status: 500 });
   }
 }
@@ -58,10 +57,7 @@ export async function readJson<T>(req: Request): Promise<T> {
   }
 }
 
-// ------------------------------------------------------------------------------
 // Autentikasi
-// ------------------------------------------------------------------------------
-
 export async function requireUser(req: Request): Promise<User> {
   const header = req.headers.get("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
@@ -129,10 +125,7 @@ export async function getUsage(profile: ProfileRow): Promise<AccountUsage> {
   };
 }
 
-// ------------------------------------------------------------------------------
 // Baca kesepakatan
-// ------------------------------------------------------------------------------
-
 function toRecord(row: AgreementRow): AgreementRecord {
   return {
     ...row.record,
@@ -223,11 +216,7 @@ export async function getByContractId(contractId: string): Promise<AgreementReco
   return toRecord(row);
 }
 
-// ------------------------------------------------------------------------------
-// Tulis kesepakatan
-// ------------------------------------------------------------------------------
-
-// Mutasi dokumen dengan optimistic locking (auto-retry)
+// Tulis kesepakatan (mutasi dengan optimistic locking)
 export async function mutate(
   column: "id" | "review_token",
   value: string,
@@ -379,7 +368,9 @@ export async function settlePaymentOrder(
       };
     }
   } catch (rpcErr) {
-    console.warn("RPC settle_payment_order fallback ke transaksi terpadu:", rpcErr);
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("RPC settle_payment_order fallback ke transaksi terpadu:", rpcErr);
+    }
   }
 
   // 2. Fallback jika RPC database belum diaplikasikan

@@ -8,7 +8,7 @@ export const isSupabaseConfigured = Boolean(
   supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith("http")
 );
 
-/** Klien Supabase untuk browser — hanya dipakai untuk login/daftar/sesi. */
+/** Klien Supabase untuk browser (khusus login, daftar, dan sesi). */
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },

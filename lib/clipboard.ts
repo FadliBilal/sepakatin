@@ -1,9 +1,8 @@
-// Sepakatin — Menyalin teks ke papan klip dengan fallback aman
+// Sepakatin - Menyalin teks ke papan klip dengan fallback aman
 //
 // `navigator.clipboard` tidak selalu tersedia: butuh HTTPS (atau localhost),
 // izin browser, dan bisa ditolak di dalam WebView aplikasi lain. Kalau panggilannya
-// tidak ditunggu, tampilan bisa terlanjur bilang "Tersalin!" padahal papan klip kosong —
-// dan itu fatal di sini, karena seluruh alur klien bergantung pada link yang tersalin.
+// tidak ditunggu, tampilan bisa terlanjur bilang "Tersalin!" padahal papan klip kosong.
 
 "use client";
 

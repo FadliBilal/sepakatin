@@ -104,8 +104,9 @@ export default function AdminPage() {
       setAuditLogs(l);
       setPaymentOrdersList(o);
     } catch (err) {
-      // Tanpa ini, gagal memuat tampak sama persis dengan "memang tidak ada data".
-      console.error(err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Gagal memuat data admin:", err);
+      }
       setLoadError(errorMessage(err));
     } finally {
       setIsLoading(false);
