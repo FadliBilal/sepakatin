@@ -192,10 +192,6 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
-
-        <div className="mt-6 text-center text-[11px] text-[#8E8E93]">
-          Perlindungan hukum sah KUHPerdata 1320 &middot; Tanda tangan digital UU ITE
-        </div>
       </div>
     </div>
   );
