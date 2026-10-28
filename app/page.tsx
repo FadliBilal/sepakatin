@@ -12,7 +12,6 @@ import {
   Lock,
   ArrowRight,
   Sparkles,
-  Zap,
   QrCode,
   FileCheck,
   FileText,
